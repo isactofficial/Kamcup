@@ -22,6 +22,37 @@
 .custom-select-dropdown option {
     font-weight: normal;
 }
+
+/* --- Styling untuk Mobile Card View  --- */
+.mobile-tournament-card {
+    border: 1px solid #e9ecef;
+    border-radius: 1rem; /* Sudut lebih membulat */
+    background-color: #fff;
+    overflow: hidden; /* Agar gambar tidak keluar dari border radius */
+}
+
+.mobile-tournament-card .card-thumbnail {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+}
+.mobile-tournament-card .card-thumbnail-placeholder {
+    width: 100%;
+    height: 150px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.mobile-tournament-card .card-title {
+    font-weight: 600;
+    color: #343a40;
+}
+
+.mobile-tournament-card .action-buttons .btn {
+    border-radius: 0.5rem;
+    font-size: 1.1rem; /* Ikon lebih besar */
+}
+
 </style>
 
 <div class="container-fluid px-4" style="min-height: 100vh;">
@@ -61,24 +92,24 @@
         </div>
     </div>
 
-    {{-- Tournament Table --}}
+    {{-- Tournament Content Card --}}
     {{-- Sporty youthful: rounded card with shadow --}}
     <div class="card border-0 rounded-4 shadow-sm">
-        <div class="card-body p-4">
+        <div class="card-body p-3 p-md-4">
 
             @if(session('success'))
                 {{-- Expressive: success alert with consistent styling --}}
-                <div class="alert rounded-3 text-white m-0" style="background-color: #00617a; border: none;">
+                <div class="alert rounded-3 text-white m-0 mb-4" style="background-color: #00617a; border: none;">
                     <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
                 </div>
             @endif
 
-            <div class="d-flex justify-content-between align-items-center mb-4 mt-3"> {{-- Added mt-3 for spacing after alert --}}
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
                 {{-- Personality: community active process - clear heading for the table --}}
-                <h1 class="fs-5 fw-semibold" style="color: #00617a;">Semua Turnamen</h1>
+                <h1 class="fs-5 fw-bold mb-3 mb-md-0" style="color: #00617a;">Semua Turnamen</h1>
                 <div>
                     <form method="GET" class="d-flex align-items-center gap-2">
-                        <span class="text-muted fw-semibold">Urutkan Berdasarkan:</span>
+                        <span class="text-muted fw-semibold d-none d-md-inline">Urutkan:</span>
                         <select name="sort" class="form-select form-select-sm custom-select-dropdown border-0" onchange="this.form.submit()" style="width: auto; cursor: pointer;">
                             {{-- Commitment growth: clearer options --}}
                             <option value="latest" {{ request('sort', 'latest') == 'latest' ? 'selected' : '' }}>Terbaru</option>
@@ -90,7 +121,82 @@
                 </div>
             </div>
 
-            <div class="table-responsive">
+            {{-- Mobile View - Tampilan Kartu (Card View) --}}
+            <div class="d-block d-lg-none">
+                @forelse($tournaments as $tournament)
+                    <div class="mobile-tournament-card shadow-sm mb-3">
+                        @if($tournament->thumbnail)
+                            <img src="{{ asset('storage/' . $tournament->thumbnail) }}" alt="thumbnail" class="card-thumbnail">
+                        @else
+                            <div class="card-thumbnail-placeholder d-flex justify-content-center align-items-center">
+                                <span class="text-muted small">Tanpa Gambar</span>
+                            </div>
+                        @endif
+                        <div class="p-3">
+                            <h3 class="card-title fs-6 mb-3">{{ $tournament->title }}</h3>
+
+                            <div>
+                                {{-- Status Badge --}}
+                                <div class="mb-2">
+                                    @php
+                                        $statusBgColor = '';
+                                        $statusTextColor = 'white';
+                                        switch(strtolower($tournament->status)) {
+                                            case 'published':
+                                                $statusBgColor = '#00617a'; // Primary blue for published
+                                                break;
+                                            case 'draft':
+                                                $statusBgColor = '#f4b704'; // Yellow for draft
+                                                $statusTextColor = '#212529'; // Dark text for yellow background
+                                                break;
+                                            default:
+                                                $statusBgColor = '#cb2786'; // Magenta for other/unknown
+                                                break;
+                                        }
+                                    @endphp
+                                    <span class="badge rounded-pill px-3 py-1" style="background-color: {{ $statusBgColor }}; color: {{ $statusTextColor }};">
+                                        {{ ucfirst($tournament->status) }}
+                                    </span>
+                                </div>
+
+                                {{-- Registration Date --}}
+                                <div class="text-end mb-3">
+                                    <span class="text-muted small">
+                                        <i class="fas fa-calendar-alt me-1"></i>
+                                        {{ \Carbon\Carbon::parse($tournament->registration_start)->format('d M') }} - {{ \Carbon\Carbon::parse($tournament->registration_end)->format('d M Y') }}
+                                    </span>
+                                </div>
+                            </div>
+
+
+                            {{-- Action buttons --}}
+                            <div class="action-buttons d-flex gap-2">
+                                <a href="{{ route('admin.tournaments.show', $tournament->slug) }}" class="btn btn-light border flex-fill" style="color: #00617a;" title="Lihat Detail">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ route('admin.tournaments.edit', $tournament->slug) }}" class="btn btn-light border flex-fill" style="color: #f4b704;" title="Edit Turnamen">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form action="{{ route('admin.tournaments.destroy', $tournament->slug) }}" method="POST" class="d-flex flex-fill">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="button" onclick="confirmDelete(event, this.parentElement)" class="btn btn-light border w-100" style="color: #cb2786;" title="Hapus Turnamen">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                @empty
+                    <div class="text-center py-4 text-muted">
+                        <i class="fas fa-box-open me-2 fs-3"></i>
+                        <p class="mt-2">Tidak ada turnamen yang ditemukan.</p>
+                    </div>
+                @endforelse
+            </div>
+
+            {{-- Desktop View - Tampilan Tabel --}}
+            <div class="table-responsive d-none d-lg-block">
                 <table class="table table-hover align-middle">
                     <thead>
                         <tr style="background-color: #f8f9fa;"> {{-- Light background for header row --}}
@@ -246,7 +352,8 @@ function confirmDelete(event, form) {
         cancelButtonText: 'Batalkan',
         customClass: { // Sporty youthful: rounded buttons
             confirmButton: 'rounded-pill px-4',
-            cancelButton: 'rounded-pill px-4'
+            cancelButton: 'rounded-pill px-4',
+            popup: 'rounded-4'
         }
     }).then((result) => {
         if (result.isConfirmed) {
