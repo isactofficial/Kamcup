@@ -37,23 +37,37 @@
             </style>
 
         {{-- Sorting & Filtering Form --}}
+        <style>
+            .toolbar-filters { display: flex; flex-wrap: wrap; gap: .75rem 1rem; align-items: center; }
+            .toolbar-group { display: flex; align-items: center; gap: .5rem; }
+            .toolbar-group .filter-label { white-space: nowrap; color: #6c757d; font-weight: 600; }
+            @media (max-width: 575.98px) {
+                .toolbar-filters { flex-direction: column; align-items: stretch; }
+                .toolbar-group { flex-direction: column; align-items: stretch; }
+                .toolbar-group .form-select { width: 100% !important; }
+            }
+        </style>
         <div class="row mb-4">
             <div class="col-12">
-                <form method="GET" class="d-flex align-items-center gap-3 bg-white p-3 rounded-4 shadow-sm">
-                    <span class="text-muted fw-semibold">Urutkan:</span>
-                    <select name="sort" class="form-select form-select-sm border-0 bg-light rounded-pill px-3 py-2"
-                        onchange="this.form.submit()" style="width: auto; cursor: pointer;">
-                        <option value="latest" {{ request('sort') == 'latest' ? 'selected' : '' }}>Terbaru</option>
-                        <option value="oldest" {{ request('sort') == 'oldest' ? 'selected' : '' }}>Terlama</option>
-                    </select>
-                    <span class="text-muted fw-semibold ms-auto">Status:</span>
-                    <select name="status" class="form-select form-select-sm border-0 bg-light rounded-pill px-3 py-2"
-                        onchange="this.form.submit()" style="width: auto; cursor: pointer;">
-                        <option value="">Semua Status</option>
-                        <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                        <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Success</option>
-                        <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Canceled</option>
-                    </select>
+                <form method="GET" class="toolbar-filters bg-white p-3 rounded-4 shadow-sm">
+                    <div class="toolbar-group">
+                        <label for="sort-select" class="filter-label">Urutkan:</label>
+                        <select id="sort-select" name="sort" class="form-select form-select-sm border-0 bg-light rounded-pill px-3 py-2"
+                            onchange="this.form.submit()" style="width: auto; cursor: pointer;">
+                            <option value="latest" {{ request('sort') == 'latest' ? 'selected' : '' }}>Terbaru</option>
+                            <option value="oldest" {{ request('sort') == 'oldest' ? 'selected' : '' }}>Terlama</option>
+                        </select>
+                    </div>
+                    <div class="toolbar-group ms-md-auto">
+                        <label for="status-select" class="filter-label">Status:</label>
+                        <select id="status-select" name="status" class="form-select form-select-sm border-0 bg-light rounded-pill px-3 py-2"
+                            onchange="this.form.submit()" style="width: auto; cursor: pointer;">
+                            <option value="">Semua Status</option>
+                            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                            <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Success</option>
+                            <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Canceled</option>
+                        </select>
+                    </div>
                 </form>
             </div>
         </div>
