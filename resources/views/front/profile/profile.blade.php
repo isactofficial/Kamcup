@@ -96,6 +96,25 @@
                             <div class="col-md-4 fw-bold">Nama Tim:</div>
                             <div class="col-md-8">{{ $firstTeam->name }}</div>
                         </div>
+
+                        {{-- =============================================== --}}
+                        {{-- INI DIA PERUBAHANNYA --}}
+                        <div class="row mb-2">
+                            <div class="col-md-4 fw-bold">Status Tim:</div>
+                            <div class="col-md-8">
+                                @if ($firstTeam->status == 'pending')
+                                    <span class="badge bg-warning text-dark">Menunggu Persetujuan</span>
+                                @elseif ($firstTeam->status == 'approved')
+                                    <span class="badge bg-success">Disetujui</span>
+                                @elseif ($firstTeam->status == 'rejected')
+                                    <span class="badge bg-danger">Ditolak</span>
+                                @else
+                                    <span class="badge bg-secondary">{{ ucfirst($firstTeam->status) }}</span>
+                                @endif
+                            </div>
+                        </div>
+                        {{-- =============================================== --}}
+
                         <div class="row mb-2">
                             <div class="col-md-4 fw-bold">Manajer:</div>
                             <div class="col-md-8">{{ $firstTeam->manager_name }}</div>

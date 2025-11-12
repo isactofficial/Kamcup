@@ -226,6 +226,7 @@
         }
         
     </style>
+    @stack('styles')
 </head>
 
 <body>
@@ -267,6 +268,14 @@
                         class="{{ request()->routeIs('admin.tournaments.index') || request()->routeIs('admin.tournaments.create') || request()->routeIs('admin.tournaments.edit') ? 'active' : '' }}">
                         <i class="fas fa-trophy"></i> Manage Tournaments
                     </a>
+
+                    <!-- INI BARIS YANG SAYA TAMBAHKAN -->
+                    <a href="{{ route('admin.teams.index') }}"
+                        class="{{ request()->routeIs('admin.teams.*') ? 'active' : '' }}">
+                        <i class="fas fa-users fa-fw"></i> Manage Team
+                    </a>
+                    <!-- AKHIR TAMBAHAN -->
+                    
                     <a href="{{ route('admin.matches.index') }}"
                         class="{{ request()->routeIs('admin.matches.*') ? 'active' : '' }}">
                         <i class="fas fa-calendar"></i>Tournament Schedule

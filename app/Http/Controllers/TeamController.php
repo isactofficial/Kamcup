@@ -24,7 +24,6 @@ class TeamController extends Controller
             return redirect()->route('login')->with('error', 'Anda harus login untuk membuat tim.');
         }
 
-        // --- PERUBAHAN DI SINI: Gunakan team() (tunggal) ---
         // Cek apakah user sudah memiliki tim. Jika ya, redirect ke profil.
         if (Auth::user()->team) { // Cek langsung apakah relasi team() mengembalikan objek
             return redirect()->route('profile.index')->with('info', 'Anda sudah memiliki tim. Anda hanya dapat membuat satu tim.');
@@ -45,9 +44,8 @@ class TeamController extends Controller
             return redirect()->route('login')->with('error', 'Anda harus login untuk membuat tim.');
         }
 
-        // --- PERUBAHAN DI SINI: Gunakan team() (tunggal) ---
-        // Cek apakah user sudah memiliki tim. Jika ya, redirect ke profil.
-        if (Auth::user()->team) { // Cek langsung apakah relasi team() mengembalikan objek
+        // Cek lagi di store untuk keamanan
+        if (Auth::user()->team) {
             return redirect()->route('profile.index')->with('info', 'Anda sudah memiliki tim. Anda tidak dapat membuat tim lagi.');
         }
 
@@ -93,9 +91,13 @@ class TeamController extends Controller
             'gender_category' => $request->gender_category,
             'member_count' => $request->member_count,
             'description' => $request->description,
+            
+            // --- INI PERUBAHANNYA ---
+            'status' => 'pending' // Secara otomatis mengatur status sebagai 'pending'
         ]);
 
-        return redirect()->route('profile.index')->with('success', 'Tim "' . $team->name . '" berhasil dibuat!');
+        // --- DAN INI PERUBAHAN PESANNYA ---
+        return redirect()->route('profile.index')->with('success', 'Tim "' . $team->name . '" berhasil dibuat dan sedang menunggu persetujuan.');
     }
 
     /**

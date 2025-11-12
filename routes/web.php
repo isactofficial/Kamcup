@@ -18,6 +18,7 @@ use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TeamMemberController;
 use App\Http\Controllers\DonationController;
 use App\Http\Controllers\BotManController;
+use App\Http\Controllers\AdminTeamController;
 
 /*
 |--------------------------------------------------------------------------
@@ -169,6 +170,7 @@ Route::middleware(['auth'])->group(function () {
 | Admin Routes
 |--------------------------------------------------------------------------
 */
+// PERBAIKAN: Menggunakan 'role:admin' dan MENGGABUNGKAN semua rute admin
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     
     // Admin Dashboard
@@ -235,7 +237,17 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     
     // Match Resource Routes (CRUD operations)
     Route::resource('matches', MatchController::class);
+
+    // Rute Manajemen Tim (DIPINDAHKAN KE SINI)
+    Route::get('teams', [AdminTeamController::class, 'index'])->name('teams.index');
+    Route::get('teams/{team}/edit', [AdminTeamController::class, 'edit'])->name('teams.edit');
+    Route::put('teams/{team}', [AdminTeamController::class, 'update'])->name('teams.update');
+    Route::delete('teams/{team}', [AdminTeamController::class, 'destroy'])->name('teams.destroy');
 });
+
+// GRUP ADMIN KEDUA YANG SALAH (DIHAPUS)
+// Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () { ... });
+
 
 /*
 |--------------------------------------------------------------------------
@@ -261,13 +273,13 @@ Route::middleware(['auth', 'role:reader'])->group(function () {
 */
 Route::prefix('api')->name('api.')->group(function () {
     // Public API endpoints (tidak perlu auth)
-    Route::get('/matches/{match}/score', [MatchController::class, 'getScore'])->name('match.score');
+    Route::get('/matches/{match}/score', [MatchController::class, 'getScore'])->name('api.match.score'); // Nama diubah agar unik
     Route::get('/tournaments/{tournament}/matches', function($tournament) {
         return App\Models\Tournament::findOrFail($tournament)
             ->matches()
             ->with(['team1', 'team2'])
             ->get();
-    })->name('tournament.matches');
+    })->name('api.tournament.matches'); // Nama diubah agar unik
 });
 
 // Tes error page, bisa di hapus setelah testing atau presentasi
@@ -277,4 +289,5 @@ Route::get('/403', fn() => abort(403, 'Forbidden'));
 Route::get('/419', fn() => abort(419, 'Page Expired'));
 Route::get('/429', fn() => abort(429, 'Too Many Requests'));
 Route::get('/500', fn() => abort(500, 'Internal Server Error'));
+Route::get('/5G3', fn() => abort(503, 'Service Unavailable')); // Typo? 5G3 -> 503
 Route::get('/503', fn() => abort(503, 'Service Unavailable'));
