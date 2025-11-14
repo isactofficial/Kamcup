@@ -202,6 +202,15 @@
                                             <i class="fas fa-times"></i>
                                         </button>
                                     @endif
+                                    <!-- TOMBOL HAPUS BARU (MOBILE) -->
+                                    <form action="{{ route('admin.host-requests.destroy', $request->id) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-danger text-white rounded-pill"
+                                                onclick="confirmAction(event, this.parentElement, 'delete')" title="Hapus Permanen">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         </div>
@@ -274,6 +283,16 @@
                                                     <i class="fas fa-times"></i>
                                                 </button>
                                             @endif
+                                            <!-- TOMBOL HAPUS BARU (DESKTOP) -->
+                                            <form action="{{ route('admin.host-requests.destroy', $request->id) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-danger text-white rounded-pill"
+                                                        onclick="confirmAction(event, this.parentElement, 'delete')"
+                                                        title="Hapus Permanen">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            </form>
                                         </div>
                                     </td>
                                 </tr>
@@ -350,6 +369,14 @@
                 icon = 'question';
                 confirmButtonText = 'Ya, Setujui!';
                 confirmButtonColor = '#00617a';
+            } else if (actionType === 'delete') { // <-- BLOK BARU UNTUK HAPUS
+                title = 'Konfirmasi Hapus';
+                text = "Anda yakin ingin menghapus permintaan ini secara permanen? Tindakan ini tidak dapat dibatalkan.";
+                icon = 'warning';
+                confirmButtonText = 'Ya, Hapus!';
+                confirmButtonColor = '#dc3545'; // Warna btn-danger
+            } else {
+                return; // Tipe aksi tidak dikenal
             }
 
             Swal.fire({
@@ -375,6 +402,7 @@
 
         function showRejectModal(requestId) {
             const form = document.getElementById('rejectForm');
+            // Pastikan URL route-nya benar. Sesuaikan jika perlu.
             form.action = `/admin/host-requests/${requestId}/reject`;
             const rejectModal = new bootstrap.Modal(document.getElementById('rejectModal'));
             rejectModal.show();

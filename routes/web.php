@@ -209,6 +209,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
         Route::get('/{tournamentHostRequest}', [TournamentHostRequestController::class, 'show'])->name('show');
         Route::put('/{tournamentHostRequest}/approve', [TournamentHostRequestController::class, 'approve'])->name('approve');
         Route::put('/{tournamentHostRequest}/reject', [TournamentHostRequestController::class, 'reject'])->name('reject');
+        
+        // --- INI BARIS BARU YANG DITAMBAHKAN ---
+        Route::delete('/{tournamentHostRequest}', [TournamentHostRequestController::class, 'destroy'])->name('destroy');
     });
     
     // Donation/Sponsorship Management (Admin)

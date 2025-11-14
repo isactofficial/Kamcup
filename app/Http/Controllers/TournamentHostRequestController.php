@@ -10,6 +10,48 @@ use Illuminate\Support\Facades\Log;
 
 class TournamentHostRequestController extends Controller
 {
+    /**
+     * Menampilkan daftar semua permintaan host (untuk halaman index admin).
+     */
+    public function index(Request $request)
+    {
+        $query = TournamentHostRequest::query(); // Ini sudah benar (tidak akan mengambil data soft delete)
+
+        // Filter berdasarkan Status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Filter berdasarkan Urutan (Sort)
+        $sort = $request->input('sort', 'latest');
+        if ($sort == 'latest') {
+            $query->orderBy('created_at', 'desc');
+        } else {
+            $query->orderBy('created_at', 'asc');
+        }
+
+        $hostRequests = $query->paginate(10)->withQueryString();
+
+        // --- PERBAIKAN ---
+        // Mengarahkan ke view yang benar sesuai saran error Laravel
+        // 'host-request.index' (singular) diubah menjadi 'host-requests.index' (plural)
+        return view('host-requests.index', compact('hostRequests'));
+    }
+
+    /**
+     * Menampilkan detail satu permintaan host.
+     * * --- PERBAIKAN ---
+     * Mengganti $request menjadi $tournamentHostRequest agar sesuai dengan Rute
+     */
+    public function show(TournamentHostRequest $tournamentHostRequest)
+    {
+        // --- PERBAIKAN ---
+        // Mengarahkan ke view yang benar sesuai saran error Laravel
+        // 'host-request.show' (singular) diubah menjadi 'host-requests.show' (plural)
+        return view('host-requests.show', ['request' => $tournamentHostRequest]);
+    }
+
+
     // ===== USER: Tampilkan form request
     public function create()
     {
@@ -22,7 +64,7 @@ class TournamentHostRequestController extends Controller
     {
         $validatedData = $request->validate([
             'responsible_name' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
+            'email' => 'required|email|max:2255',
             'phone' => 'required|string|max:20', // Sesuaikan max length jika perlu
             'tournament_title' => 'required|string|max:255',
             'venue_name' => 'required|string|max:255',
@@ -35,100 +77,116 @@ class TournamentHostRequestController extends Controller
 
         try {
             TournamentHostRequest::create([
-                'user_id' => Auth::id(), // ID pengguna yang sedang login
+                'user_id' => Auth::id(), // Mengambil ID pengguna yang sedang login
+                'status' => 'pending', // Status awal
                 'responsible_name' => $validatedData['responsible_name'],
                 'email' => $validatedData['email'],
                 'phone' => $validatedData['phone'],
                 'tournament_title' => $validatedData['tournament_title'],
                 'venue_name' => $validatedData['venue_name'],
                 'venue_address' => $validatedData['venue_address'],
-                'estimated_capacity' => $validatedData['estimated_capacity'] ?? null, // Gunakan null jika tidak diisi
+                'estimated_capacity' => $validatedData['estimated_capacity'],
                 'proposed_date' => $validatedData['proposed_date'],
-                'available_facilities' => $validatedData['available_facilities'] ?? null, // Gunakan null jika tidak diisi
-                'notes' => $validatedData['notes'] ?? null, // Gunakan null jika tidak diisi
-                'status' => 'pending', // Status awal selalu pending
-                'rejection_reason' => null, // Tidak ada alasan penolakan saat baru dibuat
+                'available_facilities' => $validatedData['available_facilities'],
+                'notes' => $validatedData['notes'],
             ]);
 
-            return redirect()->route('redirect.dashboard')->with('success', 'Permintaan Anda untuk menjadi tuan rumah turnamen telah berhasil diajukan!');
+            // Redirect ke halaman sukses (buat halaman ini jika perlu)
+            // Anda bisa juga redirect ke dashboard pengguna
+            return redirect()->route('dashboard')->with('success', 'Permintaan Anda untuk menjadi host telah berhasil dikirim dan sedang ditinjau.');
 
         } catch (\Exception $e) {
-            Log::error('Error submitting tournament host request: ' . $e->getMessage());
-            return redirect()->back()->withInput()->with('error', 'Gagal mengajukan permintaan. Mohon coba lagi.');
+            Log::error('Gagal menyimpan permintaan host: ' . $e->getMessage());
+            // Redirect kembali ke form dengan error
+            return back()->withInput()->with('error', 'Terjadi kesalahan saat mengirim permintaan. Silakan coba lagi.');
         }
     }
 
-    // ===== ADMIN: Lihat semua request
-    public function index()
-    {
-        // Menggunakan latest() untuk mengurutkan dari yang terbaru
-        $hostRequests = TournamentHostRequest::with('user')->latest()->paginate(10);
-        // Pastikan view ini ada: resources/views/admin/host-requests/index.blade.php
-        return view('host-requests.index', compact('hostRequests'));
-    }
-
-    // ===== ADMIN: Detail request
-    public function show($id)
-    {
-        $request = TournamentHostRequest::with('user')->findOrFail($id);
-        // Pastikan view ini ada: resources/views/admin/host-requests/show.blade.php
-        return view('host-requests.show', compact('request'));
-    }
-
-    // ===== ADMIN: Approve request
-    public function approve($id)
+    /**
+     * Menyetujui permintaan host.
+     *
+     * --- PERBAIKAN ---
+     * Mengganti $id menjadi Route Model Binding $tournamentHostRequest
+     */
+    public function approve(TournamentHostRequest $tournamentHostRequest)
     {
         try {
-            $request = TournamentHostRequest::findOrFail($id);
+            if ($tournamentHostRequest->status === 'pending') {
+                $tournamentHostRequest->status = 'approved';
+                $tournamentHostRequest->rejection_reason = null; // Hapus alasan penolakan jika ada
+                $tournamentHostRequest->save();
 
-            if ($request->status === 'pending') {
-                $request->status = 'approved';
-                $request->rejection_reason = null; // Hapus alasan penolakan jika disetujui
-                $request->save();
+                // Di sini Anda bisa menambahkan logika untuk:
+                // 1. Membuat turnamen baru di tabel 'tournaments' berdasarkan data ini.
+                // 2. Mengirim email notifikasi ke host.
 
-                // Tambahkan logika lain di sini setelah disetujui, seperti:
-                // - Membuat entri turnamen baru di tabel 'tournaments' berdasarkan data request ini.
-                // - Mengirim notifikasi email ke pengguna yang mengajukan bahwa permintaan mereka disetujui.
-
-                return redirect()->route('admin.host-requests.index')->with('success', 'Permintaan tuan rumah turnamen telah disetujui.');
+                return redirect()->route('admin.host-requests.index')->with('success', 'Permintaan host turnamen telah disetujui.');
             } else {
                 return redirect()->route('admin.host-requests.index')->with('error', 'Permintaan tidak dapat disetujui. Status bukan "pending".');
             }
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return redirect()->route('admin.host-requests.index')->with('error', 'Permintaan tidak ditemukan.');
         } catch (\Exception $e) {
-            Log::error('Error approving tournament host request (ID: ' . $id . '): ' . $e->getMessage());
+            Log::error('Error approving host request (ID: ' . $tournamentHostRequest->id . '): ' . $e->getMessage());
             return redirect()->route('admin.host-requests.index')->with('error', 'Gagal menyetujui permintaan. Mohon coba lagi.');
         }
     }
 
-    // ===== ADMIN: Reject request
-    public function reject(Request $request, $id)
+
+    /**
+     * Menolak request
+     *
+     * --- PERBAIKAN ---
+     * Mengganti $id menjadi Route Model Binding $tournamentHostRequest
+     * Tetap menerima Request $request untuk validasi
+     */
+    public function reject(Request $request, TournamentHostRequest $tournamentHostRequest)
     {
         $validatedData = $request->validate([
             'rejection_reason' => 'required|string|min:10|max:1000', // Alasan penolakan minimal 10 karakter
         ]);
 
         try {
-            $hostRequest = TournamentHostRequest::findOrFail($id);
-
-            if ($hostRequest->status === 'pending') {
-                $hostRequest->status = 'rejected';
-                $hostRequest->rejection_reason = $validatedData['rejection_reason'];
-                $hostRequest->save();
+            if ($tournamentHostRequest->status === 'pending') {
+                $tournamentHostRequest->status = 'rejected';
+                $tournamentHostRequest->rejection_reason = $validatedData['rejection_reason'];
+                $tournamentHostRequest->save();
 
                 // Tambahkan logika lain di sini setelah ditolak, seperti:
                 // - Mengirim notifikasi email ke pengguna yang ditolak beserta alasannya.
 
                 return redirect()->route('admin.host-requests.index')->with('success', 'Permintaan tuan rumah turnamen telah ditolak.');
             } else {
-                return redirect()->route('admin.host-requests.index')->with('error', 'Permintaan tidak dapat ditolak. Status bukan "pending".');
+                return redirect()->route('admin.host-requests.index')->with('error', 'Permintaan tidak dapat ditolak. Status bukan \"pending\".');
             }
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return redirect()->route('admin.host-requests.index')->with('error', 'Permintaan tidak ditemukan.');
         } catch (\Exception $e) {
-            Log::error('Error rejecting tournament host request (ID: ' . $id . '): ' . $e->getMessage());
+            Log::error('Error rejecting tournament host request (ID: ' . $tournamentHostRequest->id . '): ' . $e->getMessage());
             return redirect()->route('admin.host-requests.index')->with('error', 'Gagal menolak permintaan. Mohon coba lagi.');
+        }
+    }
+
+    /**
+     * Menghapus data permintaan host dari database.
+     *
+     * --- PERBAIKAN ---
+     * Mengganti $request menjadi $tournamentHostRequest agar sesuai dengan Rute
+     */
+    public function destroy(TournamentHostRequest $tournamentHostRequest)
+    {
+        try {
+            $requestName = $tournamentHostRequest->tournament_title;
+
+            // --- PERUBAHAN DI SINI ---
+            // Mengganti delete() menjadi forceDelete()
+            // Ini akan menghapus data secara permanen, sesuai dengan tombol Anda
+            // $tournamentHostRequest->delete(); // Ini hanya soft delete (ke tong sampah)
+            $tournamentHostRequest->forceDelete(); // Ini HAPUS PERMANEN
+
+            return redirect()->route('admin.host-requests.index')
+                             ->with('success', 'Permintaan host untuk "' . $requestName . '" berhasil dihapus secara permanen.');
+
+        } catch (\Exception $e) {
+            Log::error('Error deleting host request (ID: ' . $tournamentHostRequest->id . '): ' . $e->getMessage());
+            return redirect()->route('admin.host-requests.index')
+                             ->with('error', 'Gagal menghapus permintaan host.');
         }
     }
 }

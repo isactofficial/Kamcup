@@ -58,4 +58,48 @@ class Team extends Model
     {
         return $this->belongsTo(Tournament::class);
     }
+
+    /**
+     * =========================================================
+     * INI ADALAH TAMBAHAN UNTUK MEMPERBAIKI ERROR HAPUS TIM (team_wins)
+     * =========================================================
+     *
+     * Mendapatkan data kemenangan (wins) yang terkait dengan tim ini.
+     * Relasi ini merujuk ke tabel 'team_wins'.
+     */
+    public function wins()
+    {
+        // PENTING: Saya berasumsi model Anda untuk tabel 'team_wins'
+        // bernama 'TeamWin'. Jika nama modelnya lain (misal: 'Win'),
+        // ganti 'TeamWin::class' dengan nama model yang benar.
+
+        // --- PERBAIKAN ---
+        // Menghapus 'App\Models\' untuk memperbaiki error duplikasi namespace
+        return $this->hasMany(TeamWin::class);
+    }
+
+    /**
+     * =========================================================
+     * TAMBAHAN BARU UNTUK FIX ERROR VOLLEYBALL MATCHES
+     * (Relasi ini yang hilang di file Anda sebelumnya)
+     * =========================================================
+     */
+
+    /**
+     * Mendapatkan semua pertandingan voli di mana tim ini adalah Tuan Rumah (Home).
+     */
+    public function homeVolleyballMatches()
+    {
+        // Merujuk ke Model VolleyballMatch::class dengan foreign key 'team_home_id'
+        return $this->hasMany(VolleyballMatch::class, 'team_home_id');
+    }
+
+    /**
+     * Mendapatkan semua pertandingan voli di mana tim ini adalah Tamu (Away).
+     */
+    public function awayVolleyballMatches()
+    {
+        // Merujuk ke Model VolleyballMatch::class dengan foreign key 'team_away_id'
+        return $this->hasMany(VolleyballMatch::class, 'team_away_id');
+    }
 }

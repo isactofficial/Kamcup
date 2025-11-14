@@ -85,8 +85,17 @@ class AdminTeamController extends Controller
     public function destroy(Team $team)
     {
         // Hapus anggota tim terkait
-        // Kita asumsikan relasi 'members' sudah di-setup untuk cascade delete atau kita hapus manual
         $team->members()->delete(); 
+
+        // Hapus data 'wins' terkait (FIX SEBELUMNYA)
+        $team->wins()->delete();
+
+        // --- TAMBAHAN BARU UNTUK FIX ERROR VOLLEYBALL_MATCHES ---
+        // Hapus data 'volleyball_matches' di mana tim ini adalah tuan rumah (home)
+        $team->homeVolleyballMatches()->delete();
+        // Hapus data 'volleyball_matches' di mana tim ini adalah tamu (away)
+        $team->awayVolleyballMatches()->delete();
+        // ---------------------------------------------------------
 
         // Hapus file logo jika ada
         if ($team->logo && Storage::disk('public')->exists($team->logo)) {
@@ -94,8 +103,8 @@ class AdminTeamController extends Controller
         }
 
         $teamName = $team->name;
-        $team->delete();
+        $team->delete(); // Sekarang seharusnya berhasil
 
-        return redirect()->route('admin.teams.index')->with('success', 'Tim "' . $teamName . '" dan semua anggotanya berhasil dihapus.');
+        return redirect()->route('admin.teams.index')->with('success', 'Tim "' . $teamName . '" dan semua data terkaitnya berhasil dihapus.');
     }
 }
