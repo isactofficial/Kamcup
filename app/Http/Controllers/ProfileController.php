@@ -18,7 +18,8 @@ use App\Models\TeamMember;
 use App\Models\TournamentRegistration;
 use App\Models\TournamentHostRequest;
 use App\Models\Profile;
-use App\Models\Donation; // Tambahkan import model Donation
+use App\Models\Donation;
+use App\Models\VolleyMatch;
 
 class ProfileController extends Controller
 {
@@ -81,7 +82,7 @@ class ProfileController extends Controller
             ['path' => route('profile.index', ['page_registered' => $pageRegistered, 'page_donations' => $pageDonations, 'active_tab' => 'permohonan']), 'pageName' => 'page_host']
         );
 
-        // --- Paginasi Manual untuk userDonations (TAMBAHAN BARU) ---
+        // --- Paginasi Manual untuk userDonations ---
         $allUserDonations = $user->donations ?? collect();
         $userDonations = new \Illuminate\Pagination\LengthAwarePaginator(
             $allUserDonations->forPage($pageDonations, $perPageDonations),
@@ -91,6 +92,21 @@ class ProfileController extends Controller
             ['path' => route('profile.index', ['page_registered' => $pageRegistered, 'page_host' => $pageHost, 'active_tab' => 'donasi-saya']), 'pageName' => 'page_donations']
         );
 
+        // jadwal pertandingan
+        $upcomingMatches = collect();
+        if ($hasTeam) {
+            $userTeamId = $firstTeam->id;
+
+            $upcomingMatches = \App\Models\VolleyMatch::where(function ($query) use ($userTeamId) {
+                                    $query->where('team1_id', $userTeamId)
+                                          ->orWhere('team2_id', $userTeamId);
+                                })
+                                ->with(['team1', 'team2', 'tournament'])
+                                ->orderBy('match_datetime', 'desc')
+                                ->get();
+        }
+
+
         return view('front.profile.profile', compact(
             'user',
             'hasTeam',
@@ -98,7 +114,8 @@ class ProfileController extends Controller
             'teamMembers',
             'registeredTournaments',
             'hostApplications',
-            'userDonations' // Tambahkan variabel userDonations
+            'userDonations',
+            'upcomingMatches'
         ));
     }
 

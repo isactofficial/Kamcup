@@ -3,822 +3,1089 @@
 @section('title', 'Profile')
 
 @section('content')
-<div class="container py-5">
-    <h2 class="text-center mt-5 scroll-reveal">Profile</h2>
+    <div class="container py-5">
+        <h2 class="text-center mt-5 scroll-reveal">Profile</h2>
 
-    <div class="text-center my-3 scroll-reveal">
-        <img src="{{ Auth::user()->profile && Auth::user()->profile->profile_photo ? asset('storage/' . Auth::user()->profile->profile_photo) : asset('assets/img/profile-placeholder.png') }}" alt="Profile Photo" class="img-fluid img-square-profile">
-    </div>
+        <div class="text-center my-3 scroll-reveal">
+            <img src="{{ Auth::user()->profile && Auth::user()->profile->profile_photo ? asset('storage/' . Auth::user()->profile->profile_photo) : asset('assets/img/profile-placeholder.png') }}"
+                alt="Profile Photo" class="img-fluid img-square-profile">
+        </div>
 
-    <h4 class="text-center mt-4 mb-3 profile-section-title scroll-reveal">Informasi Dasar</h4>
+        <h4 class="text-center mt-4 mb-3 profile-section-title scroll-reveal">Informasi Dasar</h4>
 
-    <div class="card shadow-sm mb-4 profile-info-card scroll-reveal">
-        <div class="card-body position-relative">
-            <a href="{{ route('profile.edit') }}" class="btn btn-link p-0 position-absolute top-0 end-0 mt-3 me-3 edit-profile-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
-                    <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.121z"/>
-                    <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>
-                </svg>
-            </a>
+        <div class="card shadow-sm mb-4 profile-info-card scroll-reveal">
+            <div class="card-body position-relative">
+                <a href="{{ route('profile.edit') }}"
+                    class="btn btn-link p-0 position-absolute top-0 end-0 mt-3 me-3 edit-profile-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                        class="bi bi-pencil-square" viewBox="0 0 16 16">
+                        <path
+                            d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.121z" />
+                        <path fill-rule="evenodd"
+                            d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z" />
+                    </svg>
+                </a>
 
-            <div class="row mb-3">
-                <div class="col-md-3 fw-bold">Nama:</div>
-                <div class="col-md-9">{{ Auth::user()->profile->name ?? Auth::user()->name ?? '-' }}</div>
-            </div>
-            <div class="row mb-3">
-                <div class="col-md-3 fw-bold">Tanggal Lahir:</div>
-                <div class="col-md-9">{{ Auth::user()->profile->birthdate ?? '-' }}</div>
-            </div>
-            <div class="row mb-3">
-                <div class="col-md-3 fw-bold">Jenis Kelamin:</div>
-                <div class="col-md-9">{{ Auth::user()->profile->gender ?? '-' }}</div>
-            </div>
-            <div class="row mb-3">
-                <div class="col-md-3 fw-bold">Email:</div>
-                <div class="col-md-9">{{ Auth::user()->profile->email ?? Auth::user()->email ?? '-' }}</div>
-            </div>
-            <div class="row mb-3">
-                <div class="col-md-3 fw-bold">Nomor Telepon:</div>
-                <div class="col-md-9">{{ Auth::user()->profile->phone_number ?? '-' }}</div>
-            </div>
-            <div class="row mb-3">
-                <div class="col-md-3 fw-bold">Akun Sosial Media:</div>
-                <div class="col-md-9">{{ Auth::user()->profile->social_media ?? '-' }}</div>
+                <div class="row mb-3">
+                    <div class="col-md-3 fw-bold">Nama:</div>
+                    <div class="col-md-9">{{ Auth::user()->profile->name ?? (Auth::user()->name ?? '-') }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-3 fw-bold">Tanggal Lahir:</div>
+                    <div class="col-md-9">{{ Auth::user()->profile->birthdate ?? '-' }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-3 fw-bold">Jenis Kelamin:</div>
+                    <div class="col-md-9">{{ Auth::user()->profile->gender ?? '-' }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-3 fw-bold">Email:</div>
+                    <div class="col-md-9">{{ Auth::user()->profile->email ?? (Auth::user()->email ?? '-') }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-3 fw-bold">Nomor Telepon:</div>
+                    <div class="col-md-9">{{ Auth::user()->profile->phone_number ?? '-' }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-3 fw-bold">Akun Sosial Media:</div>
+                    <div class="col-md-9">{{ Auth::user()->profile->social_media ?? '-' }}</div>
+                </div>
             </div>
         </div>
-    </div>
 
-    {{-- Navigasi Tab --}}
-    <ul class="nav nav-tabs mb-4 scroll-reveal" id="profileTabs" role="tablist">
-        <li class="nav-item">
-            <a class="nav-link @if(request('active_tab') == 'tim' || !request('active_tab')) active @endif" id="tim-tab" data-bs-toggle="tab" href="#tim" role="tab" aria-controls="tim" aria-selected="true">Tim</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link @if(request('active_tab') == 'event-saya') active @endif" id="event-saya-tab" data-bs-toggle="tab" href="#event-saya" role="tab" aria-controls="event-saya" aria-selected="false">Event Saya</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link @if(request('active_tab') == 'permohonan') active @endif" id="permohonan-tab" data-bs-toggle="tab" href="#permohonan" role="tab" aria-controls="permohonan" aria-selected="false">Permohonan Tuan Rumah</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link @if(request('active_tab') == 'donasi-saya') active @endif" id="donasi-saya-tab" data-bs-toggle="tab" href="#donasi-saya" role="tab" aria-controls="donasi-saya" aria-selected="false">Donasi Saya</a>
-        </li>
-    </ul>
+        {{-- Navigasi Tab --}}
+        <ul class="nav nav-tabs mb-4 scroll-reveal" id="profileTabs" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link @if (request('active_tab') == 'tim' || !request('active_tab')) active @endif" id="tim-tab" data-bs-toggle="tab"
+                    href="#tim" role="tab" aria-controls="tim" aria-selected="true">Tim</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @if (request('active_tab') == 'event-saya') active @endif" id="event-saya-tab" data-bs-toggle="tab"
+                    href="#event-saya" role="tab" aria-controls="event-saya" aria-selected="false">Event Saya</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @if (request('active_tab') == 'permohonan') active @endif" id="permohonan-tab" data-bs-toggle="tab"
+                    href="#permohonan" role="tab" aria-controls="permohonan" aria-selected="false">Permohonan Tuan
+                    Rumah</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @if (request('active_tab') == 'donasi-saya') active @endif" id="donasi-saya-tab"
+                    data-bs-toggle="tab" href="#donasi-saya" role="tab" aria-controls="donasi-saya"
+                    aria-selected="false">Donasi Saya</a>
+            </li>
+        </ul>
 
-    {{-- Konten Tab --}}
-    <div class="tab-content" id="myTabContent">
-        {{-- Tab 'Tim' --}}
-        <div class="tab-pane fade @if(request('active_tab') == 'tim' || !request('active_tab')) show active @endif" id="tim" role="tabpanel" aria-labelledby="tim-tab">
-            @if (!$hasTeam)
-                <div class="d-flex justify-content-center align-items-center scroll-reveal" style="min-height: 200px; border: 1px dashed #ccc; border-radius: 8px;">
-                    <a href="{{ route('team.create') }}" class="text-decoration-none text-muted" style="font-size: 3rem;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
-                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-                            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
-                        </svg>
-                        <p class="mt-3 fs-5">Buat Tim</p>
-                    </a>
-                </div>
-            @else
-                <h4 class="text-center mt-4 mb-3 profile-section-title scroll-reveal">Detail Tim</h4>
-                <div class="card shadow-sm mb-4 profile-info-card scroll-reveal">
-                    <div class="card-body position-relative">
-                       <a href="{{ route('team.edit', Crypt::encryptString($firstTeam->id)) }}" class="btn btn-link p-0 position-absolute top-0 end-0 mt-3 me-3 edit-profile-btn">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
-                                <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.121z"/>
-                                <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>
+        {{-- Konten Tab --}}
+        <div class="tab-content" id="myTabContent">
+            {{-- Tab 'Tim' --}}
+            <div class="tab-pane fade @if (request('active_tab') == 'tim' || !request('active_tab')) show active @endif" id="tim" role="tabpanel"
+                aria-labelledby="tim-tab">
+                @if (!$hasTeam)
+                    <div class="d-flex justify-content-center align-items-center scroll-reveal"
+                        style="min-height: 200px; border: 1px dashed #ccc; border-radius: 8px;">
+                        <a href="{{ route('team.create') }}" class="text-decoration-none text-muted"
+                            style="font-size: 3rem;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" fill="currentColor"
+                                class="bi bi-plus-circle" viewBox="0 0 16 16">
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                                <path
+                                    d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
                             </svg>
+                            <p class="mt-3 fs-5">Buat Tim</p>
                         </a>
-
-                        <div class="text-center mb-3">
-                          <img src="{{ $firstTeam->logo ? asset('storage/' . $firstTeam->logo) : asset('assets/img/profile-placeholder.png') }}" alt="Team Logo" class="img-fluid img-square-team">
-                        </div>
-                        <div class="row mb-2">
-                            <div class="col-md-4 fw-bold">Nama Tim:</div>
-                            <div class="col-md-8">{{ $firstTeam->name }}</div>
-                        </div>
-
-                        {{-- =============================================== --}}
-                        {{-- INI DIA PERUBAHANNYA --}}
-                        <div class="row mb-2">
-                            <div class="col-md-4 fw-bold">Status Tim:</div>
-                            <div class="col-md-8">
-                                @if ($firstTeam->status == 'pending')
-                                    <span class="badge bg-warning text-dark">Menunggu Persetujuan</span>
-                                @elseif ($firstTeam->status == 'approved')
-                                    <span class="badge bg-success">Disetujui</span>
-                                @elseif ($firstTeam->status == 'rejected')
-                                    <span class="badge bg-danger">Ditolak</span>
-                                @else
-                                    <span class="badge bg-secondary">{{ ucfirst($firstTeam->status) }}</span>
-                                @endif
-                            </div>
-                        </div>
-                        {{-- =============================================== --}}
-
-                        <div class="row mb-2">
-                            <div class="col-md-4 fw-bold">Manajer:</div>
-                            <div class="col-md-8">{{ $firstTeam->manager_name }}</div>
-                        </div>
-                        <div class="row mb-2">
-                            <div class="col-md-4 fw-bold">Kontak:</div>
-                            <div class="col-md-8">{{ $firstTeam->contact }}</div>
-                        </div>
-                        <div class="row mb-2">
-                            <div class="col-md-4 fw-bold">Lokasi:</div>
-                            <div class="col-md-8">{{ $firstTeam->location }}</div>
-                        </div>
-                        <div class="row mb-2">
-                            <div class="col-md-4 fw-bold">Kategori Gender:</div>
-                            <div class="col-md-8">{{ ucfirst($firstTeam->gender_category) }}</div>
-                        </div>
-                        <div class="row mb-2">
-                            <div class="col-md-4 fw-bold">Jumlah Anggota:</div>
-                            <div class="col-md-8">{{ $firstTeam->members->count() }} / {{ $firstTeam->member_count }}</div>
-                        </div>
-                        @if ($firstTeam->description)
-                            <div class="row mb-2">
-                                <div class="col-md-4 fw-bold">Deskripsi:</div>
-                                <div class="col-md-8">{{ $firstTeam->description }}</div>
-                            </div>
-                        @endif
                     </div>
-                </div>
+                @else
+                    <h4 class="text-center mt-4 mb-3 profile-section-title scroll-reveal">Detail Tim</h4>
+                    <div class="card shadow-sm mb-4 profile-info-card scroll-reveal">
+                        <div class="card-body position-relative">
+                            <a href="{{ route('team.edit', Crypt::encryptString($firstTeam->id)) }}"
+                                class="btn btn-link p-0 position-absolute top-0 end-0 mt-3 me-3 edit-profile-btn">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                                    class="bi bi-pencil-square" viewBox="0 0 16 16">
+                                    <path
+                                        d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.121z" />
+                                    <path fill-rule="evenodd"
+                                        d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z" />
+                                </svg>
+                            </a>
 
-                <h4 class="text-center mt-4 mb-3 profile-section-title scroll-reveal">Anggota Tim</h4>
-                <div class="row row-cols-2 row-cols-md-5 g-3 d-flex align-items-stretch scroll-reveal-stagger">
-                    @for ($i = 0; $i < $firstTeam->member_count; $i++)
-                        <div class="col scroll-reveal-item">
-                            @php
-                                $member = $teamMembers->get($i);
-                            @endphp
+                            <div class="text-center mb-3">
+                                <img src="{{ $firstTeam->logo ? asset('storage/' . $firstTeam->logo) : asset('assets/img/profile-placeholder.png') }}"
+                                    alt="Team Logo" class="img-fluid img-square-team">
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-4 fw-bold">Nama Tim:</div>
+                                <div class="col-md-8">{{ $firstTeam->name }}</div>
+                            </div>
 
-                            @if ($member)
-                                <div class="card h-100 shadow-sm text-center d-flex flex-column justify-content-center align-items-center text-dark member-card-wrapper">
-                                     <div class="d-flex flex-column h-100"> 
-                                        <a href="{{ route('team.members.edit', ['team' => Crypt::encryptString($firstTeam->id), 'member' => Crypt::encryptString($member->id)]) }}"
-                                        class="member-card-link" style="padding: 1rem; width: 100%;">
-                                            <div class="card-body">
-                                                @if ($member->photo)
-                                                    <img src="{{ asset('storage/' . $member->photo) }}" alt="{{ $member->name }}" class="img-fluid img-square-team-member mb-2">
-                                                @else
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="70" height="70" fill="currentColor" class="bi bi-person-circle text-muted mb-2" viewBox="0 0 16 16">
-                                                        <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
-                                                        <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
-                                                    </svg>
-                                                @endif
-                                                <h6 class="card-title mb-0">{{ $member->name ?? 'Anggota Tim' }}</h6>
-                                                <p class="card-text text-muted small">{{ $member->position ?? 'Peran' }}</p>
-                                            </div>
-                                        </a>
-                                        @if ($firstTeam->members->count() > 1)
-                                            <form action="{{ route('team.members.destroy', ['team' => Crypt::encryptString($firstTeam->id), 'member' => Crypt::encryptString($member->id)]) }}" method="POST" class="d-block w-100 px-3 pb-2 mt-auto">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="button" onclick="confirmDeleteMember(event, this.parentElement)" class="btn btn-danger btn-sm w-100">
-                                                    <i class="fas fa-trash me-1"></i> Hapus
-                                                </button>
-                                            </form>
-                                        @endif
-                                    </div>
+                            {{-- =============================================== --}}
+                            {{-- INI DIA PERUBAHANNYA --}}
+                            <div class="row mb-2">
+                                <div class="col-md-4 fw-bold">Status Tim:</div>
+                                <div class="col-md-8">
+                                    @if ($firstTeam->status == 'pending')
+                                        <span class="badge bg-warning text-dark">Menunggu Persetujuan</span>
+                                    @elseif ($firstTeam->status == 'approved')
+                                        <span class="badge bg-success">Disetujui</span>
+                                    @elseif ($firstTeam->status == 'rejected')
+                                        <span class="badge bg-danger">Ditolak</span>
+                                    @else
+                                        <span class="badge bg-secondary">{{ ucfirst($firstTeam->status) }}</span>
+                                    @endif
                                 </div>
-                            @else
-                                <a href="{{ route('team.members.create', Crypt::encryptString($firstTeam->id)) }}"
-                                   class="card h-100 shadow-sm text-center d-flex flex-column justify-content-center align-items-center text-decoration-none text-muted member-card-link add-member-card">
-                                    <div class="card-body">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="70" height="70" fill="currentColor" class="bi bi-person-plus-fill" viewBox="0 0 16 16">
-                                            <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
-                                            <path fill-rule="evenodd" d="M13.5 5a.5.5 0 0 1 .5.5V7h1.5a.5.5 0 0 1 0 1H14v1.5a.5.5 0 0 1-1 0V8h-1.5a.5.5 0 0 1 0-1H13V5.5a.5.5 0 0 1 .5-.5z"/>
-                                        </svg>
-                                        <h6 class="card-title mt-2 mb-0">Tambah Anggota</h6>
-                                        <p class="card-text text-muted small">Slot Kosong {{ $i + 1 }}</p>
-                                    </div>
-                                </a>
+                            </div>
+                            {{-- =============================================== --}}
+
+                            <div class="row mb-2">
+                                <div class="col-md-4 fw-bold">Manajer:</div>
+                                <div class="col-md-8">{{ $firstTeam->manager_name }}</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-4 fw-bold">Kontak:</div>
+                                <div class="col-md-8">{{ $firstTeam->contact }}</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-4 fw-bold">Lokasi:</div>
+                                <div class="col-md-8">{{ $firstTeam->location }}</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-4 fw-bold">Kategori Gender:</div>
+                                <div class="col-md-8">{{ ucfirst($firstTeam->gender_category) }}</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-4 fw-bold">Jumlah Anggota:</div>
+                                <div class="col-md-8">{{ $firstTeam->members->count() }} / {{ $firstTeam->member_count }}
+                                </div>
+                            </div>
+                            @if ($firstTeam->description)
+                                <div class="row mb-2">
+                                    <div class="col-md-4 fw-bold">Deskripsi:</div>
+                                    <div class="col-md-8">{{ $firstTeam->description }}</div>
+                                </div>
                             @endif
                         </div>
-                    @endfor
-                </div>
-            @endif
-        </div>
-
-        {{-- Tab 'Event Saya' --}}
-        <div class="tab-pane fade @if(request('active_tab') == 'event-saya') show active @endif" id="event-saya" role="tabpanel" aria-labelledby="event-saya-tab">
-            @if ($registeredTournaments->isEmpty())
-                <p class="text-center text-muted scroll-reveal">Anda belum terdaftar ke lomba manapun.</p>
-            @else
-                @foreach ($registeredTournaments as $registration)
-                    <div class="card shadow-sm mb-3 scroll-reveal">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h4>{{ $registration->tournament->title ?? 'Nama Turnamen' }}</h4>
-                                @php
-                                    $badgeClass = '';
-                                    switch($registration->status) {
-                                        case 'pending': $badgeClass = 'bg-warning text-dark'; break;
-                                        case 'approved': $badgeClass = 'bg-success'; break;
-                                        case 'rejected': $badgeClass = 'bg-danger'; break;
-                                        case 'completed': $badgeClass = 'bg-primary'; break;
-                                        default: $badgeClass = 'bg-secondary'; break;
-                                    }
-                                @endphp
-                                <span class="badge {{ $badgeClass }}">{{ ucfirst($registration->status ?? 'Status') }}</span>
-                            </div>
-                            <div class="progress mb-2" style="height: 8px;">
-                                @php
-                                    $progressWidth = 0;
-                                    $progressBarClass = '';
-                                    switch($registration->status) {
-                                        case 'pending': $progressWidth = 25; $progressBarClass = 'bg-warning'; break;
-                                        case 'approved': $progressWidth = 50; $progressBarClass = 'bg-info'; break;
-                                        case 'completed': $progressWidth = 100; $progressBarClass = 'bg-success'; break;
-                                        case 'rejected': $progressWidth = 10; $progressBarClass = 'bg-danger'; break;
-                                        default: $progressWidth = 0; $progressBarClass = 'bg-secondary'; break;
-                                    }
-                                @endphp
-                                <div class="progress-bar {{ $progressBarClass }}" role="progressbar" style="width: {{ $progressWidth }}%" aria-valuenow="{{ $progressWidth }}" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
-                            <p class="text-muted small">
-                                Tanggal Turnamen: {{ \Carbon\Carbon::parse($registration->tournament->registration_start ?? 'N/A')->format('d M Y') }} - {{ \Carbon\Carbon::parse($registration->tournament->registration_end ?? 'N/A')->format('d M Y') }} |
-                                Status Pendaftaran: {{ ucfirst($registration->status ?? 'N/A') }}
-                                @if ($registration->rejection_reason)
-                                    <br>Alasan Penolakan: {{ $registration->rejection_reason }}
-                                @endif
-                            </p>
-                        </div>
                     </div>
-                @endforeach
-            @endif
-        </div>
 
-        {{-- Tab 'Permohonan Tuan Rumah' --}}
-        <div class="tab-pane fade @if(request('active_tab') == 'permohonan') show active @endif" id="permohonan" role="tabpanel" aria-labelledby="permohonan-tab">
-            @if ($hostApplications->isEmpty())
-                <div class="text-center text-muted p-4 border rounded scroll-reveal">
-                    <p class="mb-0">Anda belum mengajukan permohonan tuan rumah.</p>
-                    <p class="mt-2"><a href="{{ route('host-request.create') }}">Ajukan Permohonan Sekarang</a></p>
-                </div>
-            @else
-                @foreach ($hostApplications as $hostApplication)
-                    <div class="card shadow-sm mb-3 scroll-reveal">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ $hostApplication->tournament_title ?? 'Judul Turnamen' }}</h5>
-                            <p class="card-text">
-                                <strong>Penanggung Jawab:</strong> {{ $hostApplication->responsible_name ?? '-' }} <br>
-                                <strong>Email:</strong> {{ $hostApplication->email ?? '-' }} <br>
-                                <strong>Telepon:</strong> {{ $hostApplication->phone ?? '-' }} <br>
-                                <strong>Lokasi:</strong> {{ $hostApplication->venue_name ?? '-' }}, {{ $hostApplication->venue_address ?? '-' }} <br>
-                                <strong>Tanggal Diajukan:</strong> {{ \Carbon\Carbon::parse($hostApplication->proposed_date ?? 'N/A')->format('d M Y') }} <br>
-                                <strong>Status:</strong> @php
-                                    $badgeClass = '';
-                                    switch($hostApplication->status) {
-                                        case 'pending': $badgeClass = 'bg-info text-dark'; break;
-                                        case 'approved': $badgeClass = 'bg-success'; break;
-                                        case 'rejected': $badgeClass = 'bg-danger'; break;
-                                        default: $badgeClass = 'bg-secondary'; break;
-                                    }
-                                @endphp
-                                <span class="badge {{ $badgeClass }}">{{ ucfirst($hostApplication->status ?? 'N/A') }}</span>
-                                @if ($hostApplication->rejection_reason)
-                                    <br> <strong>Alasan Penolakan:</strong> {{ $hostApplication->rejection_reason }}
-                                @endif
-                            </p>
-                        </div>
-                    </div>
-                @endforeach
-            @endif
-        </div>
-
-        {{-- Tab 'Donasi Saya' - VERSI SEDERHANA --}}
-        <div class="tab-pane fade @if(request('active_tab') == 'donasi-saya') show active @endif" id="donasi-saya" role="tabpanel" aria-labelledby="donasi-saya-tab">
-            @if ($userDonations->isEmpty())
-                <div class="text-center text-muted p-4 border rounded scroll-reveal">
-                    <p class="mb-0">Anda belum mengajukan donasi/sponsor.</p>
-                    <p class="mt-2"><a href="{{ route('donations.create') }}">Ajukan Donasi/Sponsor Sekarang</a></p>
-                </div>
-            @else
-                @foreach ($userDonations as $donation)
-                    <div class="card shadow-sm mb-3 scroll-reveal">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <h5 class="card-title mb-0">{{ $donation->name_brand ?? 'Nama Brand' }}</h5>
+                    <h4 class="text-center mt-4 mb-3 profile-section-title scroll-reveal">Anggota Tim</h4>
+                    <div class="row row-cols-2 row-cols-md-5 g-3 d-flex align-items-stretch scroll-reveal-stagger">
+                        @for ($i = 0; $i < $firstTeam->member_count; $i++)
+                            <div class="col scroll-reveal-item">
                                 @php
-                                    $badgeClass = '';
-                                    switch($donation->status) {
-                                        case 'pending': $badgeClass = 'bg-warning text-dark'; break;
-                                        case 'approved': $badgeClass = 'bg-success'; break;
-                                        case 'rejected': $badgeClass = 'bg-danger'; break;
-                                        default: $badgeClass = 'bg-secondary'; break;
-                                    }
+                                    $member = $teamMembers->get($i);
                                 @endphp
-                                <span class="badge {{ $badgeClass }}">{{ ucfirst($donation->status ?? 'N/A') }}</span>
-                            </div>
-                            <p class="card-text mb-0">
-                                <strong>Jenis:</strong> {{ ucfirst($donation->donation_type ?? '-') }} 
-                                @if($donation->sponsor_type && $donation->donation_type == 'sponsor')
-                                    ({{ $donation->sponsor_type }})
-                                @endif
-                                <br>
-                                <strong>Event:</strong> {{ $donation->event_name ?? '-' }} <br>
-                                <strong>Tanggal Pengajuan:</strong> {{ \Carbon\Carbon::parse($donation->created_at ?? 'N/A')->format('d M Y') }}
-                            </p>
-                        </div>
-                    </div>
-                @endforeach
 
-                {{-- Pagination untuk Donasi Saya --}}
-                @if($userDonations->hasPages())
-                    <div class="mt-4 d-flex justify-content-center scroll-reveal">
-                        <nav aria-label="Page navigation for User Donations">
-                            <ul class="pagination">
-                                {{-- Previous Page Link --}}
-                                @if ($userDonations->onFirstPage())
-                                    <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+                                @if ($member)
+                                    <div
+                                        class="card h-100 shadow-sm text-center d-flex flex-column justify-content-center align-items-center text-dark member-card-wrapper">
+                                        <div class="d-flex flex-column h-100">
+                                            <a href="{{ route('team.members.edit', ['team' => Crypt::encryptString($firstTeam->id), 'member' => Crypt::encryptString($member->id)]) }}"
+                                                class="member-card-link" style="padding: 1rem; width: 100%;">
+                                                <div class="card-body">
+                                                    @if ($member->photo)
+                                                        <img src="{{ asset('storage/' . $member->photo) }}"
+                                                            alt="{{ $member->name }}"
+                                                            class="img-fluid img-square-team-member mb-2">
+                                                    @else
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="70"
+                                                            height="70" fill="currentColor"
+                                                            class="bi bi-person-circle text-muted mb-2"
+                                                            viewBox="0 0 16 16">
+                                                            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
+                                                            <path fill-rule="evenodd"
+                                                                d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z" />
+                                                        </svg>
+                                                    @endif
+                                                    <h6 class="card-title mb-0">{{ $member->name ?? 'Anggota Tim' }}</h6>
+                                                    <p class="card-text text-muted small">
+                                                        {{ $member->position ?? 'Peran' }}</p>
+                                                </div>
+                                            </a>
+                                            @if ($firstTeam->members->count() > 1)
+                                                <form
+                                                    action="{{ route('team.members.destroy', ['team' => Crypt::encryptString($firstTeam->id), 'member' => Crypt::encryptString($member->id)]) }}"
+                                                    method="POST" class="d-block w-100 px-3 pb-2 mt-auto">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="button"
+                                                        onclick="confirmDeleteMember(event, this.parentElement)"
+                                                        class="btn btn-danger btn-sm w-100">
+                                                        <i class="fas fa-trash me-1"></i> Hapus
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        </div>
+                                    </div>
                                 @else
-                                    <li class="page-item">
-                                        <a class="page-link" href="{{ $userDonations->previousPageUrl() . '&active_tab=donasi-saya&page_registered=' . request('page_registered', 1) . '&page_host=' . request('page_host', 1) }}" rel="prev">&laquo;</a>
-                                    </li>
+                                    <a href="{{ route('team.members.create', Crypt::encryptString($firstTeam->id)) }}"
+                                        class="card h-100 shadow-sm text-center d-flex flex-column justify-content-center align-items-center text-decoration-none text-muted member-card-link add-member-card">
+                                        <div class="card-body">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="70" height="70"
+                                                fill="currentColor" class="bi bi-person-plus-fill" viewBox="0 0 16 16">
+                                                <path
+                                                    d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
+                                                <path fill-rule="evenodd"
+                                                    d="M13.5 5a.5.5 0 0 1 .5.5V7h1.5a.5.5 0 0 1 0 1H14v1.5a.5.5 0 0 1-1 0V8h-1.5a.5.5 0 0 1 0-1H13V5.5a.5.5 0 0 1 .5-.5z" />
+                                            </svg>
+                                            <h6 class="card-title mt-2 mb-0">Tambah Anggota</h6>
+                                            <p class="card-text text-muted small">Slot Kosong {{ $i + 1 }}</p>
+                                        </div>
+                                    </a>
                                 @endif
-
-                                {{-- Pagination Elements --}}
-                                @php
-                                    $currentPage = $userDonations->currentPage();
-                                    $lastPage = $userDonations->lastPage();
-                                    $pageRange = 5;
-                                    $startPage = max(1, $currentPage - floor($pageRange / 2));
-                                    $endPage = min($lastPage, $currentPage + floor($pageRange / 2));
-
-                                    if ($currentPage <= floor($pageRange / 2) && $lastPage >= $pageRange) {
-                                        $endPage = $pageRange;
-                                    }
-                                    if ($currentPage > ($lastPage - floor($pageRange / 2)) && $lastPage >= $pageRange) {
-                                        $startPage = $lastPage - $pageRange + 1;
-                                    }
-                                @endphp
-
-                                @for ($i = $startPage; $i <= $endPage; $i++)
-                                    <li class="page-item {{ $i == $currentPage ? 'active' : '' }}">
-                                        <a class="page-link" href="{{ $userDonations->url($i) . '&active_tab=donasi-saya&page_registered=' . request('page_registered', 1) . '&page_host=' . request('page_host', 1) }}">{{ $i }}</a>
-                                    </li>
-                                @endfor
-
-                                {{-- Next Page Link --}}
-                                @if ($userDonations->hasMorePages())
-                                    <li class="page-item">
-                                        <a class="page-link" href="{{ $userDonations->nextPageUrl() . '&active_tab=donasi-saya&page_registered=' . request('page_registered', 1) . '&page_host=' . request('page_host', 1) }}" rel="next">&raquo;</a>
-                                    </li>
-                                @else
-                                    <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
-                                @endif
-                            </ul>
-                        </nav>
+                            </div>
+                        @endfor
                     </div>
                 @endif
-            @endif
+            </div>
+
+            {{-- Tab 'Event Saya' --}}
+            <div class="tab-pane fade @if (request('active_tab') == 'event-saya') show active @endif" id="event-saya"
+                role="tabpanel" aria-labelledby="event-saya-tab">
+                @if ($registeredTournaments->isEmpty())
+                    <p class="text-center text-muted scroll-reveal">Anda belum terdaftar ke lomba manapun.</p>
+                @else
+                    @foreach ($registeredTournaments as $registration)
+                        <div class="card shadow-sm mb-3 scroll-reveal">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h4>{{ $registration->tournament->title ?? 'Nama Turnamen' }}</h4>
+                                    @php
+                                        $badgeClass = '';
+                                        switch ($registration->status) {
+                                            case 'pending':
+                                                $badgeClass = 'bg-warning text-dark';
+                                                break;
+                                            case 'approved':
+                                                $badgeClass = 'bg-success';
+                                                break;
+                                            case 'rejected':
+                                                $badgeClass = 'bg-danger';
+                                                break;
+                                            case 'completed':
+                                                $badgeClass = 'bg-primary';
+                                                break;
+                                            default:
+                                                $badgeClass = 'bg-secondary';
+                                                break;
+                                        }
+                                    @endphp
+                                    <span
+                                        class="badge {{ $badgeClass }}">{{ ucfirst($registration->status ?? 'Status') }}</span>
+                                </div>
+                                <div class="progress mb-2" style="height: 8px;">
+                                    @php
+                                        $progressWidth = 0;
+                                        $progressBarClass = '';
+                                        switch ($registration->status) {
+                                            case 'pending':
+                                                $progressWidth = 25;
+                                                $progressBarClass = 'bg-warning';
+                                                break;
+                                            case 'approved':
+                                                $progressWidth = 50;
+                                                $progressBarClass = 'bg-info';
+                                                break;
+                                            case 'completed':
+                                                $progressWidth = 100;
+                                                $progressBarClass = 'bg-success';
+                                                break;
+                                            case 'rejected':
+                                                $progressWidth = 10;
+                                                $progressBarClass = 'bg-danger';
+                                                break;
+                                            default:
+                                                $progressWidth = 0;
+                                                $progressBarClass = 'bg-secondary';
+                                                break;
+                                        }
+                                    @endphp
+                                    <div class="progress-bar {{ $progressBarClass }}" role="progressbar"
+                                        style="width: {{ $progressWidth }}%" aria-valuenow="{{ $progressWidth }}"
+                                        aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <p class="text-muted small">
+                                    Tanggal Turnamen:
+                                    {{ \Carbon\Carbon::parse($registration->tournament->registration_start ?? 'N/A')->format('d M Y') }}
+                                    -
+                                    {{ \Carbon\Carbon::parse($registration->tournament->registration_end ?? 'N/A')->format('d M Y') }}
+                                    |
+                                    Status Pendaftaran: {{ ucfirst($registration->status ?? 'N/A') }}
+                                    @if ($registration->rejection_reason)
+                                        <br>Alasan Penolakan: {{ $registration->rejection_reason }}
+                                    @endif
+                                </p>
+                            </div>
+                        </div>
+                    @endforeach
+                @endif
+
+                {{-- Jadwal pertandingan --}}
+                <div class="card shadow-sm scroll-reveal">
+                    <div class="card-header bg-white py-3">
+                        <h4 class="text-center mb-0 profile-section-title">Jadwal Pertandingan</h4>
+                    </div>
+
+                    <div class="list-group list-group-flush">
+                        @forelse($upcomingMatches as $match)
+                            <div class="list-group-item px-3 py-3">
+
+                                @php
+                                    $statusClass = '';
+                                    $statusText = ucfirst($match->status);
+                                    switch ($match->status) {
+                                        case 'scheduled':
+                                            $statusClass = 'bg-info text-dark';
+                                            break;
+                                        case 'completed':
+                                            $statusClass = 'bg-success';
+                                            $statusText = 'Selesai';
+                                            break;
+                                        case 'cancelled':
+                                            $statusClass = 'bg-danger';
+                                            $statusText = 'Dibatalkan';
+                                            break;
+                                        case 'live':
+                                            $statusClass = 'bg-warning text-dark';
+                                            $statusText = 'Live';
+                                            break;
+                                        default:
+                                            $statusClass = 'bg-secondary';
+                                    }
+                                @endphp
+
+                                {{-- BARIS 1: Info Turnamen & Status --}}
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <small class="text-muted fw-bold">
+                                        {{ $match->tournament->title ?? 'Nama Turnamen' }}
+                                        @if ($match->stage)
+                                            - ({{ $match->stage }})
+                                        @endif
+                                    </small>
+                                    <span class="badge {{ $statusClass }} ms-2">
+                                        {{ $statusText }}
+                                    </span>
+                                </div>
+
+                                {{-- BARIS 2: Tim vs Tim (atau Skor) --}}
+                                <h5 class="fw-bold d-flex justify-content-between align-items-center mb-1">
+                                    <span class="{{ $match->winner_id == $match->team1_id ? 'text-success' : '' }}">
+                                        {{ $match->team1->name ?? 'Tim 1' }}
+                                    </span>
+
+                                    @if ($match->status == 'completed' && isset($match->team1_score))
+                                        <span class="fw-normal text-primary mx-2">
+                                            {{ $match->team1_score ?? 0 }} - {{ $match->team2_score ?? 0 }}
+                                        </span>
+                                    @else
+                                        <span class="fw-normal text-muted mx-2 small">vs</span>
+                                    @endif
+
+                                    <span class="{{ $match->winner_id == $match->team2_id ? 'text-success' : '' }}">
+                                        {{ $match->team2->name ?? 'Tim 2' }}
+                                    </span>
+                                </h5>
+
+                                {{-- BARIS 3: Waktu & Lokasi --}}
+                                <div class="text-muted small d-flex justify-content-between">
+                                    <span class="me-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                            fill="currentColor" class="bi bi-calendar-event" viewBox="0 0 16 16"
+                                            style="vertical-align: -0.05em;">
+                                            <path
+                                                d="M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
+                                            <path
+                                                d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z" />
+                                        </svg>
+                                        {{ \Carbon\Carbon::parse($match->match_datetime)->translatedFormat('d M Y, H:i') }}
+                                        WIB
+                                    </span>
+                                    <span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                            fill="currentColor" class="bi bi-geo-alt" viewBox="0 0 16 16"
+                                            style="vertical-align: -0.05em;">
+                                            <path
+                                                d="M12.166 8.94c-.524 1.062-1.234 2.12-1.96 3.185C9.55 13.036 8.74 14 8 14s-1.55-.964-2.206-1.875C5.066 11.06 4.356 9.999 3.834 8.94A5.953 5.953 0 0 1 3 6.5C3 3.464 5.239 1 8 1s5 2.464 5 5.5c0 .606-.101 1.183-.294 1.716-.03.086-.062.172-.096.259zM8 16s6-5.686 6-9.5A6 6 0 0 0 8 0 6 6 0 0 0 2 6.5C2 10.314 8 16 8 16z" />
+                                            <path d="M8 8a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z" />
+                                        </svg>
+                                        {{ $match->location ?? 'Belum ditentukan' }}
+                                    </span>
+                                </div>
+
+                            </div>
+                        @empty
+                            <div class="list-group-item">
+                                <div class="alert alert-info mb-0" role="alert">
+                                    Tidak ada data pertandingan untuk tim Anda.
+                                </div>
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+
+
+            {{-- Tab 'Permohonan Tuan Rumah' --}}
+            <div class="tab-pane fade @if (request('active_tab') == 'permohonan') show active @endif" id="permohonan"
+                role="tabpanel" aria-labelledby="permohonan-tab">
+                @if ($hostApplications->isEmpty())
+                    <div class="text-center text-muted p-4 border rounded scroll-reveal">
+                        <p class="mb-0">Anda belum mengajukan permohonan tuan rumah.</p>
+                        <p class="mt-2"><a href="{{ route('host-request.create') }}">Ajukan Permohonan Sekarang</a>
+                        </p>
+                    </div>
+                @else
+                    @foreach ($hostApplications as $hostApplication)
+                        <div class="card shadow-sm mb-3 scroll-reveal">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ $hostApplication->tournament_title ?? 'Judul Turnamen' }}
+                                </h5>
+                                <p class="card-text">
+                                    <strong>Penanggung Jawab:</strong> {{ $hostApplication->responsible_name ?? '-' }}
+                                    <br>
+                                    <strong>Email:</strong> {{ $hostApplication->email ?? '-' }} <br>
+                                    <strong>Telepon:</strong> {{ $hostApplication->phone ?? '-' }} <br>
+                                    <strong>Lokasi:</strong> {{ $hostApplication->venue_name ?? '-' }},
+                                    {{ $hostApplication->venue_address ?? '-' }} <br>
+                                    <strong>Tanggal Diajukan:</strong>
+                                    {{ \Carbon\Carbon::parse($hostApplication->proposed_date ?? 'N/A')->format('d M Y') }}
+                                    <br>
+                                    <strong>Status:</strong> @php
+                                        $badgeClass = '';
+                                        switch ($hostApplication->status) {
+                                            case 'pending':
+                                                $badgeClass = 'bg-info text-dark';
+                                                break;
+                                            case 'approved':
+                                                $badgeClass = 'bg-success';
+                                                break;
+                                            case 'rejected':
+                                                $badgeClass = 'bg-danger';
+                                                break;
+                                            default:
+                                                $badgeClass = 'bg-secondary';
+                                                break;
+                                        }
+                                    @endphp
+                                    <span
+                                        class="badge {{ $badgeClass }}">{{ ucfirst($hostApplication->status ?? 'N/A') }}</span>
+                                    @if ($hostApplication->rejection_reason)
+                                        <br> <strong>Alasan Penolakan:</strong>
+                                        {{ $hostApplication->rejection_reason }}
+                                    @endif
+                                </p>
+                            </div>
+                        </div>
+                    @endforeach
+                @endif
+            </div>
+
+            {{-- Tab 'Donasi Saya' - VERSI SEDERHANA --}}
+            <div class="tab-pane fade @if (request('active_tab') == 'donasi-saya') show active @endif" id="donasi-saya"
+                role="tabpanel" aria-labelledby="donasi-saya-tab">
+                @if ($userDonations->isEmpty())
+                    <div class="text-center text-muted p-4 border rounded scroll-reveal">
+                        <p class="mb-0">Anda belum mengajukan donasi/sponsor.</p>
+                        <p class="mt-2"><a href="{{ route('donations.create') }}">Ajukan Donasi/Sponsor
+                                Sekarang</a>
+                        </p>
+                    </div>
+                @else
+                    @foreach ($userDonations as $donation)
+                        <div class="card shadow-sm mb-3 scroll-reveal">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h5 class="card-title mb-0">{{ $donation->name_brand ?? 'Nama Brand' }}</h5>
+                                    @php
+                                        $badgeClass = '';
+                                        switch ($donation->status) {
+                                            case 'pending':
+                                                $badgeClass = 'bg-warning text-dark';
+                                                break;
+                                            case 'approved':
+                                                $badgeClass = 'bg-success';
+                                                break;
+                                            case 'rejected':
+                                                $badgeClass = 'bg-danger';
+                                                break;
+                                            default:
+                                                $badgeClass = 'bg-secondary';
+                                                break;
+                                        }
+                                    @endphp
+                                    <span
+                                        class="badge {{ $badgeClass }}">{{ ucfirst($donation->status ?? 'N/A') }}</span>
+                                </div>
+                                <p class="card-text mb-0">
+                                    <strong>Jenis:</strong> {{ ucfirst($donation->donation_type ?? '-') }}
+                                    @if ($donation->sponsor_type && $donation->donation_type == 'sponsor')
+                                        ({{ $donation->sponsor_type }})
+                                    @endif
+                                    <br>
+                                    <strong>Event:</strong> {{ $donation->event_name ?? '-' }} <br>
+                                    <strong>Tanggal Pengajuan:</strong>
+                                    {{ \Carbon\Carbon::parse($donation->created_at ?? 'N/A')->format('d M Y') }}
+                                </p>
+                            </div>
+                        </div>
+                    @endforeach
+
+                    {{-- Pagination untuk Donasi Saya --}}
+                    @if ($userDonations->hasPages())
+                        <div class="mt-4 d-flex justify-content-center scroll-reveal">
+                            <nav aria-label="Page navigation for User Donations">
+                                <ul class="pagination">
+                                    {{-- Previous Page Link --}}
+                                    @if ($userDonations->onFirstPage())
+                                        <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+                                    @else
+                                        <li class="page-item">
+                                            <a class="page-link"
+                                                href="{{ $userDonations->previousPageUrl() . '&active_tab=donasi-saya&page_registered=' . request('page_registered', 1) . '&page_host=' . request('page_host', 1) }}"
+                                                rel="prev">&laquo;</a>
+                                        </li>
+                                    @endif
+
+                                    {{-- Pagination Elements --}}
+                                    @php
+                                        $currentPage = $userDonations->currentPage();
+                                        $lastPage = $userDonations->lastPage();
+                                        $pageRange = 5;
+                                        $startPage = max(1, $currentPage - floor($pageRange / 2));
+                                        $endPage = min($lastPage, $currentPage + floor($pageRange / 2));
+
+                                        if ($currentPage <= floor($pageRange / 2) && $lastPage >= $pageRange) {
+                                            $endPage = $pageRange;
+                                        }
+                                        if (
+                                            $currentPage > $lastPage - floor($pageRange / 2) &&
+                                            $lastPage >= $pageRange
+                                        ) {
+                                            $startPage = $lastPage - $pageRange + 1;
+                                        }
+                                    @endphp
+
+                                    @for ($i = $startPage; $i <= $endPage; $i++)
+                                        <li class="page-item {{ $i == $currentPage ? 'active' : '' }}">
+                                            <a class="page-link"
+                                                href="{{ $userDonations->url($i) . '&active_tab=donasi-saya&page_registered=' . request('page_registered', 1) . '&page_host=' . request('page_host', 1) }}">{{ $i }}</a>
+                                        </li>
+                                    @endfor
+
+                                    {{-- Next Page Link --}}
+                                    @if ($userDonations->hasMorePages())
+                                        <li class="page-item">
+                                            <a class="page-link"
+                                                href="{{ $userDonations->nextPageUrl() . '&active_tab=donasi-saya&page_registered=' . request('page_registered', 1) . '&page_host=' . request('page_host', 1) }}"
+                                                rel="next">&raquo;</a>
+                                        </li>
+                                    @else
+                                        <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+                                    @endif
+                                </ul>
+                            </nav>
+                        </div>
+                    @endif
+                @endif
+            </div>
         </div>
     </div>
-</div>
 @endsection
 
 @push('styles')
-   {{-- Memuat CSS eksternal Anda --}}
-   <link rel="stylesheet" href="{{ asset('css/profile.css') }}">
-   <style>
-       /* --- Scroll Reveal Animation Styles --- */
-       .scroll-reveal {
-           opacity: 0;
-           transform: translateY(30px);
-           transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-       }
+    {{-- Memuat CSS eksternal Anda --}}
+    <link rel="stylesheet" href="{{ asset('css/profile.css') }}">
+    <style>
+        /* --- Scroll Reveal Animation Styles --- */
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
 
-       .scroll-reveal.revealed {
-           opacity: 1;
-           transform: translateY(0);
-       }
+        .scroll-reveal.revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
 
-       /* Staggered animation for multiple items */
-       .scroll-reveal-stagger .scroll-reveal-item {
-           opacity: 0;
-           transform: translateY(30px);
-           transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-       }
+        /* Staggered animation for multiple items */
+        .scroll-reveal-stagger .scroll-reveal-item {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
 
-       .scroll-reveal-stagger .scroll-reveal-item.revealed {
-           opacity: 1;
-           transform: translateY(0);
-       }
+        .scroll-reveal-stagger .scroll-reveal-item.revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
 
-       /* Different animation variants */
-       .scroll-reveal.fade-left {
-           transform: translateX(-50px);
-       }
+        /* Different animation variants */
+        .scroll-reveal.fade-left {
+            transform: translateX(-50px);
+        }
 
-       .scroll-reveal.fade-right {
-           transform: translateX(50px);
-       }
+        .scroll-reveal.fade-right {
+            transform: translateX(50px);
+        }
 
-       .scroll-reveal.fade-up {
-           transform: translateY(50px);
-       }
+        .scroll-reveal.fade-up {
+            transform: translateY(50px);
+        }
 
-       .scroll-reveal.zoom-in {
-           transform: scale(0.8);
-       }
+        .scroll-reveal.zoom-in {
+            transform: scale(0.8);
+        }
 
-       .scroll-reveal.fade-left.revealed,
-       .scroll-reveal.fade-right.revealed,
-       .scroll-reveal.fade-up.revealed,
-       .scroll-reveal.zoom-in.revealed {
-           transform: translateX(0) translateY(0) scale(1);
-       }
+        .scroll-reveal.fade-left.revealed,
+        .scroll-reveal.fade-right.revealed,
+        .scroll-reveal.fade-up.revealed,
+        .scroll-reveal.zoom-in.revealed {
+            transform: translateX(0) translateY(0) scale(1);
+        }
 
-       /* Smooth scrolling behavior */
-       html {
-           scroll-behavior: smooth;
-       }
+        /* Smooth scrolling behavior */
+        html {
+            scroll-behavior: smooth;
+        }
 
-       /* --- Gaya Khusus untuk Gambar Profil Kotak --- */
-       .img-square-profile {
-           width: 100px;  /* Atur lebar yang diinginkan */
-           height: 100px; /* Atur tinggi yang sama dengan lebar */
-           object-fit: cover; /* Penting! Memastikan gambar terpotong dan tidak terdistorsi */
-           border-radius: 8px; /* Untuk membuat sudut sedikit membulat */
-           border: 2px solid #ccc;
-       }
-       /* --- Gaya untuk Gambar Logo dan member Tim Kotak --- */
-       .img-square-team {
-           width: 90px;
-           height: 90px;
-           object-fit: cover;
-           border-radius: 8px;
-           border: 1px solid #ddd;
-       }
-       .img-square-team-member {
-           width: 70px;
-           height: 70px;
-           object-fit: cover;
-           border-radius: 8px;
-           border: 1px solid #ddd;
-       }
-       /* Gaya tambahan yang mungkin relevan dari edit.blade.php */
-       .profile-info-card {
-           border-radius: 12px;
-           box-shadow:
-               8px 8px 0px 0px var(--shadow-color-cf2585),
-               5px 5px 15px rgba(0, 0, 0, 0.1) !important;
-           position: relative;
-           z-index: 1;
-           border: 1px solid #dee2e6;
-       }
-       .profile-section-title {
-           color: #212529;
-           font-weight: 600;
-       }
-       .edit-profile-btn {
-           z-index: 10; /* Pastikan tombol di atas konten lain */
-       }
-       /* Definisi variabel warna jika belum ada di tempat lain */
-       :root {
-           --shadow-color-cf2585: #cf2585; /* Sesuaikan dengan warna shadow Anda */
-           --kamcup-pink: #cb2786;
-           --kamcup-blue-green: #00617a;
-           --kamcup-yellow: #f4b704;
-           --kamcup-dark-text: #212529;
-           --kamcup-light-text: #ffffff;
-       }
-       /* Gaya umum untuk semua kartu anggota yang bisa diklik */
-       .member-card-link {
-           /* Pastikan elemen <a> ini berperilaku seperti card */
-           display: flex; /* Untuk mengaktifkan d-flex flex-column */
-           flex-direction: column; /* Untuk d-flex flex-column */
-           justify-content: center; /* Untuk justify-content-center */
-           align-items: center; /* Untuk align-items-center */
-           text-decoration: none; /* Hilangkan garis bawah link */
-           color: inherit; /* Warisi warna teks dari parent atau reset */
+        /* --- Gaya Khusus untuk Gambar Profil Kotak --- */
+        .img-square-profile {
+            width: 100px;
+            /* Atur lebar yang diinginkan */
+            height: 100px;
+            /* Atur tinggi yang sama dengan lebar */
+            object-fit: cover;
+            /* Penting! Memastikan gambar terpotong dan tidak terdistorsi */
+            border-radius: 8px;
+            /* Untuk membuat sudut sedikit membulat */
+            border: 2px solid #ccc;
+        }
 
-           /* Pastikan ini dapat diklik */
-           position: relative;
-           z-index: 1; /* Mungkin perlu disesuaikan jika ada overlay */
-           cursor: pointer;
-       }
-       /* Gaya untuk kartu "Tambah Anggota" (slot kosong) */
-       .add-member-card {
-           border: 1px dashed #ccc; /* Border putus-putus */
-           background-color: #f8f9fa; /* Latar belakang sedikit abu-abu */
-           transition: all 0.3s ease-in-out;
-       }
+        /* --- Gaya untuk Gambar Logo dan member Tim Kotak --- */
+        .img-square-team {
+            width: 90px;
+            height: 90px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
 
-       .add-member-card:hover {
-           /* Overwrite hover effect for add-member-card if needed, or let member-card-link handle it */
-           background-color: #e9ecef;
-           border-color: #0d6efd;
-           box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-       }
+        .img-square-team-member {
+            width: 70px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
 
-       /* Pastikan card-body di dalam link tidak memiliki padding berlebihan jika tidak diinginkan */
-       .member-card-link .card-body {
-           width: 100%; /* Pastikan body mengisi lebar card link */
-       }
+        /* Gaya tambahan yang mungkin relevan dari edit.blade.php */
+        .profile-info-card {
+            border-radius: 12px;
+            box-shadow:
+                8px 8px 0px 0px var(--shadow-color-cf2585),
+                5px 5px 15px rgba(0, 0, 0, 0.1) !important;
+            position: relative;
+            z-index: 1;
+            border: 1px solid #dee2e6;
+        }
 
-       /* Gaya baru untuk pembungkus kartu anggota agar tombol hapus bisa diletakkan di bawah */
-       .member-card-wrapper {
-           position: relative;
-           background-color: #fff;
-           border-radius: 0.5rem;
-           border: 1px solid rgba(0,0,0,.125);
-           padding: 0;
-           transition: all 0.2s ease-in-out;
-       }
-       .member-card-wrapper:hover {
+        .profile-section-title {
+            color: #212529;
+            font-weight: 600;
+        }
+
+        .edit-profile-btn {
+            z-index: 10;
+            /* Pastikan tombol di atas konten lain */
+        }
+
+        /* Definisi variabel warna jika belum ada di tempat lain */
+        :root {
+            --shadow-color-cf2585: #cf2585;
+            /* Sesuaikan dengan warna shadow Anda */
+            --kamcup-pink: #cb2786;
+            --kamcup-blue-green: #00617a;
+            --kamcup-yellow: #f4b704;
+            --kamcup-dark-text: #212529;
+            --kamcup-light-text: #ffffff;
+        }
+
+        /* Gaya umum untuk semua kartu anggota yang bisa diklik */
+        .member-card-link {
+            /* Pastikan elemen <a> ini berperilaku seperti card */
+            display: flex;
+            /* Untuk mengaktifkan d-flex flex-column */
+            flex-direction: column;
+            /* Untuk d-flex flex-column */
+            justify-content: center;
+            /* Untuk justify-content-center */
+            align-items: center;
+            /* Untuk align-items-center */
+            text-decoration: none;
+            /* Hilangkan garis bawah link */
+            color: inherit;
+            /* Warisi warna teks dari parent atau reset */
+
+            /* Pastikan ini dapat diklik */
+            position: relative;
+            z-index: 1;
+            /* Mungkin perlu disesuaikan jika ada overlay */
+            cursor: pointer;
+        }
+
+        /* Gaya untuk kartu "Tambah Anggota" (slot kosong) */
+        .add-member-card {
+            border: 1px dashed #ccc;
+            /* Border putus-putus */
+            background-color: #f8f9fa;
+            /* Latar belakang sedikit abu-abu */
+            transition: all 0.3s ease-in-out;
+        }
+
+        .add-member-card:hover {
+            /* Overwrite hover effect for add-member-card if needed, or let member-card-link handle it */
+            background-color: #e9ecef;
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+
+        /* Pastikan card-body di dalam link tidak memiliki padding berlebihan jika tidak diinginkan */
+        .member-card-link .card-body {
+            width: 100%;
+            /* Pastikan body mengisi lebar card link */
+        }
+
+        /* Gaya baru untuk pembungkus kartu anggota agar tombol hapus bisa diletakkan di bawah */
+        .member-card-wrapper {
+            position: relative;
+            background-color: #fff;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(0, 0, 0, .125);
+            padding: 0;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .member-card-wrapper:hover {
             /* Konsisten dengan hover member-card-link */
-           border-color: #0d6efd;
-           background-color: #e9ecef;
-           box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-       }
+            border-color: #0d6efd;
+            background-color: #e9ecef;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
 
-       /* --- Custom Pagination Styling --- */
-       .pagination {
-           --bs-pagination-color: var(--kamcup-blue-green); /* Default text color for links */
-           --bs-pagination-active-bg: var(--kamcup-pink); /* Background for active page */
-           --bs-pagination-active-border-color: var(--kamcup-pink); /* Border for active page */
-           --bs-pagination-hover-color: var(--kamcup-pink); /* Text color on hover */
-           --bs-pagination-hover-bg: #e9ecef; /* Background on hover for inactive links */
-           --bs-pagination-border-color: #dee2e6; /* Default border color for links */
-           --bs-pagination-disabled-color: #6c757d; /* Text color for disabled links */
-           --bs-pagination-focus-box-shadow: 0 0 0 0.25rem rgba(203, 39, 134, 0.25); /* Focus shadow using KAMCUP pink */
-       }
+        /* --- Custom Pagination Styling --- */
+        .pagination {
+            --bs-pagination-color: var(--kamcup-blue-green);
+            /* Default text color for links */
+            --bs-pagination-active-bg: var(--kamcup-pink);
+            /* Background for active page */
+            --bs-pagination-active-border-color: var(--kamcup-pink);
+            /* Border for active page */
+            --bs-pagination-hover-color: var(--kamcup-pink);
+            /* Text color on hover */
+            --bs-pagination-hover-bg: #e9ecef;
+            /* Background on hover for inactive links */
+            --bs-pagination-border-color: #dee2e6;
+            /* Default border color for links */
+            --bs-pagination-disabled-color: #6c757d;
+            /* Text color for disabled links */
+            --bs-pagination-focus-box-shadow: 0 0 0 0.25rem rgba(203, 39, 134, 0.25);
+            /* Focus shadow using KAMCUP pink */
+        }
 
-       .page-item .page-link {
-           border-radius: 8px; /* Slightly rounded corners */
-           margin: 0 5px; /* Space between pagination buttons (changed from 4px to 5px based on your ref) */
-           min-width: 40px; /* Minimum width to make buttons consistent */
-           text-align: center;
-           transition: all 0.3s ease; /* Smooth transition for hover effects */
-           display: flex; /* Use flexbox for centering content */
-           align-items: center;
-           justify-content: center;
-           height: 40px; /* Consistent height for buttons */
-           font-weight: 500; /* Added from your ref */
-           color: var(--bs-pagination-color); /* Ensure text color respects variable */
-       }
+        .page-item .page-link {
+            border-radius: 8px;
+            /* Slightly rounded corners */
+            margin: 0 5px;
+            /* Space between pagination buttons (changed from 4px to 5px based on your ref) */
+            min-width: 40px;
+            /* Minimum width to make buttons consistent */
+            text-align: center;
+            transition: all 0.3s ease;
+            /* Smooth transition for hover effects */
+            display: flex;
+            /* Use flexbox for centering content */
+            align-items: center;
+            justify-content: center;
+            height: 40px;
+            /* Consistent height for buttons */
+            font-weight: 500;
+            /* Added from your ref */
+            color: var(--bs-pagination-color);
+            /* Ensure text color respects variable */
+        }
 
-       /* Active page styling */
-       .pagination .page-item.active .page-link { /* Specificity added */
-           background-color: var(--secondary-color); /* From your ref */
-           border-color: var(--secondary-color); /* From your ref */
-           color: white; /* Text color for active page */
-           font-weight: bold;
-           box-shadow: 0 4px 8px rgba(203, 39, 134, 0.3); /* Subtle shadow for active page */
-       }
+        /* Active page styling */
+        .pagination .page-item.active .page-link {
+            /* Specificity added */
+            background-color: var(--secondary-color);
+            /* From your ref */
+            border-color: var(--secondary-color);
+            /* From your ref */
+            color: white;
+            /* Text color for active page */
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(203, 39, 134, 0.3);
+            /* Subtle shadow for active page */
+        }
 
-       /* Hover effect for inactive pagination links */
-       .pagination .page-item .page-link:hover:not(.active) { /* Specificity added, combined with your ref */
-           background-color: var(--accent-color); /* From your ref */
-           border-color: var(--accent-color); /* From your ref */
-           color: white; /* Text color on hover */
-           transform: translateY(-2px); /* Slight lift on hover */
-           box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow on hover */
-       }
+        /* Hover effect for inactive pagination links */
+        .pagination .page-item .page-link:hover:not(.active) {
+            /* Specificity added, combined with your ref */
+            background-color: var(--accent-color);
+            /* From your ref */
+            border-color: var(--accent-color);
+            /* From your ref */
+            color: white;
+            /* Text color on hover */
+            transform: translateY(-2px);
+            /* Slight lift on hover */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            /* Subtle shadow on hover */
+        }
 
-       /* Disabled page item styling */
-       .page-item.disabled .page-link {
-           opacity: 0.6; /* Slightly fade out disabled links */
-           cursor: not-allowed;
-           transform: none; /* Remove any hover transform */
-           box-shadow: none; /* Remove any hover shadow */
-       }
+        /* Disabled page item styling */
+        .page-item.disabled .page-link {
+            opacity: 0.6;
+            /* Slightly fade out disabled links */
+            cursor: not-allowed;
+            transform: none;
+            /* Remove any hover transform */
+            box-shadow: none;
+            /* Remove any hover shadow */
+        }
 
-       /* Adjusting focus outline if needed (Bootstrap usually handles this well) */
-       .page-item .page-link:focus {
-           box-shadow: var(--bs-pagination-focus-box-shadow);
-           border-color: var(--kamcup-pink);
-       }
+        /* Adjusting focus outline if needed (Bootstrap usually handles this well) */
+        .page-item .page-link:focus {
+            box-shadow: var(--bs-pagination-focus-box-shadow);
+            border-color: var(--kamcup-pink);
+        }
 
-       /* Define new color variables from your reference, ensure they are recognized */
-       :root {
-           --primary-color: #cb2786;
-           --secondary-color: #00617a;
-           --accent-color: #f4b704;
-           --text-dark: #333;
-           --text-light: #f8f9fa;
+        /* Define new color variables from your reference, ensure they are recognized */
+        :root {
+            --primary-color: #cb2786;
+            --secondary-color: #00617a;
+            --accent-color: #f4b704;
+            --text-dark: #333;
+            --text-light: #f8f9fa;
 
-           /* Mapped to your existing KAMCUP variables for consistency */
-           --kamcup-pink: var(--primary-color);
-           --kamcup-blue-green: var(--secondary-color);
-           --kamcup-yellow: var(--accent-color);
-           --kamcup-dark-text: var(--text-dark);
-           --kamcup-light-text: var(--text-light);
-       }
-   </style>
+            /* Mapped to your existing KAMCUP variables for consistency */
+            --kamcup-pink: var(--primary-color);
+            --kamcup-blue-green: var(--secondary-color);
+            --kamcup-yellow: var(--accent-color);
+            --kamcup-dark-text: var(--text-dark);
+            --kamcup-light-text: var(--text-light);
+        }
+    </style>
 @endpush
 
 @push('scripts')
-   {{-- Pastikan SweetAlert2 sudah dimuat di layout master_nav atau di sini --}}
-   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    {{-- Pastikan SweetAlert2 sudah dimuat di layout master_nav atau di sini --}}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-   <script>
-       document.addEventListener('DOMContentLoaded', function () {
-           // ===== SCROLL REVEAL ANIMATION =====
-           let lastScrollTop = 0;
-           const scrollElements = document.querySelectorAll('.scroll-reveal');
-           const scrollStaggerElements = document.querySelectorAll('.scroll-reveal-stagger');
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // ===== SCROLL REVEAL ANIMATION =====
+            let lastScrollTop = 0;
+            const scrollElements = document.querySelectorAll('.scroll-reveal');
+            const scrollStaggerElements = document.querySelectorAll('.scroll-reveal-stagger');
 
-           // Function to check if element is partially in viewport
-           function isElementPartiallyInViewport(el) {
-               const rect = el.getBoundingClientRect();
-               const windowHeight = window.innerHeight || document.documentElement.clientHeight;
-               return (
-                   rect.top < windowHeight * 0.8 && rect.bottom > 0
-               );
-           }
+            // Function to check if element is partially in viewport
+            function isElementPartiallyInViewport(el) {
+                const rect = el.getBoundingClientRect();
+                const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+                return (
+                    rect.top < windowHeight * 0.8 && rect.bottom > 0
+                );
+            }
 
-           // Function to check if element is in top 30% of page (persistent elements)
-           function isElementInTopSection(el) {
-               const elementTop = el.getBoundingClientRect().top + window.pageYOffset;
-               const pageHeight = document.documentElement.scrollHeight;
-               return elementTop < pageHeight * 0.3; // Top 30% of page
-           }
+            // Function to check if element is in top 30% of page (persistent elements)
+            function isElementInTopSection(el) {
+                const elementTop = el.getBoundingClientRect().top + window.pageYOffset;
+                const pageHeight = document.documentElement.scrollHeight;
+                return elementTop < pageHeight * 0.3; // Top 30% of page
+            }
 
-           // Function to reveal elements based on scroll direction
-           function revealElements() {
-               const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
-               const scrollingDown = currentScrollTop > lastScrollTop;
+            // Function to reveal elements based on scroll direction
+            function revealElements() {
+                const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                const scrollingDown = currentScrollTop > lastScrollTop;
 
-               // Handle regular scroll reveal elements
-               scrollElements.forEach((el) => {
-                   if (scrollingDown && isElementPartiallyInViewport(el)) {
-                       if (!el.classList.contains('revealed')) {
-                           el.classList.add('revealed');
-                       }
-                   } else if (!scrollingDown && currentScrollTop > 100) {
-                       // Don't hide elements that are in the top section (profile header area)
-                       if (!isElementInTopSection(el)) {
-                           const rect = el.getBoundingClientRect();
-                           if (rect.bottom < -50) { // Element is well above viewport
-                               el.classList.remove('revealed');
-                           }
-                       }
-                   }
-               });
+                // Handle regular scroll reveal elements
+                scrollElements.forEach((el) => {
+                    if (scrollingDown && isElementPartiallyInViewport(el)) {
+                        if (!el.classList.contains('revealed')) {
+                            el.classList.add('revealed');
+                        }
+                    } else if (!scrollingDown && currentScrollTop > 100) {
+                        // Don't hide elements that are in the top section (profile header area)
+                        if (!isElementInTopSection(el)) {
+                            const rect = el.getBoundingClientRect();
+                            if (rect.bottom < -50) { // Element is well above viewport
+                                el.classList.remove('revealed');
+                            }
+                        }
+                    }
+                });
 
-               // Handle staggered elements
-               scrollStaggerElements.forEach((container) => {
-                   const items = container.querySelectorAll('.scroll-reveal-item');
-                   
-                   if (scrollingDown && isElementPartiallyInViewport(container)) {
-                       items.forEach((item, index) => {
-                           setTimeout(() => {
-                               if (!item.classList.contains('revealed')) {
-                                   item.classList.add('revealed');
-                               }
-                           }, index * 100); // Stagger delay
-                       });
-                   } else if (!scrollingDown && currentScrollTop > 100) {
-                       // Don't hide staggered elements in top section
-                       if (!isElementInTopSection(container)) {
-                           const containerRect = container.getBoundingClientRect();
-                           if (containerRect.bottom < -50) {
-                               items.forEach((item) => {
-                                   item.classList.remove('revealed');
-                               });
-                           }
-                       }
-                   }
-               });
+                // Handle staggered elements
+                scrollStaggerElements.forEach((container) => {
+                    const items = container.querySelectorAll('.scroll-reveal-item');
 
-               lastScrollTop = currentScrollTop <= 0 ? 0 : currentScrollTop;
-           }
+                    if (scrollingDown && isElementPartiallyInViewport(container)) {
+                        items.forEach((item, index) => {
+                            setTimeout(() => {
+                                if (!item.classList.contains('revealed')) {
+                                    item.classList.add('revealed');
+                                }
+                            }, index * 100); // Stagger delay
+                        });
+                    } else if (!scrollingDown && currentScrollTop > 100) {
+                        // Don't hide staggered elements in top section
+                        if (!isElementInTopSection(container)) {
+                            const containerRect = container.getBoundingClientRect();
+                            if (containerRect.bottom < -50) {
+                                items.forEach((item) => {
+                                    item.classList.remove('revealed');
+                                });
+                            }
+                        }
+                    }
+                });
 
-           // Initial reveal for elements already in viewport
-           function initialReveal() {
-               scrollElements.forEach((el) => {
-                   if (isElementPartiallyInViewport(el)) {
-                       el.classList.add('revealed');
-                   }
-               });
+                lastScrollTop = currentScrollTop <= 0 ? 0 : currentScrollTop;
+            }
 
-               scrollStaggerElements.forEach((container) => {
-                   if (isElementPartiallyInViewport(container)) {
-                       const items = container.querySelectorAll('.scroll-reveal-item');
-                       items.forEach((item, index) => {
-                           setTimeout(() => {
-                               item.classList.add('revealed');
-                           }, index * 100);
-                       });
-                   }
-               });
-           }
+            // Initial reveal for elements already in viewport
+            function initialReveal() {
+                scrollElements.forEach((el) => {
+                    if (isElementPartiallyInViewport(el)) {
+                        el.classList.add('revealed');
+                    }
+                });
 
-           // Throttle scroll event for better performance
-           function throttle(func, wait) {
-               let timeout;
-               return function executedFunction(...args) {
-                   const later = () => {
-                       clearTimeout(timeout);
-                       func(...args);
-                   };
-                   clearTimeout(timeout);
-                   timeout = setTimeout(later, wait);
-               };
-           }
+                scrollStaggerElements.forEach((container) => {
+                    if (isElementPartiallyInViewport(container)) {
+                        const items = container.querySelectorAll('.scroll-reveal-item');
+                        items.forEach((item, index) => {
+                            setTimeout(() => {
+                                item.classList.add('revealed');
+                            }, index * 100);
+                        });
+                    }
+                });
+            }
 
-           // Add scroll event listener with throttling
-           window.addEventListener('scroll', throttle(revealElements, 16)); // ~60fps
+            // Throttle scroll event for better performance
+            function throttle(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            }
 
-           // Initial reveal on page load
-           initialReveal();
+            // Add scroll event listener with throttling
+            window.addEventListener('scroll', throttle(revealElements, 16)); // ~60fps
 
-           // Re-reveal when window is resized
-           window.addEventListener('resize', throttle(initialReveal, 250));
+            // Initial reveal on page load
+            initialReveal();
 
-           // ===== EXISTING FUNCTIONALITY =====
-           
-           // SweetAlert for general success/error messages from session
-           @if(session('success'))
-           Swal.fire({
-               icon: 'success',
-               title: 'Berhasil!',
-               html: '{{ session('success') }}',
-               showConfirmButton: false,
-               timer: 2000
-           });
-           @endif
+            // Re-reveal when window is resized
+            window.addEventListener('resize', throttle(initialReveal, 250));
 
-           @if(session('error'))
-           Swal.fire({
-               icon: 'error',
-               title: 'Terjadi Kesalahan!',
-               text: '{{ session('error') }}',
-               confirmButtonText: 'Oke'
-           });
-           @endif
+            // ===== EXISTING FUNCTIONALITY =====
 
-           @if(session('info'))
-           Swal.fire({
-               icon: 'info',
-               title: 'Informasi',
-               text: '{{ session('info') }}',
-               confirmButtonText: 'Oke'
-           });
-           @endif
+            // SweetAlert for general success/error messages from session
+            @if (session('success'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    html: '{{ session('success') }}',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+            @endif
 
-           // Fungsi untuk konfirmasi hapus anggota tim
-           window.confirmDeleteMember = function(event, form) {
-               event.preventDefault(); // Mencegah form disubmit secara default
+            @if (session('error'))
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Terjadi Kesalahan!',
+                    text: '{{ session('error') }}',
+                    confirmButtonText: 'Oke'
+                });
+            @endif
 
-               Swal.fire({
-                   title: "Konfirmasi Hapus?",
-                   text: "Anda yakin ingin menghapus anggota tim ini? Data tidak bisa dikembalikan!",
-                   icon: "warning",
-                   showCancelButton: true,
-                   confirmButtonColor: "#dc3545", // Warna merah untuk konfirmasi hapus
-                   cancelButtonColor: "#6c757d", // Warna abu-abu untuk batal
-                   confirmButtonText: "Ya, Hapus!",
-                   cancelButtonText: "Batalkan"
-               }).then((result) => {
-                   if (result.isConfirmed) {
-                       form.submit(); // Jika dikonfirmasi, submit form
-                   }
-               });
-           }
+            @if (session('info'))
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Informasi',
+                    text: '{{ session('info') }}',
+                    confirmButtonText: 'Oke'
+                });
+            @endif
 
-           // JavaScript to handle tab switching on page load if active_tab is in URL
-           const urlParams = new URLSearchParams(window.location.search);
-           const activeTab = urlParams.get('active_tab');
-           if (activeTab) {
-               const tabElement = document.getElementById(activeTab + '-tab');
-               if (tabElement) {
-                   const tab = new bootstrap.Tab(tabElement);
-                   tab.show();
-               }
-           }
+            // Fungsi untuk konfirmasi hapus anggota tim
+            window.confirmDeleteMember = function(event, form) {
+                event.preventDefault(); // Mencegah form disubmit secara default
 
-           // Optional: Update URL on tab click for better UX when sharing/refreshing
-           const profileTabs = document.getElementById('profileTabs');
-           if (profileTabs) {
-               profileTabs.addEventListener('shown.bs.tab', function (event) {
-                   const newTabId = event.target.id; // e.g., "donasi-saya-tab"
-                   const tabName = newTabId.replace('-tab', ''); // e.g., "donasi-saya"
-                   const currentUrl = new URL(window.location.href);
-                   currentUrl.searchParams.set('active_tab', tabName);
+                Swal.fire({
+                    title: "Konfirmasi Hapus?",
+                    text: "Anda yakin ingin menghapus anggota tim ini? Data tidak bisa dikembalikan!",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#dc3545", // Warna merah untuk konfirmasi hapus
+                    cancelButtonColor: "#6c757d", // Warna abu-abu untuk batal
+                    confirmButtonText: "Ya, Hapus!",
+                    cancelButtonText: "Batalkan"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit(); // Jika dikonfirmasi, submit form
+                    }
+                });
+            }
 
-                   // Preserve other pagination parameters when switching tabs
-                   if (tabName !== 'event-saya') {
-                       currentUrl.searchParams.delete('page_registered');
-                   }
-                   if (tabName !== 'permohonan') {
-                       currentUrl.searchParams.delete('page_host');
-                   }
-                   if (tabName !== 'donasi-saya') {
-                       currentUrl.searchParams.delete('page_donations');
-                   }
+            // JavaScript to handle tab switching on page load if active_tab is in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const activeTab = urlParams.get('active_tab');
+            if (activeTab) {
+                const tabElement = document.getElementById(activeTab + '-tab');
+                if (tabElement) {
+                    const tab = new bootstrap.Tab(tabElement);
+                    tab.show();
+                }
+            }
 
-                   window.history.pushState({}, '', currentUrl.toString());
+            // Optional: Update URL on tab click for better UX when sharing/refreshing
+            const profileTabs = document.getElementById('profileTabs');
+            if (profileTabs) {
+                profileTabs.addEventListener('shown.bs.tab', function(event) {
+                    const newTabId = event.target.id; // e.g., "donasi-saya-tab"
+                    const tabName = newTabId.replace('-tab', ''); // e.g., "donasi-saya"
+                    const currentUrl = new URL(window.location.href);
+                    currentUrl.searchParams.set('active_tab', tabName);
 
-                   // Re-trigger scroll reveal for newly visible tab content
-                   setTimeout(() => {
-                       initialReveal();
-                   }, 100);
-               });
-           }
-       });
-   </script>
+                    // Preserve other pagination parameters when switching tabs
+                    if (tabName !== 'event-saya') {
+                        currentUrl.searchParams.delete('page_registered');
+                    }
+                    if (tabName !== 'permohonan') {
+                        currentUrl.searchParams.delete('page_host');
+                    }
+                    if (tabName !== 'donasi-saya') {
+                        currentUrl.searchParams.delete('page_donations');
+                    }
+
+                    window.history.pushState({}, '', currentUrl.toString());
+
+                    // Re-trigger scroll reveal for newly visible tab content
+                    setTimeout(() => {
+                        initialReveal();
+                    }, 100);
+                });
+            }
+        });
+    </script>
 @endpush
