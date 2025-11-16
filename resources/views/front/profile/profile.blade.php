@@ -478,22 +478,32 @@
                 @endif
             </div>
 
-            {{-- Tab 'Donasi Saya' - VERSI SEDERHANA --}}
+            {{-- Tab 'Donasi Saya' --}}
             <div class="tab-pane fade @if (request('active_tab') == 'donasi-saya') show active @endif" id="donasi-saya"
                 role="tabpanel" aria-labelledby="donasi-saya-tab">
+                
+                {{-- Header dengan tombol --}}
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="profile-section-title mb-0"></h4>
+                    <a href="{{ route('donations.create') }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus me-1"></i> Donasi Lagi
+                    </a>
+                </div>
+
                 @if ($userDonations->isEmpty())
                     <div class="text-center text-muted p-4 border rounded scroll-reveal">
-                        <p class="mb-0">Anda belum mengajukan donasi/sponsor.</p>
-                        <p class="mt-2"><a href="{{ route('donations.create') }}">Ajukan Donasi/Sponsor
-                                Sekarang</a>
-                        </p>
+                        <p class="mb-0">Anda belum melakukan donasi.</p>
+                        <p class="mt-2"><a href="{{ route('donations.create') }}">Berikan Donasi Sekarang</a></p>
                     </div>
                 @else
                     @foreach ($userDonations as $donation)
                         <div class="card shadow-sm mb-3 scroll-reveal">
                             <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <h5 class="card-title mb-0">{{ $donation->name_brand ?? 'Nama Brand' }}</h5>
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <h5 class="card-title mb-1">{{ $donation->donor_name ?? 'Nama Donatur' }}</h5>
+                                        <h6 class="text-success fw-bold">Rp {{ number_format($donation->amount ?? 0, 0, ',', '.') }}</h6>
+                                    </div>
                                     @php
                                         $badgeClass = '';
                                         switch ($donation->status) {
@@ -511,19 +521,36 @@
                                                 break;
                                         }
                                     @endphp
-                                    <span
-                                        class="badge {{ $badgeClass }}">{{ ucfirst($donation->status ?? 'N/A') }}</span>
+                                    <span class="badge {{ $badgeClass }}">{{ ucfirst($donation->status ?? 'N/A') }}</span>
                                 </div>
-                                <p class="card-text mb-0">
-                                    <strong>Jenis:</strong> {{ ucfirst($donation->donation_type ?? '-') }}
-                                    @if ($donation->sponsor_type && $donation->donation_type == 'sponsor')
-                                        ({{ $donation->sponsor_type }})
+                                
+                                <div class="mb-2">
+                                    <strong>Email:</strong> {{ $donation->email ?? '-' }}<br>
+                                    <strong>Tanggal:</strong> {{ \Carbon\Carbon::parse($donation->created_at ?? 'N/A')->format('d M Y H:i') }}
+                                </div>
+
+                                @if($donation->message)
+                                    <div class="alert alert-light mb-2">
+                                        <small><strong>Pesan:</strong> {{ $donation->message }}</small>
+                                    </div>
+                                @endif
+
+                                <div class="d-flex gap-2">
+                                    @if($donation->proof_image)
+                                        <a href="{{ asset('storage/' . $donation->proof_image) }}" 
+                                           target="_blank" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-receipt me-1"></i> Bukti Transfer
+                                        </a>
                                     @endif
-                                    <br>
-                                    <strong>Event:</strong> {{ $donation->event_name ?? '-' }} <br>
-                                    <strong>Tanggal Pengajuan:</strong>
-                                    {{ \Carbon\Carbon::parse($donation->created_at ?? 'N/A')->format('d M Y') }}
-                                </p>
+                                    @if($donation->foto_donatur)
+                                        <a href="{{ asset('storage/' . $donation->foto_donatur) }}" 
+                                           target="_blank" 
+                                           class="btn btn-sm btn-outline-warning">
+                                            <i class="fas fa-user me-1"></i> Foto Donatur
+                                        </a>
+                                    @endif
+                                </div>
                             </div>
                         </div>
                     @endforeach

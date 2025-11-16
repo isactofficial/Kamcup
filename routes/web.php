@@ -215,13 +215,14 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     });
     
     // Donation/Sponsorship Management (Admin)
-    Route::prefix('donations')->name('donations.')->group(function () {
-        Route::get('/', [DonationController::class, 'index'])->name('index');
-        Route::get('/{donation}', [DonationController::class, 'show'])->name('show');
-        Route::put('/{donation}/status', [DonationController::class, 'updateStatus'])->name('updateStatus');
-        Route::get('/export/csv', [DonationController::class, 'export'])->name('export');
-        Route::get('/statistics/json', [DonationController::class, 'statistics'])->name('statistics');
-    });
+Route::prefix('donations')->name('donations.')->group(function () {
+    Route::get('/', [DonationController::class, 'index'])->name('index');
+    Route::get('/{donation}', [DonationController::class, 'show'])->name('show');
+    Route::put('/{donation}/status', [DonationController::class, 'updateStatus'])->name('updateStatus');
+    Route::delete('/{donation}', [DonationController::class, 'destroy'])->name('destroy');
+    Route::get('/export/csv', [DonationController::class, 'export'])->name('export');
+    Route::get('/statistics/json', [DonationController::class, 'statistics'])->name('statistics');
+});
     
     // Match Management (Admin) - DIPERBAIKI DAN DIKELOMPOKKAN
     Route::prefix('matches')->name('matches.')->group(function () {

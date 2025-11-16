@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>Admin Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="{{ asset('assets/img/logo4.png') }}" type="image/png">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -41,14 +42,14 @@
             height: 100vh;
             background-color: var(--bg-sidebar);
             box-shadow: var(--shadow-sm);
-            padding-top: 20px; /* Disesuaikan */
+            padding-top: 20px;
             overflow-y: auto;
             flex-shrink: 0;
             position: fixed;
             left: 0;
             top: 0;
-            z-index: 1030; /* Pastikan di atas konten */
-            transition: transform 0.3s ease-in-out; /* BARU: Transisi untuk slide */
+            z-index: 1030;
+            transition: transform 0.3s ease-in-out;
         }
 
         .sidebar-content {
@@ -101,15 +102,15 @@
         .main-content-wrapper {
             margin-left: var(--sidebar-width);
             flex-grow: 1;
-            padding: 20px; /* Disesuaikan */
+            padding: 20px;
             background-color: var(--bg-light);
-            width: calc(100% - var(--sidebar-width)); /* BARU */
-            transition: margin-left 0.3s ease-in-out, width 0.3s ease-in-out; /* BARU */
+            width: calc(100% - var(--sidebar-width));
+            transition: margin-left 0.3s ease-in-out, width 0.3s ease-in-out;
         }
 
         .content {
-            padding: 20px; /* Disesuaikan */
-            background-color: #FFFFFF; /* Warna putih untuk card konten */
+            padding: 20px;
+            background-color: #FFFFFF;
             border-radius: 15px;
             box-shadow: var(--shadow-sm);
         }
@@ -160,9 +161,8 @@
             flex-grow: 1;
         }
         
-        /* --- BARU: STYLING UNTUK MOBILE --- */
         .mobile-topbar {
-            display: none; /* Sembunyi di desktop */
+            display: none;
             background-color: #fff;
             padding: 0.75rem 1rem;
             box-shadow: var(--shadow-sm);
@@ -196,28 +196,27 @@
             z-index: 1029;
         }
         
-        /* Tampilan di bawah 992px (Tablet dan Mobile) */
         @media (max-width: 991.98px) {
             .sidebar {
-                transform: translateX(-100%); /* Sembunyikan sidebar ke kiri */
+                transform: translateX(-100%);
             }
 
             .sidebar.show {
-                transform: translateX(0); /* Tampilkan sidebar */
+                transform: translateX(0);
             }
 
             .main-content-wrapper {
-                margin-left: 0; /* Konten memenuhi layar */
+                margin-left: 0;
                 width: 100%;
                 padding: 15px;
             }
 
             .mobile-topbar {
-                display: flex; /* Tampilkan topbar di mobile */
+                display: flex;
             }
             
             .sidebar-overlay.show {
-                display: block; /* Tampilkan overlay saat sidebar aktif */
+                display: block;
             }
             
             .content {
@@ -269,12 +268,10 @@
                         <i class="fas fa-trophy"></i> Manage Tournaments
                     </a>
 
-                    <!-- INI BARIS YANG SAYA TAMBAHKAN -->
                     <a href="{{ route('admin.teams.index') }}"
                         class="{{ request()->routeIs('admin.teams.*') ? 'active' : '' }}">
                         <i class="fas fa-users fa-fw"></i> Manage Team
                     </a>
-                    <!-- AKHIR TAMBAHAN -->
                     
                     <a href="{{ route('admin.matches.index') }}"
                         class="{{ request()->routeIs('admin.matches.*') ? 'active' : '' }}">
@@ -309,7 +306,8 @@
                      <i class="fas fa-bars"></i>
                  </button>
                  <span class="topbar-brand">Kamcup Admin</span>
-                 <span></span> </div>
+                 <span></span>
+            </div>
             
             <main class="content mt-3">
                 @yield('content')
@@ -319,8 +317,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    {{-- Hapus duplikasi Chart.js karena sudah ada di admin.blade.php (jika perlu) --}}
-    {{-- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> --}} 
     
     <script>
         document.addEventListener('DOMContentLoaded', function () {

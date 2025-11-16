@@ -1,4 +1,4 @@
-@extends('../layouts/master')
+@extends('layouts.master')
 
 {{-- Memberi penanda 'home-page' ke tag <body> di master layout --}}
 @section('body-class', 'home-page')
@@ -25,15 +25,18 @@
     {{-- Match Terdekat --}}
     @if ($next_match)
         <div class="container py-4 scroll-animate" data-animation="fadeInUp">
-            <a href="{{ route('front.events.show', $next_match->tournament->slug) }}" class="text-decoration-none">
+            {{-- PERBAIKAN: Tambahkan optional() pada tournament --}}
+            <a href="{{ route('front.events.show', optional($next_match->tournament)->slug) }}" class="text-decoration-none">
                 <div class="card bg-light border-0 shadow-sm card-hover-zoom" style="height: auto;">
                     <div class="card-body d-flex flex-column flex-md-row justify-content-between align-items-center">
                         <h5 class="card-title fw-bold mb-2 mb-md-0 me-md-3 text-center text-md-start article-text">
                             <span class="main-text">Match</span> <span class="highlight-text">Terdekat:</span>
-                            {{ $next_match->tournament->title }}
+                            {{-- PERBAIKAN: Tambahkan optional() pada tournament --}}
+                            {{ optional($next_match->tournament)->title }}
                             <br>
                             <small class="text-muted d-block mt-1" style="font-size: 0.85rem;">
-                                {{ $next_match->team1->name }} vs {{ $next_match->team2->name }}
+                                {{-- PERBAIKAN: Tambahkan optional() pada team1 dan team2 --}}
+                                {{ optional($next_match->team1)->name }} vs {{ optional($next_match->team2)->name }}
                                 @if ($next_match->stage)
                                     | {{ $next_match->stage }}
                                 @endif
@@ -50,7 +53,8 @@
                                     {{ Str::limit($next_match->location, 30) }}
                                 </p>
                             @endif
-                            <a href="{{ route('front.events.show', $next_match->tournament->slug) }}"
+                            {{-- PERBAIKAN: Tambahkan optional() pada tournament --}}
+                            <a href="{{ route('front.events.show', optional($next_match->tournament)->slug) }}"
                                 class="btn btn-sm btn-outline-primary mt-2 mt-md-0">Lihat Detail</a>
                         </div>
                     </div>
@@ -66,16 +70,19 @@
                 <div class="card-body d-flex flex-column flex-md-row justify-content-between align-items-center">
                     <h5 class="card-title fw-bold mb-2 mb-md-0 me-md-3 text-center text-md-start article-text">
                         <span class="main-text">Match</span> <span class="highlight-text">Terakhir:</span>
-                        {{ $last_match->tournament->title }}
+                        {{-- PERBAIKAN: Tambahkan optional() pada tournament --}}
+                        {{ optional($last_match->tournament)->title }}
                         <br>
                         <small class="text-muted d-block mt-1" style="font-size: 0.85rem;">
-                            {{ $last_match->team1->name }} <span
+                            {{-- PERBAIKAN: Tambahkan optional() pada team1 --}}
+                            {{ optional($last_match->team1)->name }} <span
                                 class="highlight-text fw-bold">{{ $last_match->team1_score }}</span>
                             -
                             <span class="highlight-text fw-bold">{{ $last_match->team2_score }}</span>
-                            {{ $last_match->team2->name }}
-                            @if ($last_match->winner)
-                                | 🏆 {{ $last_match->winner->name }}
+                            {{-- PERBAIKAN: Tambahkan optional() pada team2 --}}
+                            {{ optional($last_match->team2)->name }}
+                            @if (optional($last_match->winner)->name)
+                                | 🏆 {{ optional($last_match->winner)->name }}
                             @endif
                         </small>
                     </h5>
@@ -90,7 +97,8 @@
                                 {{ Str::limit($last_match->location, 30) }}
                             </p>
                         @endif
-                        <a href="{{ route('front.events.show', $last_match->tournament->slug) }}"
+                        {{-- PERBAIKAN: Tambahkan optional() pada tournament --}}
+                        <a href="{{ route('front.events.show', optional($last_match->tournament)->slug) }}"
                             class="btn btn-sm btn-outline-primary mt-2 mt-md-0">Lihat Detail</a>
                     </div>
                 </div>

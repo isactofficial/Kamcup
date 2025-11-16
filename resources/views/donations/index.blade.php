@@ -11,16 +11,15 @@
                             <i class="fas fa-donate fs-2" style="color: #00617a;"></i>
                         </div>
                         <div>
-                            <h2 class="fs-3 fw-bold mb-1" style="color: #00617a;">Sponsor dan Donasi</h2>
-                            <p class="text-muted mb-0">Kelola dan tinjau Sponsor / Donasi.</p>
+                            <h2 class="fs-3 fw-bold mb-1" style="color: #00617a;">Kelola Donasi</h2>
+                            <p class="text-muted mb-0">Kelola dan tinjau donasi yang masuk.</p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-         <style>
-            /* Mobile card used by donations list */
+        <style>
             .mobile-sponsor-card {
                 border: 1px solid #e9ecef;
                 border-radius: 1rem;
@@ -34,19 +33,19 @@
             @media (max-width: 575.98px) {
                 .btn-sm { padding: 0.35rem 0.6rem; }
             }
-            </style>
-
-        {{-- Sorting & Filtering Form --}}
-        <style>
+            
             .toolbar-filters { display: flex; flex-wrap: wrap; gap: .75rem 1rem; align-items: center; }
             .toolbar-group { display: flex; align-items: center; gap: .5rem; }
             .toolbar-group .filter-label { white-space: nowrap; color: #6c757d; font-weight: 600; }
+            
             @media (max-width: 575.98px) {
                 .toolbar-filters { flex-direction: column; align-items: stretch; }
                 .toolbar-group { flex-direction: column; align-items: stretch; }
                 .toolbar-group .form-select { width: 100% !important; }
             }
         </style>
+
+        {{-- Sorting & Filtering Form --}}
         <div class="row mb-4">
             <div class="col-12">
                 <form method="GET" class="toolbar-filters bg-white p-3 rounded-4 shadow-sm">
@@ -56,6 +55,8 @@
                             onchange="this.form.submit()" style="width: auto; cursor: pointer;">
                             <option value="latest" {{ request('sort') == 'latest' ? 'selected' : '' }}>Terbaru</option>
                             <option value="oldest" {{ request('sort') == 'oldest' ? 'selected' : '' }}>Terlama</option>
+                            <option value="amount_high" {{ request('sort') == 'amount_high' ? 'selected' : '' }}>Jumlah Tertinggi</option>
+                            <option value="amount_low" {{ request('sort') == 'amount_low' ? 'selected' : '' }}>Jumlah Terendah</option>
                         </select>
                     </div>
                     <div class="toolbar-group ms-md-auto">
@@ -82,136 +83,204 @@
                     </div>
                 @endif
 
+                @if (session('error'))
+                    <div class="alert alert-danger m-3 mb-0 border-0 rounded-3"
+                        style="background-color: #ffe6e6; color: #dc3545;">
+                        <i class="fas fa-exclamation-circle me-2"></i>{{ session('error') }}
+                    </div>
+                @endif
+
                 @if ($donations->isEmpty())
                     <div class="alert alert-info m-3 border-0 rounded-3" style="background-color: #eaf6fe; color: #337ab7;">
-                        <i class="fas fa-info-circle me-2"></i>Tidak ada permintaan host yang perlu ditinjau saat ini.
+                        <i class="fas fa-info-circle me-2"></i>Tidak ada donasi saat ini.
                     </div>
                 @else
-                 {{-- Mobile Card View (visible on small screens) --}}
+                    {{-- Mobile Card View --}}
                     <div class="d-block d-lg-none p-3">
-                        @foreach ($donations as $request)
+                        @foreach ($donations as $donation)
                             <div class="mobile-sponsor-card shadow-sm mb-3">
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between align-items-start mb-2">
                                         <div>
-                                            <h3 class="card-title fs-6 mb-1">{{ $request->name_brand }}</h3>
-                                            <div class="text-muted small">{{ $request->donation_type }} - {{ $request->sponsor_type ?? '-' }}</div>
-                                            <div class="text-muted small">{{ $request->event_name }}</div>
-                                            <div class="text-muted small">{{ $request->created_at->format('d M Y H:i') }}</div>
+                                            <h3 class="card-title fs-6 mb-1">{{ $donation->donor_name }}</h3>
+                                            <div class="text-success fw-bold">Rp {{ number_format($donation->amount, 0, ',', '.') }}</div>
+                                            <div class="text-muted small">{{ $donation->email }}</div>
+                                            <div class="text-muted small">{{ $donation->created_at->format('d M Y H:i') }}</div>
                                         </div>
                                         <div class="text-end">
-                                            <a href="{{ route('admin.donations.show', $request->id) }}" class="btn btn-sm text-white rounded-pill mb-1" style="background-color: #00617a;" title="Lihat Detail" aria-label="Lihat Detail {{ $request->name_brand }}">
-                                                <i class="fas fa-info-circle me-1"></i>
-                                            </a>
-                                            @if ($request->status == 'pending')
-                                                <form action="{{ route('admin.donations.updateStatus', $request->id) }}" method="POST" class="d-inline">
+                                            @if($donation->proof_image)
+                                                <a href="{{ asset('storage/' . $donation->proof_image) }}" 
+                                                    target="_blank"
+                                                    class="btn btn-sm text-white rounded-pill mb-1" 
+                                                    style="background-color: #00617a;" 
+                                                    title="Lihat Bukti Transfer">
+                                                    <i class="fas fa-receipt me-1"></i>
+                                                </a>
+                                            @endif
+                                            @if($donation->foto_donatur)
+                                                <a href="{{ asset('storage/' . $donation->foto_donatur) }}" 
+                                                    target="_blank"
+                                                    class="btn btn-sm text-white rounded-pill mb-1" 
+                                                    style="background-color: #f4b704;" 
+                                                    title="Lihat Foto Donatur">
+                                                    <i class="fas fa-user me-1"></i>
+                                                </a>
+                                            @endif
+                                            @if ($donation->status == 'pending')
+                                                <form action="{{ route('admin.donations.updateStatus', $donation->id) }}" 
+                                                    method="POST" class="d-inline">
                                                     @csrf
                                                     @method('PUT')
                                                     <input type="hidden" name="status" value="approved">
-                                                    <button type="button" onclick="confirmAction(event, this.parentElement, 'approve')" class="btn btn-sm text-white rounded-pill mb-1" style="background-color: #f4b704;" title="Success" aria-label="Approve {{ $request->name_brand }}">
+                                                    <button type="button" 
+                                                        onclick="confirmAction(event, this.parentElement, 'approve')" 
+                                                        class="btn btn-sm text-white rounded-pill mb-1" 
+                                                        style="background-color: #f4b704;" 
+                                                        title="Success">
                                                         <i class="fas fa-check-circle me-1"></i>
                                                     </button>
                                                 </form>
-                                                <form action="{{ route('admin.donations.updateStatus', $request->id) }}" method="POST" class="d-inline">
+                                                <form action="{{ route('admin.donations.updateStatus', $donation->id) }}" 
+                                                    method="POST" class="d-inline">
                                                     @csrf
                                                     @method('PUT')
                                                     <input type="hidden" name="status" value="rejected">
-                                                    <button type="button" onclick="confirmAction(event, this.parentElement, 'reject')" class="btn btn-sm text-white rounded-pill" style="background-color: #cb2786;" title="Cancel" aria-label="Reject {{ $request->name_brand }}">
+                                                    <button type="button" 
+                                                        onclick="confirmAction(event, this.parentElement, 'reject')" 
+                                                        class="btn btn-sm text-white rounded-pill mb-1" 
+                                                        style="background-color: #cb2786;" 
+                                                        title="Cancel">
                                                         <i class="fas fa-times-circle me-1"></i>
                                                     </button>
                                                 </form>
                                             @endif
+                                            <form action="{{ route('admin.donations.destroy', $donation->id) }}" 
+                                                method="POST" class="d-inline">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="button" 
+                                                    onclick="confirmDelete(event, this.parentElement)" 
+                                                    class="btn btn-sm btn-danger text-white rounded-pill mb-1" 
+                                                    title="Hapus">
+                                                    <i class="fas fa-trash me-1"></i>
+                                                </button>
+                                            </form>
                                         </div>
                                     </div>
+                                    <div class="mt-2">
+                                        @if($donation->status == 'pending')
+                                            <span class="badge bg-warning text-dark">Pending</span>
+                                        @elseif($donation->status == 'approved')
+                                            <span class="badge bg-success">Success</span>
+                                        @else
+                                            <span class="badge bg-danger">Canceled</span>
+                                        @endif
+                                        @if($donation->message)
+                                            <span class="badge bg-secondary ms-1">
+                                                <i class="fas fa-comment-dots"></i> Ada Pesan
+                                            </span>
+                                        @endif
+                                    </div>
+                                    @if($donation->message)
+                                        <div class="mt-2 p-2 bg-light rounded">
+                                            <small class="text-muted">{{ Str::limit($donation->message, 100) }}</small>
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
                         @endforeach
                     </div>
 
-                    <div class="table-responsive p-4">
-                        <table class="table table-hover align-middle">
-                            <thead>
-                                <tr style="background-color: #f8f9fa;">
-                                    <th class="py-3" style="color: #6c757d;">Nama Brand</th>
-                                    {{-- <th class="py-3" style="color: #6c757d;">Email Kontak</th> --}}
-                                    {{-- <th class="py-3" style="color: #6c757d;">Telepon</th> --}}
-                                    <th class="py-3" style="color: #6c757d;" title="Sponsor/Donasi">Kategori</th>
-                                    <th class="py-3" style="color: #6c757d;">Tipe sponsor</th>
-                                    <th class="py-3" style="color: #6c757d;">Judul Turnamen</th>
-                                    <th class="py-3" style="color: #6c757d;">Tanggal Diajukan</th>
-                                    <th class="py-3" style="color: #6c757d;">Status</th>
-                                    <th class="py-3" style="color: #6c757d;">Aksi Cepat</th>
+                    {{-- Desktop Table View --}}
+                    <div class="d-none d-lg-block table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead style="background-color: #00617a; color: white;">
+                                <tr>
+                                    <th class="px-4 py-3 rounded-start">No</th>
+                                    <th class="px-4 py-3">Nama Donatur</th>
+                                    <th class="px-4 py-3">Email</th>
+                                    <th class="px-4 py-3">Jumlah</th>
+                                    <th class="px-4 py-3">Bukti TF</th>
+                                    <th class="px-4 py-3">Foto</th>
+                                    <th class="px-4 py-3">Tanggal</th>
+                                    <th class="px-4 py-3">Status</th>
+                                    <th class="px-4 py-3 rounded-end">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($donations as $request)
-                                    <tr style="border-bottom: 1px solid #eee;">
-                                        <td class="py-3 fw-semibold">{{ $request->name_brand }}</td>
-                                        {{-- <td class="py-3">{{ $request->email }}</td> --}}
-                                        {{-- <td class="py-3">{{ $request->phone_whatsapp }}</td> --}}
-                                        <td class="py-3">{{ $request->donation_type }}</td>
-                                        <td class="py-3">{{ $request->sponsor_type ?? '-' }}</td>
-                                        <td class="py-3">{{ $request->event_name }}</td>
-                                        <td class="py-3 text-muted">{{ $request->created_at->format('d M Y H:i') }}</td>
-                                        <td class="py-3">
-                                            @php
-                                                $statusColor = '';
-                                                $statusLabel = '';
-
-                                                switch ($request->status) {
-                                                    case 'pending':
-                                                        $statusColor = '#f4b704';
-                                                        $statusLabel = 'Pending';
-                                                        break;
-                                                    case 'approved':
-                                                        $statusColor = '#00617a';
-                                                        $statusLabel = 'Success';
-                                                        break;
-                                                    case 'rejected':
-                                                        $statusColor = '#cb2786';
-                                                        $statusLabel = 'Canceled';
-                                                        break;
-                                                    default:
-                                                        $statusColor = '#6c757d';
-                                                        $statusLabel = ucfirst($request->status);
-                                                        break;
-                                                }
-                                            @endphp
-
-                                            <span class="badge rounded-pill px-3 py-2 text-white"
-                                                style="background-color: {{ $statusColor }};">
-                                                {{ $statusLabel }}
-                                            </span>
+                                @foreach ($donations as $donation)
+                                    <tr>
+                                        <td class="px-4 py-3">{{ $loop->iteration + ($donations->currentPage() - 1) * $donations->perPage() }}</td>
+                                        <td class="px-4 py-3">
+                                            <strong>{{ $donation->donor_name }}</strong>
+                                            @if($donation->message)
+                                                <br><small class="text-muted">
+                                                    <i class="fas fa-comment-dots"></i> {{ Str::limit($donation->message, 50) }}
+                                                </small>
+                                            @endif
                                         </td>
-                                        <td class="py-3">
-                                            <div class="d-flex gap-2">
-                                                <a href="{{ route('admin.donations.show', $request->id) }}"
-                                                    class="btn btn-sm text-white rounded-pill"
-                                                    style="background-color: #00617a; border-color: #00617a;"
-                                                    title="Lihat Detail" aria-label="Lihat Detail {{ $request->name_brand }}">
-                                                    <i class="fas fa-info-circle me-1"></i>
+                                        <td class="px-4 py-3">{{ $donation->email }}</td>
+                                        <td class="px-4 py-3">
+                                            <strong class="text-success">Rp {{ number_format($donation->amount, 0, ',', '.') }}</strong>
+                                        </td>
+                                        <td class="px-4 py-3 text-center">
+                                            @if($donation->proof_image)
+                                                <a href="{{ asset('storage/' . $donation->proof_image) }}" 
+                                                   target="_blank"
+                                                   class="btn btn-sm btn-outline-primary rounded-pill">
+                                                    <i class="fas fa-receipt"></i>
                                                 </a>
-                                                @if ($request->status == 'pending')
-                                                    <form
-                                                        action="{{ route('admin.donations.updateStatus', $request->id) }}"
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-4 py-3 text-center">
+                                            @if($donation->foto_donatur)
+                                                <a href="{{ asset('storage/' . $donation->foto_donatur) }}" 
+                                                   target="_blank"
+                                                   class="btn btn-sm btn-outline-warning rounded-pill">
+                                                    <i class="fas fa-user"></i>
+                                                </a>
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <small>{{ $donation->created_at->format('d M Y') }}</small><br>
+                                            <small class="text-muted">{{ $donation->created_at->format('H:i') }}</small>
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            @if($donation->status == 'pending')
+                                                <span class="badge bg-warning text-dark">Pending</span>
+                                            @elseif($donation->status == 'approved')
+                                                <span class="badge bg-success">Success</span>
+                                            @else
+                                                <span class="badge bg-danger">Canceled</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <div class="d-flex gap-1">
+                                                @if ($donation->status == 'pending')
+                                                    <form action="{{ route('admin.donations.updateStatus', $donation->id) }}"
                                                         method="POST" class="d-inline">
                                                         @csrf
                                                         @method('PUT')
                                                         <input type="hidden" name="status" value="approved">
-                                                        <button type="submit" class="btn btn-sm text-white rounded-pill"
+                                                        <button type="button" 
+                                                            class="btn btn-sm text-white rounded-pill"
                                                             style="background-color: #f4b704; border-color: #f4b704;"
                                                             onclick="confirmAction(event, this.parentElement, 'approve')"
                                                             title="Success">
                                                             <i class="fas fa-check-circle me-1"></i>
                                                         </button>
                                                     </form>
-                                                    <form
-                                                        action="{{ route('admin.donations.updateStatus', $request->id) }}"
+                                                    <form action="{{ route('admin.donations.updateStatus', $donation->id) }}"
                                                         method="POST" class="d-inline">
                                                         @csrf
                                                         @method('PUT')
                                                         <input type="hidden" name="status" value="rejected">
-                                                        <button type="submit" class="btn btn-sm text-white rounded-pill"
+                                                        <button type="button" 
+                                                            class="btn btn-sm text-white rounded-pill"
                                                             style="background-color: #cb2786; border-color: #cb2786;"
                                                             onclick="confirmAction(event, this.parentElement, 'reject')"
                                                             title="Cancel">
@@ -219,6 +288,17 @@
                                                         </button>
                                                     </form>
                                                 @endif
+                                                <form action="{{ route('admin.donations.destroy', $donation->id) }}" 
+                                                    method="POST" class="d-inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="button" 
+                                                        onclick="confirmDelete(event, this.parentElement)" 
+                                                        class="btn btn-sm btn-danger text-white rounded-pill" 
+                                                        title="Hapus">
+                                                        <i class="fas fa-trash me-1"></i>
+                                                    </button>
+                                                </form>
                                             </div>
                                         </td>
                                     </tr>
@@ -237,8 +317,6 @@
             </div>
         @endif
     </div>
-
-
 @endsection
 
 @push('scripts')
@@ -253,13 +331,13 @@
 
             if (actionType === 'approve') {
                 title = 'Konfirmasi Persetujuan';
-                text = "Anda yakin bahwa donasi/sponsor sudah sukses?";
+                text = "Anda yakin bahwa donasi sudah sukses?";
                 icon = 'question';
                 confirmButtonText = 'Ya, Setujui!';
                 confirmButtonColor = '#00617a';
             } else if (actionType === 'reject') {
                 title = 'Konfirmasi Penolakan';
-                text = "Anda yakin ingin membatalkan donasi/sponsor ini?";
+                text = "Anda yakin ingin membatalkan donasi ini?";
                 icon = 'warning';
                 confirmButtonText = 'Ya, Batalkan!';
                 confirmButtonColor = '#cb2786';
@@ -273,6 +351,29 @@
                 confirmButtonColor: confirmButtonColor,
                 cancelButtonColor: '#6c757d',
                 confirmButtonText: confirmButtonText,
+                cancelButtonText: 'Batal',
+                customClass: {
+                    confirmButton: 'rounded-pill px-4',
+                    cancelButton: 'rounded-pill px-4'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        }
+
+        function confirmDelete(event, form) {
+            event.preventDefault();
+            
+            Swal.fire({
+                title: 'Konfirmasi Hapus',
+                text: "Data yang dihapus tidak dapat dikembalikan!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Ya, Hapus!',
                 cancelButtonText: 'Batal',
                 customClass: {
                     confirmButton: 'rounded-pill px-4',
