@@ -1,4 +1,4 @@
-@extends('../layouts/master_nav')
+@extends('layouts/master_nav')
 
 @section('title', 'Profile')
 
@@ -366,22 +366,28 @@
                                 </div>
 
                                 {{-- BARIS 2: Tim vs Tim (atau Skor) --}}
-                                <h5 class="fw-bold d-flex justify-content-between align-items-center mb-1">
-                                    <span class="{{ $match->winner_id == $match->team1_id ? 'text-success' : '' }}">
+                                <h5 class="fw-bold d-flex align-items-center mb-1">
+
+                                    <span style="flex: 1; text-align: left;"
+                                        class="{{ $match->winner_id == $match->team1_id ? 'text-success' : '' }}">
                                         {{ $match->team1->name ?? 'Tim 1' }}
                                     </span>
 
-                                    @if ($match->status == 'completed' && isset($match->team1_score))
-                                        <span class="fw-normal text-primary mx-2">
-                                            {{ $match->team1_score ?? 0 }} - {{ $match->team2_score ?? 0 }}
-                                        </span>
-                                    @else
-                                        <span class="fw-normal text-muted mx-2 small">vs</span>
-                                    @endif
+                                    <span style="flex: 0 0 80px; text-align: center;">
+                                        @if ($match->status == 'completed' && isset($match->team1_score))
+                                            <span class="fw-normal text-primary mx-2">
+                                                {{ $match->team1_score ?? 0 }} - {{ $match->team2_score ?? 0 }}
+                                            </span>
+                                        @else
+                                            <span class="fw-normal text-muted mx-2 small">vs</span>
+                                        @endif
+                                    </span>
 
-                                    <span class="{{ $match->winner_id == $match->team2_id ? 'text-success' : '' }}">
+                                    <span style="flex: 1; text-align: right;"
+                                        class="{{ $match->winner_id == $match->team2_id ? 'text-success' : '' }}">
                                         {{ $match->team2->name ?? 'Tim 2' }}
                                     </span>
+
                                 </h5>
 
                                 {{-- BARIS 3: Waktu & Lokasi --}}
