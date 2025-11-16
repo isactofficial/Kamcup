@@ -53,7 +53,14 @@ class Donation extends Model
     // Accessors
     public function getFormattedCreatedAtAttribute()
     {
-        return $this->created_at->format('d F Y H:i');
+        // =================================================================
+        // PERBAIKAN DI SINI:
+        // Tambahkan ->timezone('Asia/Jakarta') untuk konversi ke WIB
+        // =================================================================
+        if ($this->created_at) {
+            return $this->created_at->timezone('Asia/Jakarta')->format('d F Y H:i');
+        }
+        return 'N/A'; // Pengaman jika created_at null
     }
 
     public function getFormattedAmountAttribute()
@@ -109,10 +116,5 @@ class Donation extends Model
     public function isApproved()
     {
         return $this->status === 'approved';
-    }
-
-    public function isRejected()
-    {
-        return $this->status === 'rejected';
     }
 }
