@@ -224,22 +224,28 @@ Route::prefix('donations')->name('donations.')->group(function () {
     Route::get('/statistics/json', [DonationController::class, 'statistics'])->name('statistics');
 });
     
-    // Match Management (Admin) - DIPERBAIKI DAN DIKELOMPOKKAN
+   // =====================================================
+    // MATCH MANAGEMENT (Admin)
+    // =====================================================
     Route::prefix('matches')->name('matches.')->group(function () {
-        // AJAX endpoints untuk form create/edit (harus di atas resource routes)
-        Route::get('/get-confirmed-teams', [MatchController::class, 'getConfirmedTeams'])->name('get-confirmed-teams');
-        Route::get('/get-tournament-location', [MatchController::class, 'getTournamentLocation'])->name('get-tournament-location');
-        Route::get('/get-all-teams', [MatchController::class, 'getAllTeamsForTournament'])->name('get-all-teams');
         
-        // Live score dan stats endpoints
-        Route::get('/{match}/score', [MatchController::class, 'getScore'])->name('get-score');
-        Route::get('/tournament/{tournament}/stats', [MatchController::class, 'getTournamentStats'])->name('tournament-stats');
+        // ⚠️ PENTING: AJAX Endpoints HARUS DI ATAS Resource Routes
+        // Jika ditaruh di bawah, akan ter-capture oleh {match} parameter
         
-        // Bulk operations
-        Route::post('/bulk-update-status', [MatchController::class, 'bulkUpdateStatus'])->name('bulk-update-status');
+        // AJAX Endpoints untuk Form Create/Edit
+        Route::get('/get-confirmed-teams', [MatchController::class, 'getConfirmedTeams'])
+             ->name('get-confirmed-teams');
+        
+        Route::get('/get-tournament-location', [MatchController::class, 'getTournamentLocation'])
+             ->name('get-tournament-location');
+        
+        // Live Score dan Stats Endpoints (Optional)
+        Route::get('/{match}/score', [MatchController::class, 'getScore'])
+             ->name('get-score');
     });
     
     // Match Resource Routes (CRUD operations)
+    // Ini HARUS setelah AJAX routes di atas
     Route::resource('matches', MatchController::class);
 
     // Rute Manajemen Tim (DIPINDAHKAN KE SINI)
