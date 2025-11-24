@@ -11,26 +11,24 @@ class Donation extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id',      // TAMBAH INI - Relasi ke user yang login
-        'name_brand',
-        'email', 
-        'phone_whatsapp',
-        'event_name',
-        'donation_type',
-        'sponsor_type',
+        'user_id',
+        'donor_name',
+        'email',
+        'amount',
+        'proof_image',
+        'foto_donatur',
         'message',
-        'benefits',
         'status'
     ];
 
     protected $casts = [
-        'donation_type' => 'string',
+        'amount' => 'decimal:2',
         'status' => 'string',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
 
-    // TAMBAH RELASI KE USER
+    // Relasi ke User
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -47,20 +45,27 @@ class Donation extends Model
         return $query->where('status', 'approved');
     }
 
-    public function scopeSponsors($query)
+    public function scopeRejected($query)
     {
-        return $query->where('donation_type', 'sponsor');
-    }
-
-    public function scopeDonatur($query)
-    {
-        return $query->where('donation_type', 'donatur');
+        return $query->where('status', 'rejected');
     }
 
     // Accessors
     public function getFormattedCreatedAtAttribute()
     {
-        return $this->created_at->format('d F Y H:i');
+        // =================================================================
+        // PERBAIKAN DI SINI:
+        // Tambahkan ->timezone('Asia/Jakarta') untuk konversi ke WIB
+        // =================================================================
+        if ($this->created_at) {
+            return $this->created_at->timezone('Asia/Jakarta')->format('d F Y H:i');
+        }
+        return 'N/A'; // Pengaman jika created_at null
+    }
+
+    public function getFormattedAmountAttribute()
+    {
+        return 'Rp ' . number_format($this->amount, 0, ',', '.');
     }
 
     public function getStatusBadgeAttribute()
@@ -72,6 +77,22 @@ class Donation extends Model
         ];
         
         return $badges[$this->status] ?? $badges['pending'];
+    }
+
+    public function getProofImageUrlAttribute()
+    {
+        if ($this->proof_image) {
+            return asset('storage/' . $this->proof_image);
+        }
+        return null;
+    }
+
+    public function getFotoDonaturUrlAttribute()
+    {
+        if ($this->foto_donatur) {
+            return asset('storage/' . $this->foto_donatur);
+        }
+        return null;
     }
 
     // Methods
@@ -95,71 +116,5 @@ class Donation extends Model
     public function isApproved()
     {
         return $this->status === 'approved';
-    }
-
-    public function isRejected()
-    {
-        return $this->status === 'rejected';
-    }
-
-    public function isSponsor()
-    {
-        return $this->donation_type === 'sponsor';
-    }
-
-    public function isDonatur()
-    {
-        return $this->donation_type === 'donatur';
-    }
-
-    // Auto-set benefits based on sponsor_type
-    protected static function booted()
-    {
-        static::creating(function ($donation) {
-            if ($donation->donation_type === 'sponsor' && $donation->sponsor_type) {
-                $donation->benefits = static::getSponsorBenefits($donation->sponsor_type);
-            }
-        });
-
-        static::updating(function ($donation) {
-            if ($donation->donation_type === 'sponsor' && $donation->sponsor_type) {
-                $donation->benefits = static::getSponsorBenefits($donation->sponsor_type);
-            }
-        });
-    }
-
-    public static function getSponsorBenefits($sponsorType)
-    {
-        $benefits = [
-            'XXL' => [
-                'Logo perusahaan di Web',
-                'Mendapatkan seluruh kontraprestasi yang didapatkan oleh sponsor khusus',
-                'Booth khusus di area event',
-                'Branding di semua media promosi',
-                'Merchandise khusus',
-                'Sertifikat apresiasi'
-            ],
-            'XL' => [
-                'Logo perusahaan di Web',
-                'Mendapatkan seluruh kontraprestasi yang didapatkan oleh sponsor khusus',
-                'Branding di media promosi utama',
-                'Merchandise khusus'
-            ],
-            'L' => [
-                'Logo perusahaan di Web',
-                'Mendapatkan kontraprestasi sponsor',
-                'Branding di beberapa media promosi'
-            ],
-            'M' => [
-                'Logo perusahaan di Web',
-                'Mendapatkan kontraprestasi dasar'
-            ]
-        ];
-
-        if (isset($benefits[$sponsorType])) {
-            return implode("\n", array_map(fn($benefit) => "- $benefit", $benefits[$sponsorType]));
-        }
-
-        return null;
     }
 }
