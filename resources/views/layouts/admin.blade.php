@@ -289,6 +289,10 @@
                         class="{{ request()->routeIs('admin.donations.index') || request()->routeIs('admin.donations.show') ? 'active' : '' }}">
                         <i class="fas fa-donate"></i>Sponsors/Donations
                     </a>
+                    <a href="{{ route('admin.messages.index') }}"
+                        class="{{ request()->routeIs('admin.messages.*') ? 'active' : '' }}">
+                        <i class="fas fa-envelope"></i> Manajemen Pesan
+                    </a>
                 </div>
 
                 <form action="{{ route('logout') }}" method="POST">

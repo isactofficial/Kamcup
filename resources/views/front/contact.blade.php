@@ -24,11 +24,24 @@
                     <div class="p-4 p-lg-5 rounded-4 h-100"
                         style="background-color: #ffffff; box-shadow: 0 10px 30px rgba(108, 99, 255, 0.08);">
                         <h4 class="fw-semibold mb-4 article-text">Send us a message</h4>
-                        <form>
+                        @if(session('success'))
+                            <div class="alert alert-success">{{ session('success') }}</div>
+                        @endif
+                        @if ($errors->any())
+                            <div class="alert alert-danger">
+                                <ul class="mb-0">
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+                        <form method="POST" action="{{ route('front.contact.messages.store') }}">
+                            @csrf
                             <div class="row g-4">
                                 <div class="col-md-6">
                                     <div class="form-floating mb-1">
-                                        <input type="text" class="form-control border-0"
+                                        <input type="text" name="name" value="{{ old('name') }}" class="form-control border-0"
                                             style="background-color: #f4f4f4;" id="nameInput" placeholder="Your name"
                                             required>
                                         <label for="nameInput" class="text-muted article-text">Name</label>
@@ -36,7 +49,7 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-floating mb-1">
-                                        <input type="email" class="form-control border-0"
+                                        <input type="email" name="email" value="{{ old('email') }}" class="form-control border-0"
                                             style="background-color: #f4f4f4;" id="emailInput" placeholder="you@example.com"
                                             required>
                                         <label for="emailInput" class="text-muted">Email</label>
@@ -44,7 +57,7 @@
                                 </div>
                                 <div class="col-12">
                                     <div class="form-floating mb-1">
-                                        <input type="text" class="form-control border-0"
+                                        <input type="text" name="subject" value="{{ old('subject') }}" class="form-control border-0"
                                             style="background-color: #f4f4f4;" id="subjectInput"
                                             placeholder="How can we help you?">
                                         <label for="subjectInput" class="text-muted">Subject</label>
@@ -52,13 +65,13 @@
                                 </div>
                                 <div class="col-12">
                                     <div class="form-floating mb-1">
-                                        <textarea class="form-control border-0" style="background-color: #f4f4f4; height: 140px;" id="messageInput"
-                                            placeholder="Tell us more about your inquiry..." required></textarea>
+                                        <textarea name="message" class="form-control border-0" style="background-color: #f4f4f4; height: 140px;" id="messageInput"
+                                            placeholder="Tell us more about your inquiry..." required>{{ old('message') }}</textarea>
                                         <label for="messageInput" class="text-muted">Message</label>
                                     </div>
                                 </div>
                                 <div class="col-12 mt-3">
-                                    <button class="btn btn-lg px-4 py-2 rounded-pill text-white d-flex align-items-center"
+                                    <button type="submit" class="btn btn-lg px-4 py-2 rounded-pill text-white d-flex align-items-center"
                                         style="background: linear-gradient(135deg, #161616 0%, #4e4e4e 100%); border: none; box-shadow: 0 4px 12px rgba(108, 99, 255, 0.25); transition: all 0.3s ease;">
                                         <span>Send Message</span>
                                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"

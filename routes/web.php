@@ -18,6 +18,7 @@ use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TeamMemberController;
 use App\Http\Controllers\DonationController;
 use App\Http\Controllers\BotManController;
+use App\Http\Controllers\ContactMessageController;
 use App\Http\Controllers\AdminTeamController;
 
 /*
@@ -60,6 +61,7 @@ Route::middleware('log.visit')->group(function () {
     // Homepage and main content
     Route::get('/', [FrontController::class, 'index'])->name('front.index');
     Route::get('/contact', [FrontController::class, 'contact'])->name('front.contact');
+    Route::post('/contact/messages', [ContactMessageController::class, 'store'])->name('front.contact.messages.store');
     Route::get('/search', [FrontController::class, 'search'])->name('front.search');
     
     // Articles (Public viewing)
@@ -202,6 +204,14 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     
     // Sponsor Management (Admin)
     Route::resource('sponsors', SponsorController::class);
+
+    // Contact Messages Management
+    Route::prefix('messages')->name('messages.')->group(function () {
+        Route::get('/', [ContactMessageController::class, 'index'])->name('index');
+        Route::get('/{message}', [ContactMessageController::class, 'show'])->name('show');
+        Route::put('/{message}/toggle', [ContactMessageController::class, 'toggle'])->name('toggle');
+        Route::delete('/{message}', [ContactMessageController::class, 'destroy'])->name('destroy');
+    });
     
     // Host Request Management (Admin approval)
     Route::prefix('host-requests')->name('host-requests.')->group(function () {
