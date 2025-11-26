@@ -291,7 +291,7 @@
                     </a>
                     <a href="{{ route('admin.messages.index') }}"
                         class="{{ request()->routeIs('admin.messages.*') ? 'active' : '' }}">
-                        <i class="fas fa-envelope"></i> Manajemen Pesan
+                        <i class="fas fa-envelope"></i> Manajemen Kontak
                     </a>
                 </div>
 

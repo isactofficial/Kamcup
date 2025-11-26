@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3 class="mb-0">Detail Pesan</h3>
+        <h3 class="mb-0">Detail Kontak</h3>
         <a href="{{ route('admin.messages.index') }}" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-left me-1"></i> Kembali</a>
     </div>
 

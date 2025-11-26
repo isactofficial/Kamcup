@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3 class="mb-0">Manajemen Pesan Masuk</h3>
+        <h3 class="mb-0">Manajemen Kontak Masuk</h3>
         <div>
             <form class="d-inline">
                 <select name="filter" class="form-select form-select-sm" onchange="this.form.submit()">
@@ -48,23 +48,25 @@
                             <small class="text-muted">{{ $msg->created_at->format('H:i') }}</small>
                         </td>
                         <td class="text-end">
-                            <a href="{{ route('admin.messages.show', $msg) }}" class="btn btn-sm btn-outline-secondary" title="Baca">
-                                <i class="fas fa-envelope-open-text"></i>
-                            </a>
-                            <form action="{{ route('admin.messages.toggle', $msg) }}" method="POST" class="d-inline">
-                                @csrf
-                                @method('PUT')
-                                <button class="btn btn-sm btn-outline-primary" title="Tandai">
-                                    <i class="fas {{ $msg->is_read ? 'fa-envelope' : 'fa-envelope-open' }}"></i>
-                                </button>
-                            </form>
-                            <form action="{{ route('admin.messages.destroy', $msg) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus pesan ini?')">
-                                @csrf
-                                @method('DELETE')
-                                <button class="btn btn-sm btn-outline-danger" title="Hapus">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </form>
+                            <div class="d-flex justify-content-end gap-1 flex-wrap">
+                                <a href="{{ route('admin.messages.show', $msg) }}" class="btn btn-sm btn-outline-secondary" title="Baca">
+                                    <i class="fas fa-envelope-open-text"></i>
+                                </a>
+                                <form action="{{ route('admin.messages.toggle', $msg) }}" method="POST">
+                                    @csrf
+                                    @method('PUT')
+                                    <button class="btn btn-sm btn-outline-primary" title="Tandai">
+                                        <i class="fas {{ $msg->is_read ? 'fa-envelope' : 'fa-envelope-open' }}"></i>
+                                    </button>
+                                </form>
+                                <form action="{{ route('admin.messages.destroy', $msg) }}" method="POST" onsubmit="return confirm('Hapus pesan ini?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="btn btn-sm btn-outline-danger" title="Hapus">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                 @empty
