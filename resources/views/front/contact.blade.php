@@ -24,9 +24,6 @@
                     <div class="p-4 p-lg-5 rounded-4 h-100"
                         style="background-color: #ffffff; box-shadow: 0 10px 30px rgba(108, 99, 255, 0.08);">
                         <h4 class="fw-semibold mb-4 article-text">Send us a message</h4>
-                        @if(session('success'))
-                            <div class="alert alert-success">{{ session('success') }}</div>
-                        @endif
                         @if ($errors->any())
                             <div class="alert alert-danger">
                                 <ul class="mb-0">
@@ -242,8 +239,44 @@
             transition: all 0.3s ease;
         }
     </style>
+    @if(session('success'))
+    <style>
+        /* Sembunyikan alert fixed di layout saat halaman ini menampilkan SweetAlert */
+        .alert-fixed { display:none !important; }
+    </style>
+    @endif
 @endpush
 
 @push('scripts')
     <script src="{{ asset('js/animate.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    @if(session('success'))
+    <script>
+        // Popup sukses setelah form terkirim
+        document.addEventListener('DOMContentLoaded', function(){
+            if (typeof Swal !== 'undefined' && Swal.fire) {
+                Swal.fire({
+                    title: 'Pesan Berhasil Dikirim!',
+                    html: '<p style="margin:0;color:#6c757d;">Terima kasih. Kami akan segera menindaklanjuti pesan Anda.</p>',
+                    icon: 'success',
+                    confirmButtonText: 'Tutup',
+                    customClass: {
+                        popup: 'rounded-4',
+                        confirmButton: 'rounded-pill px-4 py-2'
+                    },
+                    buttonsStyling: false,
+                    didOpen: () => {
+                        const confirmBtn = document.querySelector('.swal2-confirm');
+                        if (confirmBtn) {
+                            confirmBtn.style.backgroundColor = '#00617a';
+                            confirmBtn.style.color = '#ffffff';
+                            confirmBtn.style.border = 'none';
+                            confirmBtn.style.borderRadius = '999px';
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+    @endif
 @endpush

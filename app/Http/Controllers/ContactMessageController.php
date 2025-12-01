@@ -60,8 +60,10 @@ class ContactMessageController extends Controller
         $message->is_read = !$message->is_read;
         $message->read_at = $message->is_read ? now() : null;
         $message->save();
-
-        return back()->with('success', 'Status pesan diperbarui.');
+        $text = $message->is_read
+            ? 'Status pesan berhasil diubah menjadi sudah dibaca.'
+            : 'Status pesan berhasil diubah menjadi belum dibaca.';
+        return back()->with('success', $text);
     }
 
     // Admin: delete message

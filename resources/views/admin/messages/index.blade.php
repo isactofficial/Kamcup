@@ -71,13 +71,10 @@
                         </td>
                         <td class="text-end">
                             <div class="d-flex justify-content-end gap-2 flex-wrap">
-                                <a href="{{ route('admin.messages.show', $msg) }}" class="btn-action view" title="Baca">
-                                    <i class="fas fa-address-card"></i>
-                                </a>
                                 <form action="{{ route('admin.messages.toggle', $msg) }}" method="POST">
                                     @csrf
                                     @method('PUT')
-                                    <button class="btn-action toggle" title="Tandai">
+                                    <button class="btn-action toggle" title="{{ $msg->is_read ? 'Tandai Belum Dibaca' : 'Tandai Sudah Dibaca' }}">
                                         <i class="fas {{ $msg->is_read ? 'fa-envelope' : 'fa-envelope-open' }}"></i>
                                     </button>
                                 </form>
