@@ -16,14 +16,28 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+
 # Laravel
 /vendor
 /node_modules
 /public/storage
-/storage
-/.env
+/storage/*.key
+/storage/app/*
+/storage/framework/cache/data/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/logs/*
+!storage/app/.gitkeep
+!storage/app/public/.gitkeep
+!storage/framework/cache/.gitkeep
+!storage/framework/cache/data/.gitkeep
+!storage/framework/sessions/.gitkeep
+!storage/framework/views/.gitkeep
+!storage/logs/.gitkeep
 
 # Sistem
 .DS_Store
 Thumbs.db
 
+# User
+docker-compose.yml
