@@ -77,11 +77,11 @@
 
 @section('content')
 
-<div class="container px-4 px-lg-5">
+<div class="container px-4 px-lg-5 pt-5" style="padding-top: 6rem !important;">
     <div class="row justify-content-center">
         <div class="col-lg-12">
 
-            <div class="d-flex justify-content-between mb-4 mt-4">
+            <div class="d-flex justify-content-between mb-4">
             <a href="{{ route('front.articles') }}" class="btn px-4 py-2"
             style="background-color: #F0F5FF; color: #5B93FF; border-radius: 8px;">
             <i class="fas fa-arrow-left me-2"></i> Kembali
@@ -152,16 +152,16 @@
                     <h3 class="fw-bold fs-5 mb-4 article-text">Komentar ({{ $article->comments->count() }})</h3>
 
                     @auth
-                        <form action="{{ route('comments.store', $article->id) }}" method="POST" class="mb-4">
+                        <form action="{{ route('comments.store', $article) }}" method="POST" class="mb-4" id="comment-form">
                             @csrf
                             <div class="form-group">
                                 <textarea name="content" rows="3" class="form-control @error('content') is-invalid @enderror"
-                                    placeholder="Tulis komentar Anda..."></textarea>
+                                    placeholder="Tulis komentar Anda..." id="comment-content"></textarea>
                                 @error('content')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-                            <button type="submit" class="btn btn-primary mt-2">
+                            <button type="submit" class="btn btn-primary mt-2" id="submit-comment-btn">
                                 <i class="fas fa-paper-plane me-2"></i>Kirim Komentar
                             </button>
                         </form>
@@ -172,9 +172,9 @@
                         </div>
                     @endauth
 
-                    <div class="comments-list">
+                    <div class="comments-list" id="comments-list">
                         @forelse($article->comments()->with('user')->latest()->get() as $index => $comment)
-                            <div class="comment-item border-bottom py-3 scroll-animate" data-delay="{{ 700 + ($index * 100) }}">
+                            <div class="comment-item border-bottom py-3 scroll-animate" id="comment-{{ $comment->id }}" data-delay="{{ 700 + ($index * 100) }}">
                                 <div class="d-flex align-items-start">
                                     <div class="d-flex justify-content-center align-items-center rounded-circle me-3"
                                          style="width: 40px; height: 40px; background-color: #F0F5FF;">
@@ -185,7 +185,7 @@
                                             <h6 class="mb-0 fw-medium">{{ $comment->user->name }}</h6>
                                             <small class="text-muted">{{ $comment->created_at->diffForHumans() }}</small>
                                         </div>
-                                        <p class="mb-2" style="color: #5F738C;">{{ $comment->content }}</p>
+                                        <p class="mb-2 comment-content" style="color: #5F738C;">{{ $comment->content }}</p>
 
                                         @auth
                                             @if(auth()->id() === $comment->user_id)
@@ -196,10 +196,11 @@
                                                         <i class="fas fa-edit"></i> Edit
                                                     </button>
                                                     <form action="{{ route('comments.destroy', $comment->id) }}"
-                                                          method="POST" class="d-inline">
+                                                          method="POST" class="d-inline delete-comment-form"
+                                                          data-comment-id="{{ $comment->id }}">
                                                         @csrf
                                                         @method('DELETE')
-                                                        <button type="submit" class="btn btn-sm btn-link text-danger"
+                                                        <button type="submit" class="btn btn-sm btn-link text-danger delete-comment"
                                                                 onclick="return confirm('Apakah Anda yakin ingin menghapus komentar ini?')">
                                                             <i class="fas fa-trash"></i> Hapus
                                                         </button>
@@ -211,7 +212,7 @@
                                 </div>
                             </div>
                         @empty
-                            <div class="text-center py-4 scroll-animate" data-delay="700">
+                            <div class="text-center py-4 scroll-animate" id="empty-comments" data-delay="700">
                                 <p class="text-muted mb-0 article-text">Belum ada komentar. Jadilah yang pertama berkomentar!</p>
                             </div>
                         @endforelse
@@ -310,34 +311,364 @@
 
 @push('scripts')
 <script>
-    // Edit comment functionality
-    document.querySelectorAll('.edit-comment').forEach(button => {
-        button.addEventListener('click', function() {
-            const commentId = this.dataset.commentId;
-            const content = this.dataset.content;
+    // ===== AJAX COMMENT SUBMISSION =====
+    document.addEventListener('DOMContentLoaded', function() {
+        const commentForm = document.getElementById('comment-form');
+        if (!commentForm) return;
 
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = `/comments/${commentId}`;
-            form.innerHTML = `
-                @csrf
-                @method('PUT')
-                <div class="form-group">
-                    <textarea name="content" rows="3" class="form-control">${content}</textarea>
-                </div>
-                <div class="mt-2">
-                    <button type="submit" class="btn btn-primary btn-sm">Simpan</button>
-                    <button type="button" class="btn btn-secondary btn-sm cancel-edit">Batal</button>
-                </div>
-            `;
+        commentForm.addEventListener('submit', function(e) {
+            e.preventDefault();
 
-            const commentContent = this.closest('.comment-item').querySelector('p');
-            commentContent.replaceWith(form);
+            const content = document.getElementById('comment-content').value.trim();
+            
+            if (!content) {
+                alert('Silakan isi komentar terlebih dahulu');
+                return;
+            }
 
-            form.querySelector('.cancel-edit').addEventListener('click', () => {
-                form.replaceWith(commentContent);
+            const submitBtn = document.getElementById('submit-comment-btn');
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Mengirim...';
+
+            // Create FormData - more reliable than JSON
+            const formData = new FormData();
+            formData.append('content', content);
+            formData.append('_token', document.querySelector('input[name="_token"]').value);
+
+            console.log('Sending comment to:', commentForm.action);
+            console.log('CSRF Token:', document.querySelector('input[name="_token"]').value);
+
+            // Send AJAX request
+            fetch(commentForm.action, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                console.log('Response OK:', response.ok);
+                
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        console.error('Response text:', text);
+                        throw new Error(`HTTP ${response.status}: ${text}`);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Response data:', data);
+                
+                if (data.success) {
+                    // Clear the textarea
+                    document.getElementById('comment-content').value = '';
+
+                    // Remove empty comments message if exists
+                    const emptyMsg = document.getElementById('empty-comments');
+                    if (emptyMsg) {
+                        emptyMsg.remove();
+                    }
+
+                    // Create new comment HTML
+                    const commentContent = escapeHtml(data.comment.content);
+                    const userName = escapeHtml(data.comment.user.name);
+                    
+                    const newCommentHtml = `
+                        <div class="comment-item border-bottom py-3" id="comment-${data.comment.id}" style="opacity: 1; transform: translateY(0);">
+                            <div class="d-flex align-items-start">
+                                <div class="d-flex justify-content-center align-items-center rounded-circle me-3"
+                                     style="width: 40px; height: 40px; background-color: #F0F5FF;">
+                                    <i class="fas fa-user" style="color: #5B93FF;"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <h6 class="mb-0 fw-medium">${userName}</h6>
+                                        <small class="text-muted">Baru saja</small>
+                                    </div>
+                                    <p class="mb-2 comment-content" style="color: #5F738C;">${commentContent}</p>
+                                    <div class="comment-actions">
+                                        <button class="btn btn-sm btn-link text-primary edit-comment"
+                                                data-comment-id="${data.comment.id}"
+                                                data-content="${commentContent}">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </button>
+                                        <form action="/comments/${data.comment.id}"
+                                              method="POST" class="d-inline delete-comment-form"
+                                              data-comment-id="${data.comment.id}">
+                                            <input type="hidden" name="_token" value="${document.querySelector('input[name="_token"]').value}">
+                                            <input type="hidden" name="_method" value="DELETE">
+                                            <button type="submit" class="btn btn-sm btn-link text-danger delete-comment"
+                                                    onclick="return confirm('Apakah Anda yakin ingin menghapus komentar ini?')">
+                                                <i class="fas fa-trash"></i> Hapus
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    // Add new comment to the list
+                    const commentsList = document.getElementById('comments-list');
+                    commentsList.insertAdjacentHTML('afterbegin', newCommentHtml);
+
+                    // Re-initialize edit and delete handlers for the new comment
+                    initializeCommentHandlers();
+
+                    // Update comment count
+                    const commentCount = document.querySelector('.fw-bold.fs-5');
+                    if (commentCount) {
+                        const currentCount = parseInt(commentCount.textContent.match(/\d+/)[0]);
+                        commentCount.textContent = `Komentar (${currentCount + 1})`;
+                    }
+
+                    // Show success message
+                    showSuccessMessage('Komentar Anda berhasil ditambahkan!');
+                } else {
+                    alert('Gagal menambahkan komentar: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Fetch error:', error);
+                alert('Terjadi kesalahan saat mengirim komentar: ' + error.message + '\nSilakan coba lagi.');
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
             });
         });
+    });
+
+    // Helper function to escape HTML
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // ===== INITIALIZE COMMENT HANDLERS =====
+    function initializeCommentHandlers() {
+        // Edit comment functionality
+        document.querySelectorAll('.edit-comment').forEach(button => {
+            // Remove old event listeners by cloning
+            const newButton = button.cloneNode(true);
+            button.parentNode.replaceChild(newButton, button);
+        });
+
+        document.querySelectorAll('.edit-comment').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const commentId = this.dataset.commentId;
+                const content = this.dataset.content;
+                const commentItem = document.getElementById(`comment-${commentId}`);
+
+                if (!commentItem) return;
+
+                const commentContent = commentItem.querySelector('.comment-content');
+                const commentActions = commentItem.querySelector('.comment-actions');
+
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/comments/${commentId}`;
+                form.innerHTML = `
+                    <input type="hidden" name="_token" value="${document.querySelector('input[name="_token"]').value}">
+                    <input type="hidden" name="_method" value="PUT">
+                    <div class="form-group">
+                        <textarea name="content" rows="3" class="form-control" id="edit-textarea-${commentId}">${content}</textarea>
+                    </div>
+                    <div class="mt-2">
+                        <button type="button" class="btn btn-primary btn-sm save-edit" data-comment-id="${commentId}">
+                            <i class="fas fa-check me-1"></i>Simpan
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-sm cancel-edit">
+                            <i class="fas fa-times me-1"></i>Batal
+                        </button>
+                    </div>
+                `;
+
+                // Replace comment content and actions with edit form
+                commentContent.replaceWith(form);
+                commentActions.style.display = 'none';
+
+                // Cancel edit
+                form.querySelector('.cancel-edit').addEventListener('click', () => {
+                    form.replaceWith(commentContent);
+                    commentActions.style.display = 'block';
+                });
+
+                // Save edit via AJAX
+                form.querySelector('.save-edit').addEventListener('click', function() {
+                    const newContent = document.getElementById(`edit-textarea-${commentId}`).value.trim();
+                    
+                    if (!newContent) {
+                        alert('Komentar tidak boleh kosong');
+                        return;
+                    }
+
+                    this.disabled = true;
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Menyimpan...';
+
+                    const formData = new FormData();
+                    formData.append('content', newContent);
+                    formData.append('_token', document.querySelector('input[name="_token"]').value);
+                    formData.append('_method', 'PUT');
+
+                    fetch(`/comments/${commentId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: formData
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('HTTP ' + response.status);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            // Update the comment content
+                            const newCommentContent = document.createElement('p');
+                            newCommentContent.className = 'mb-2 comment-content';
+                            newCommentContent.style.color = '#5F738C';
+                            newCommentContent.textContent = newContent;
+
+                            form.replaceWith(newCommentContent);
+                            commentActions.style.display = 'block';
+
+                            // Update the data-content attribute
+                            const editBtn = commentActions.querySelector('.edit-comment');
+                            if (editBtn) {
+                                editBtn.dataset.content = newContent;
+                            }
+
+                            showSuccessMessage('Komentar berhasil diperbarui!');
+                        } else {
+                            alert('Gagal memperbarui komentar: ' + (data.message || ''));
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Terjadi kesalahan saat memperbarui komentar');
+                    });
+                });
+            });
+        });
+
+        // Delete comment functionality
+        document.querySelectorAll('.delete-comment-form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const commentId = this.dataset.commentId;
+                const csrfToken = document.querySelector('input[name="_token"]').value;
+
+                const formData = new FormData();
+                formData.append('_token', csrfToken);
+                formData.append('_method', 'DELETE');
+
+                fetch(`/comments/${commentId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('HTTP ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Remove comment from DOM
+                        const commentItem = document.getElementById(`comment-${commentId}`);
+                        if (commentItem) {
+                            commentItem.style.animation = 'fadeOut 0.3s ease-out forwards';
+                            setTimeout(() => {
+                                commentItem.remove();
+                                
+                                // Check if there are no more comments
+                                const commentsList = document.getElementById('comments-list');
+                                if (commentsList.children.length === 0) {
+                                    commentsList.innerHTML = `
+                                        <div class="text-center py-4 scroll-animate" id="empty-comments">
+                                            <p class="text-muted mb-0 article-text">Belum ada komentar. Jadilah yang pertama berkomentar!</p>
+                                        </div>
+                                    `;
+                                }
+
+                                // Update comment count
+                                const commentCount = document.querySelector('.fw-bold.fs-5');
+                                if (commentCount) {
+                                    const currentCount = parseInt(commentCount.textContent.match(/\d+/)[0]);
+                                    if (currentCount > 0) {
+                                        commentCount.textContent = `Komentar (${currentCount - 1})`;
+                                    }
+                                }
+
+                                showSuccessMessage('Komentar berhasil dihapus!');
+                            }, 300);
+                        }
+                    } else {
+                        alert('Gagal menghapus komentar: ' + (data.message || ''));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan saat menghapus komentar');
+                });
+            });
+        });
+    }
+
+    // ===== SUCCESS MESSAGE DISPLAY =====
+    function showSuccessMessage(message) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-success alert-dismissible fade show';
+        alertDiv.innerHTML = `
+            <i class="fas fa-check-circle me-2"></i>${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+
+        const cardBody = document.querySelector('.card-body');
+        if (cardBody) {
+            cardBody.insertBefore(alertDiv, cardBody.firstChild);
+            
+            setTimeout(() => {
+                alertDiv.style.animation = 'fadeOut 0.5s ease-out forwards';
+                setTimeout(() => alertDiv.remove(), 500);
+            }, 3000);
+        }
+    }
+
+    // Add CSS animation for fadeOut
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeCommentHandlers();
     });
 
     // === SCROLL ANIMATION SYSTEM ===

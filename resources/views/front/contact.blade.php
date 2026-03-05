@@ -4,13 +4,6 @@
     {{-- MODIFICATION: Added inline style 'margin-top: 140px;' to push content below the absolute navbar --}}
     <section class="pb-5" style="margin-top: 140px;">
         <div class="container">
-            <div class="d-flex justify-content-between scroll-animate" data-animation="fadeInLeft">
-                <a href="{{ route('front.index') }}" class="btn px-4 py-2"
-                    style="background-color: #F0F5FF; border-radius: 8px;">
-                    <i class="fas fa-arrow-left me-2"></i> Back
-                </a>
-            </div>
-
             <div class="text-center mb-5 p-4 rounded-4 scroll-animate" data-animation="fadeInUp" data-delay="100">
                 <h1 class="fw-bold mb-3 article-text">Terhubung dengan Semangat KAMI</h1>
                 <p class="text-muted w-75 mx-auto article-text">Punya pertanyaan, ide kolaborasi, atau ingin bergabung dalam

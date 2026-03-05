@@ -448,7 +448,7 @@
         <div class="container">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h3 class="fw-bold section-title text-white">PARTNER & SPONSOR KAMI</h3>
-                <a href="#" class="btn px-4 rounded-pill fw-bold"
+<a href="{{ route('front.contact') }}" class="btn px-4 rounded-pill fw-bold"
                     style="background-color: #ECBF00; color: #212529; border-color: #ECBF00;">MINAT JADI PARTNER?</a>
             </div>
             @php

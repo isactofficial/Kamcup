@@ -124,7 +124,7 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     
     // Comment Management on Articles
-    Route::post('/articles/{article}/comments', [CommentController::class, 'store'])->name('comments.store');
+    Route::post('/articles/{article:slug}/comments', [CommentController::class, 'store'])->name('comments.store');
     Route::put('/comments/{comment}', [CommentController::class, 'update'])->name('comments.update');
     Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
     

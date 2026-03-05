@@ -20,6 +20,27 @@ class CommentController extends Controller
             'user_id' => Auth::id(),
         ]);
 
+        // Load the user relationship for the response
+        $comment->load('user');
+
+        // Return JSON for AJAX requests (check both Content-Type and X-Requested-With)
+        if ($request->expectsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+            return response()->json([
+                'success' => true,
+                'message' => 'Komentar berhasil ditambahkan',
+                'comment' => [
+                    'id' => $comment->id,
+                    'content' => $comment->content,
+                    'user' => [
+                        'name' => $comment->user->name,
+                        'id' => $comment->user->id,
+                    ],
+                    'created_at' => $comment->created_at->diffForHumans(),
+                    'formatted_date' => $comment->created_at->diffForHumans(),
+                ]
+            ], 201);
+        }
+
         return redirect()->back()->with('success', 'Komentar berhasil ditambahkan');
     }
 
@@ -35,6 +56,18 @@ class CommentController extends Controller
             'content' => $request->content,
         ]);
 
+        // Return JSON for AJAX requests (check both Content-Type and X-Requested-With)
+        if ($request->expectsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+            return response()->json([
+                'success' => true,
+                'message' => 'Komentar berhasil diperbarui',
+                'comment' => [
+                    'id' => $comment->id,
+                    'content' => $comment->content,
+                ]
+            ]);
+        }
+
         return redirect()->back()->with('success', 'Komentar berhasil diperbarui');
     }
 
@@ -43,6 +76,14 @@ class CommentController extends Controller
         $this->authorize('delete', $comment);
 
         $comment->delete();
+
+        // Return JSON for AJAX requests (check both Content-Type and X-Requested-With)
+        if (request()->expectsJson() || request()->header('X-Requested-With') === 'XMLHttpRequest') {
+            return response()->json([
+                'success' => true,
+                'message' => 'Komentar berhasil dihapus'
+            ]);
+        }
 
         return redirect()->back()->with('success', 'Komentar berhasil dihapus');
     }
