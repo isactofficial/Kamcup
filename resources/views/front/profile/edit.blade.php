@@ -84,7 +84,9 @@
                         {{-- Input Nomor Telepon --}}
                         <div class="mb-3 fade-in-up" data-delay="700">
                             <label for="phone_number" class="form-label">Nomor Telepon</label>
-                            <input type="tel" class="form-control @error('phone_number') is-invalid @enderror" id="phone_number" name="phone_number" value="{{ old('phone_number', Auth::user()->profile->phone_number) }}">
+                            <input type="tel" class="form-control @error('phone_number') is-invalid @enderror" id="phone_number" name="phone_number" value="{{ old('phone_number', Auth::user()->profile->phone_number) }}"
+                                   pattern="[0-9]*" inputmode="numeric"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                             @error('phone_number')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror

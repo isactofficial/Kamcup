@@ -104,7 +104,10 @@
                         {{-- Input Kontak Anggota --}}
                         <div class="mb-3">
                             <label for="contact" class="form-label">Kontak Anggota (Opsional)</label>
-                            <input type="text" class="form-control @error('contact') is-invalid @enderror" id="contact" name="contact" value="{{ old('contact', $member->contact) }}" placeholder="No. Telepon atau Link Sosial Media">
+                            <input type="tel" class="form-control @error('contact') is-invalid @enderror" id="contact" name="contact" value="{{ old('contact', $member->contact) }}" 
+                                   placeholder="Contoh: 081234567890"
+                                   pattern="[0-9]*" inputmode="numeric"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                             @error('contact')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror

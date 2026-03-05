@@ -66,7 +66,9 @@
                         <div class="mb-3">
                             <label for="phone" class="form-label">Nomor Telepon <span class="text-danger">*</span></label>
                             <input type="tel" class="form-control @error('phone') is-invalid @enderror" id="phone" name="phone" value="{{ old('phone') }}" required
-                                   placeholder="Contoh: 081234567890" style="background-color: #f4f4f4; border: 1px solid #dee2e6;">
+                                   placeholder="Contoh: 081234567890" style="background-color: #f4f4f4; border: 1px solid #dee2e6;"
+                                   pattern="[0-9]*" inputmode="numeric"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                             @error('phone')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
