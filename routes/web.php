@@ -9,6 +9,7 @@ use App\Http\Controllers\FrontController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\TournamentController;
@@ -88,6 +89,13 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// OTP Verification Routes
+Route::prefix('verification')->name('verification.')->group(function () {
+    Route::post('/send-otp', [EmailVerificationController::class, 'sendOtp'])->name('send-otp');
+    Route::post('/verify-and-register', [EmailVerificationController::class, 'verifyAndRegister'])->name('verify-and-register');
+    Route::post('/resend-otp', [EmailVerificationController::class, 'resendOtp'])->name('resend-otp');
+});
 
 // Dashboard redirection based on role
 Route::get('/dashboard', [AuthController::class, 'redirectDashboard'])
