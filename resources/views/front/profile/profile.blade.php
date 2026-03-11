@@ -625,7 +625,7 @@
 
 @push('styles')
     {{-- Memuat CSS eksternal Anda --}}
-    <link rel="stylesheet" href="{{ asset('css/profile.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/profile.css') }}?v=1.0">
     <style>
         /* --- Scroll Reveal Animation Styles --- */
         .scroll-reveal {
