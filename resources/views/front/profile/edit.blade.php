@@ -150,7 +150,8 @@
         .editable-profile-photo {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* Penting untuk cropping gambar */
+            object-fit: contain; /* Penting untuk mencegah gambar terpotong */
+            background-color: #f8f9fa;
             transition: opacity 0.3s ease;
         }
 

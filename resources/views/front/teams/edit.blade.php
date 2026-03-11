@@ -23,7 +23,7 @@
                             <label for="logo" class="form-label d-block mb-3 team-logo-upload-area">
                                 <div class="team-logo-wrapper mb-2">
                                     <img src="{{ $team->logo ? asset('storage/' . $team->logo) : asset('assets/img/team-placeholder.png') }}"
-                                         alt="Team Logo" class="img-fluid editable-team-logo" width="120" height="120" style="object-fit: cover;">
+                                         alt="Team Logo" class="img-fluid editable-team-logo" width="120" height="120">
                                     <div class="team-logo-overlay">
                                         <i class="fas fa-camera"></i>
                                     </div>
@@ -162,7 +162,8 @@
         .editable-team-logo {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain;
+            background-color: #f8f9fa;
             transition: opacity 0.3s ease;
         }
 

@@ -32,7 +32,8 @@ h2.text-center.mt-5 {
     box-shadow: 0 0 100px rgba(171, 11, 11, 0.1); /* Sedikit shadow pada foto profil */
     width: 100px; /* Pastikan ukuran tetap */
     height: 100px; /* Pastikan ukuran tetap */
-    object-fit: cover; /* Penting untuk cropping gambar agar pas */
+    object-fit: contain; /* Berubah menjadi contain agar gambar tidak terpotong */
+    background-color: #f8f9fa; /* Background abu-abu muda jika ada whitespace */
     display: block; /* Agar margin auto bisa berfungsi */
     margin-left: auto; /* Pusatkan gambar */
     margin-right: auto; /* Pusatkan gambar */

@@ -686,7 +686,8 @@
             /* Atur lebar yang diinginkan */
             height: 100px;
             /* Atur tinggi yang sama dengan lebar */
-            object-fit: cover;
+            object-fit: contain;
+            background-color: #f8f9fa;
             /* Penting! Memastikan gambar terpotong dan tidak terdistorsi */
             border-radius: 8px;
             /* Untuk membuat sudut sedikit membulat */
@@ -697,7 +698,8 @@
         .img-square-team {
             width: 90px;
             height: 90px;
-            object-fit: cover;
+            object-fit: contain;
+            background-color: #f8f9fa;
             border-radius: 8px;
             border: 1px solid #ddd;
         }
@@ -705,7 +707,8 @@
         .img-square-team-member {
             width: 70px;
             height: 70px;
-            object-fit: cover;
+            object-fit: contain;
+            background-color: #f8f9fa;
             border-radius: 8px;
             border: 1px solid #ddd;
         }
