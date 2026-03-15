@@ -174,6 +174,19 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/donations', [DonationController::class, 'store'])->name('donation.store');
     Route::get('/ajukan-sponsorship', [DonationController::class, 'create'])->name('sponsorship.form');
     Route::get('/donasi', [DonationController::class, 'create'])->name('donation.form.alt');
+
+    // New User 2026 Pages (require auth)
+    Route::get('/user2026/komunitas', function () {
+        return view('User2026.komunitas');
+    })->name('user2026.komunitas');
+    
+    Route::get('/user2026/teman', function () {
+        return view('User2026.teman');
+    })->name('user2026.teman');
+    
+    Route::get('/user2026/feeds', function () {
+        return view('User2026.feeds');
+    })->name('user2026.feeds');
 });
 
 /*
@@ -242,8 +255,24 @@ Route::prefix('donations')->name('donations.')->group(function () {
     Route::get('/export/csv', [DonationController::class, 'export'])->name('export');
     Route::get('/statistics/json', [DonationController::class, 'statistics'])->name('statistics');
 });
-    
-   // =====================================================
+
+    // User Pages Management - Pengaturan Userpage Admin
+    Route::get('/userpages', function () {
+        return view('Dashboard2026.manage-user-pages');
+    })->name('userpages.index');
+    Route::get('/komunitas', function () {
+        return view('Dashboard2026.komunitas');
+    })->name('userpages.komunitas');
+    Route::get('/teman', function () {
+        return view('Dashboard2026.teman');
+    })->name('userpages.teman');
+    Route::get('/feeds', function () {
+        return view('Dashboard2026.feeds');
+    })->name('userpages.feeds');
+
+
+
+    // =====================================================
     // MATCH MANAGEMENT (Admin)
     // =====================================================
     Route::prefix('matches')->name('matches.')->group(function () {

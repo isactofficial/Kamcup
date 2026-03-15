@@ -86,10 +86,14 @@
             font-size: 18px;
         }
 
-        .sidebar a:hover {
+.sidebar a:hover {
             background-color: var(--active-bg);
             color: var(--active-text);
             transform: translateX(5px);
+        }
+
+        .sidebar .dropdown-toggle {
+            cursor: pointer !important;
         }
 
         .sidebar a.active {
@@ -242,6 +246,8 @@
                     <h4>Admin Panel</h4>
                 </div>
 
+
+                
                 <div class="nav-links">
                     <a href="{{ route('admin.dashboard') }}"
                         class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
@@ -292,6 +298,16 @@
                     <a href="{{ route('admin.messages.index') }}"
                         class="{{ request()->routeIs('admin.messages.*') ? 'active' : '' }}">
                         <i class="fas fa-envelope"></i> Manajemen Kontak
+                    </a>
+
+                    <a href="{{ route('admin.userpages.komunitas') }}" class="{{ request()->routeIs('admin.userpages.komunitas') ? 'active' : '' }}">
+                        <i class="fas fa-users me-2"></i> Komunitas
+                    </a>
+                    <a href="{{ route('admin.userpages.teman') }}" class="{{ request()->routeIs('admin.userpages.teman') ? 'active' : '' }}">
+                        <i class="fas fa-user-friends me-2"></i> Teman
+                    </a>
+                    <a href="{{ route('admin.userpages.feeds') }}" class="{{ request()->routeIs('admin.userpages.feeds') ? 'active' : '' }}">
+                        <i class="fas fa-rss me-2"></i> Feeds
                     </a>
                 </div>
 

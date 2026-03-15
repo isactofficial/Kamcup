@@ -247,9 +247,10 @@
         </div>
     </div>
 
-</div>
+    </div>
 
 @push('scripts')
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     const ctx = document.getElementById('visitChart').getContext('2d');
