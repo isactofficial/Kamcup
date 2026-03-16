@@ -50,6 +50,32 @@
                     <div class="col-md-3 fw-bold">Akun Sosial Media:</div>
                     <div class="col-md-9">{{ Auth::user()->profile->social_media ?? '-' }}</div>
                 </div>
+
+                {{-- New Buttons for Komunitas, Teman, Feeds - Simplified design --}}
+                <div class="row mt-4 mb-3">
+                    <div class="col-12">
+                        <div class="row g-2">
+                            <div class="col-md-4">
+                                <a href="{{ route('user2026.komunitas') }}" class="btn w-100 px-4 py-3" 
+                                   style="background-color: #cb2786; color: #fff; border-radius: 12px; font-weight: 600; font-size: 1rem; box-shadow: 0 4px 12px rgba(203,39,134,0.3); border: none;">
+                                    <i class="fas fa-users me-2"></i>Komunitas
+                                </a>
+                            </div>
+                            <div class="col-md-4">
+                                <a href="{{ route('user2026.teman') }}" class="btn w-100 px-4 py-3" 
+                                   style="background-color: #f4b704; color: #212529; border-radius: 12px; font-weight: 600; font-size: 1rem; box-shadow: 0 4px 12px rgba(244,183,4,0.3); border: none;">
+                                    <i class="fas fa-user-friends me-2"></i>Teman
+                                </a>
+                            </div>
+                            <div class="col-md-4">
+                                <a href="{{ route('user2026.feeds') }}" class="btn w-100 px-4 py-3" 
+                                   style="background-color: #00617a; color: #fff; border-radius: 12px; font-weight: 600; font-size: 1rem; box-shadow: 0 4px 12px rgba(0,97,122,0.3); border: none;">
+                                    <i class="fas fa-rss me-2"></i>Feeds
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
