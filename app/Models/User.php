@@ -66,4 +66,20 @@ class User extends Authenticatable
     {
         return $this->hasMany(Donation::class);
     }
+
+    /**
+     * Communities created by the user.
+     */
+    public function createdCommunities()
+    {
+        return $this->hasMany(Community::class);
+    }
+
+    /**
+     * Communities the user has joined.
+     */
+    public function joinedCommunities()
+    {
+        return $this->belongsToMany(Community::class)->withPivot('role', 'status')->withTimestamps();
+    }
 }

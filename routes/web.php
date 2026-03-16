@@ -176,9 +176,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/donasi', [DonationController::class, 'create'])->name('donation.form.alt');
 
     // New User 2026 Pages (require auth)
-    Route::get('/user2026/komunitas', function () {
-        return view('User2026.komunitas');
-    })->name('user2026.komunitas');
+    Route::get('/user2026/komunitas', [FrontController::class, 'komunitas'])->name('user2026.komunitas'); // Changed to controller for data
+    Route::get('/user2026/komunitas/buat', [App\Http\Controllers\CommunityController::class, 'create'])->name('user2026.komunitas.create');
+    Route::post('/user2026/komunitas', [App\Http\Controllers\CommunityController::class, 'store'])->name('user2026.komunitas.store');
     
     Route::get('/user2026/teman', function () {
         return view('User2026.teman');
@@ -263,6 +263,8 @@ Route::prefix('donations')->name('donations.')->group(function () {
     Route::get('/komunitas', function () {
         return view('Dashboard2026.komunitas');
     })->name('userpages.komunitas');
+    Route::get('/komunitas/buat', [App\Http\Controllers\CommunityController::class, 'adminCreate'])->name('userpages.komunitas.create');
+    Route::post('/komunitas', [App\Http\Controllers\CommunityController::class, 'store'])->name('userpages.komunitas.store');
     Route::get('/teman', function () {
         return view('Dashboard2026.teman');
     })->name('userpages.teman');

@@ -477,4 +477,19 @@ class FrontController extends Controller
             'totalResults' => $totalResults
         ]);
     }
+
+    /**
+     * Display the communities page.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function komunitas()
+    {
+        $communities = \App\Models\Community::with(['creator'])
+                                            ->orderBy('is_official', 'desc')
+                                            ->latest()
+                                            ->get();
+
+        return view('User2026.komunitas', compact('communities'));
+    }
 }
