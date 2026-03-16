@@ -260,11 +260,10 @@ Route::prefix('donations')->name('donations.')->group(function () {
     Route::get('/userpages', function () {
         return view('Dashboard2026.manage-user-pages');
     })->name('userpages.index');
-    Route::get('/komunitas', function () {
-        return view('Dashboard2026.komunitas');
-    })->name('userpages.komunitas');
+    Route::get('/komunitas', [App\Http\Controllers\CommunityController::class, 'adminIndex'])->name('userpages.komunitas');
     Route::get('/komunitas/buat', [App\Http\Controllers\CommunityController::class, 'adminCreate'])->name('userpages.komunitas.create');
     Route::post('/komunitas', [App\Http\Controllers\CommunityController::class, 'store'])->name('userpages.komunitas.store');
+    Route::delete('/komunitas/{community}', [App\Http\Controllers\CommunityController::class, 'destroy'])->name('userpages.komunitas.destroy');
     Route::get('/teman', function () {
         return view('Dashboard2026.teman');
     })->name('userpages.teman');

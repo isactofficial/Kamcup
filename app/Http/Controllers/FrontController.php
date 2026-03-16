@@ -483,13 +483,21 @@ class FrontController extends Controller
      *
      * @return \Illuminate\View\View
      */
-    public function komunitas()
+    public function komunitas(Request $request)
     {
-        $communities = \App\Models\Community::with(['creator'])
-                                            ->orderBy('is_official', 'desc')
-                                            ->latest()
-                                            ->get();
+        $query = \App\Models\Community::with(['creator', 'members'])
+                                      ->withCount('members');
+        
+        $category = $request->input('category');
+        
+        if ($category && $category !== 'Semua') {
+            $query->where('category', $category);
+        }
 
-        return view('User2026.komunitas', compact('communities'));
+        $communities = $query->orderBy('is_official', 'desc')
+                            ->latest()
+                            ->get();
+
+        return view('User2026.komunitas', compact('communities', 'category'));
     }
 }

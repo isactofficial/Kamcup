@@ -57,10 +57,51 @@ class CommunityController extends Controller
     }
 
     /**
+     * Display a listing of communities for admin management.
+     */
+    public function adminIndex(Request $request)
+    {
+        $sort = $request->input('sort', 'latest');
+        $query = Community::with(['creator'])->withCount('members');
+
+        switch ($sort) {
+            case 'members':
+                $query->orderBy('members_count', 'desc');
+                break;
+            case 'official':
+                $query->orderBy('is_official', 'desc');
+                break;
+            case 'latest':
+            default:
+                $query->orderBy('created_at', 'desc');
+                break;
+        }
+
+        $communities = $query->paginate(10);
+
+        return view('Dashboard2026.komunitas', compact('communities'));
+    }
+
+    /**
      * Show the form for creating a new community (Admin version).
      */
     public function adminCreate()
     {
         return view('Dashboard2026.communities.create');
+    }
+
+    /**
+     * Remove the specified community from storage.
+     */
+    public function destroy(Community $community)
+    {
+        // Delete image if exists
+        if ($community->image) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($community->image);
+        }
+
+        $community->delete();
+
+        return redirect()->back()->with('success', 'Komunitas berhasil dihapus!');
     }
 }

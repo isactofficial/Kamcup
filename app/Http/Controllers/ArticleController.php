@@ -66,7 +66,7 @@ class ArticleController extends Controller
         $request->validate([
             'title'       => 'required|string|max:255',
             'description' => 'nullable|string',
-            'thumbnail'   => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'thumbnail'   => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'status'      => 'required|in:Draft,Published',
             'subheadings' => 'required|array',
             'subheadings.*.title' => 'required|string|max:255',
@@ -164,7 +164,7 @@ class ArticleController extends Controller
             'title'       => 'required|string|max:255',
             'description' => 'nullable|string',
             'author'      => 'required|string|max:255',
-            'thumbnail'   => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'thumbnail'   => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'status'      => 'required|in:Draft,Published',
             'subheadings' => 'nullable|array',
             'subheadings.*.id' => 'nullable|exists:subheadings,id',
