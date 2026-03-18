@@ -8,6 +8,7 @@
         "php": "^8.0.2",
         "botman/botman": "^2.8",
         "botman/driver-web": "^1.5",
+        "doctrine/dbal": "*",
         "google/apiclient": "^2.18",
         "guzzlehttp/guzzle": "^7.2",
         "illuminate/auth": "^9.0",

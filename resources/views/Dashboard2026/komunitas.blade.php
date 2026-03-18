@@ -4,7 +4,7 @@
 
 @section('content')
 <style>
-/* Custom Select Dropdown - Konsisten dengan Manajemen Artikel */
+/* Custom Select Dropdown */
 .custom-select-dropdown {
     background-color: #f0f8ff;
     border-radius: 0.75rem;

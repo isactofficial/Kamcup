@@ -9,17 +9,13 @@ use Illuminate\Support\Facades\Auth;
 
 class CommunityController extends Controller
 {
-    /**
-     * Show the form for creating a new community (User version).
-     */
+    /*Show the form to User.*/
     public function create()
     {
         return view('User2026.communities.create');
     }
 
-    /**
-     * Store a newly created community in storage.
-     */
+    /*Store a newly created community in storage.*/
     public function store(Request $request)
     {
         $request->validate([
@@ -37,7 +33,7 @@ class CommunityController extends Controller
         $community->category = $request->category;
         $community->description = $request->description;
         $community->status = $request->status;
-        $community->is_official = Auth::user()->isAdmin(); // Automated based on logged in user
+        $community->is_official = Auth::user()->isAdmin(); // based on logged in user
 
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('communities', 'public');
@@ -56,9 +52,7 @@ class CommunityController extends Controller
             : redirect()->route('user2026.komunitas')->with('success', $message);
     }
 
-    /**
-     * Display a listing of communities for admin management.
-     */
+    /*Display communities for admin.*/
     public function adminIndex(Request $request)
     {
         $sort = $request->input('sort', 'latest');
@@ -82,17 +76,13 @@ class CommunityController extends Controller
         return view('Dashboard2026.komunitas', compact('communities'));
     }
 
-    /**
-     * Show the form for creating a new community (Admin version).
-     */
+    /*Show the form for Admin.*/
     public function adminCreate()
     {
         return view('Dashboard2026.communities.create');
     }
 
-    /**
-     * Remove the specified community from storage.
-     */
+    /*Remove community from storage.*/
     public function destroy(Community $community)
     {
         // Delete image if exists
