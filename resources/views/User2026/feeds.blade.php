@@ -417,6 +417,96 @@ body {
 .btn-delete { color: #f87171; }
 .btn-delete:hover { color: #dc2626; }
 
+/* Reply thread */
+.comment-replies {
+    margin-left: 42px;
+    border-left: 2px solid #f3f4f6;
+    padding-left: 0.75rem;
+    display: none; /* collapsed by default */
+    overflow: hidden;
+}
+.comment-replies.open {
+    display: block;
+}
+.comment-replies .comment-item {
+    padding: 0.5rem 0;
+}
+.comment-replies .comment-item:last-child {
+    border-bottom: none;
+}
+.comment-replies .comment-avatar {
+    width: 28px;
+    height: 28px;
+}
+.comment-replies .comment-bubble {
+    background: #f3f4f6;
+}
+.comment-replies .comment-username {
+    font-size: 0.75rem;
+}
+.comment-replies .comment-text {
+    font-size: 0.82rem;
+}
+.comment-replies .comment-meta {
+    margin-top: 0.2rem;
+}
+
+/* Toggle replies button */
+.toggle-replies-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-left: 42px;
+    margin-top: 0.3rem;
+    margin-bottom: 0.2rem;
+    background: none;
+    border: none;
+    padding: 0.2rem 0;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #6b7280;
+    cursor: pointer;
+    transition: color 0.2s;
+    font-family: 'DM Sans', sans-serif;
+    letter-spacing: 0.1px;
+}
+.toggle-replies-btn:hover { color: #374151; }
+.toggle-replies-btn .toggle-line {
+    display: inline-block;
+    width: 22px;
+    height: 1.5px;
+    background: #9ca3af;
+    margin-right: 0.1rem;
+    vertical-align: middle;
+    border-radius: 2px;
+}
+
+/* Reply banner above input */
+#reply-banner {
+    display: none;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 1.25rem;
+    background: #fdf2f8;
+    border-top: 1px solid #fce7f3;
+    font-size: 0.8rem;
+    color: #cb2786;
+    font-weight: 500;
+}
+#reply-banner.show { display: flex; }
+#reply-banner-cancel {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 0;
+    transition: color 0.2s;
+}
+#reply-banner-cancel:hover { color: #374151; }
+
 /* No comments */
 .no-comments {
     text-align: center;
@@ -616,6 +706,13 @@ body {
                         </div>
                     </div>
 
+                    {{-- Reply banner --}}
+                    <div id="reply-banner">
+                        <i class="fas fa-reply"></i>
+                        <span id="reply-banner-text">Membalas...</span>
+                        <button id="reply-banner-cancel" title="Batal balas"><i class="fas fa-xmark"></i></button>
+                    </div>
+
                     {{-- Input bar --}}
                     <div class="modal-input-bar">
                         <input
@@ -638,34 +735,33 @@ body {
 
 @push('scripts')
 <script>
-$(document).ready(function() {
-    $.ajaxSetup({
-        headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') }
-    });
+$(document).ready(function () {
+    $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') } });
 
     let currentFeedId = null;
+    let replyParentId = null;
+    let replyUsername  = '';
 
-    /* ---------- Like ---------- */
-    $(document).on('click', '.like-btn', function() {
-        const $btn = $(this);
-        const feedId = $btn.data('feed-id');
-
-        // Optimistic UI update
+    /* ── LIKE ── */
+    $(document).on('click', '.like-btn', function () {
+        const $btn    = $(this);
+        const feedId  = $btn.data('feed-id');
         const isLiked = $btn.hasClass('liked');
-        const $icon = $btn.find('i.fa-heart');
+        const $icon   = $btn.find('i.fa-heart');
+
+        // Optimistic
         $btn.toggleClass('liked', !isLiked);
         $icon.toggleClass('far', isLiked).toggleClass('fas', !isLiked);
         $btn.find('.like-count').text(parseInt($btn.find('.like-count').text()) + (isLiked ? -1 : 1));
 
-        $.post(`/feeds/${feedId}/like`, {})
-            .done(function(data) {
-                // Sync with server truth
+        $.post('/feeds/' + feedId + '/like', {})
+            .done(function (data) {
                 $btn.toggleClass('liked', data.liked);
                 $icon.toggleClass('far', !data.liked).toggleClass('fas', data.liked);
                 $btn.find('.like-count').text(data.count);
             })
-            .fail(function() {
-                // Revert optimistic update
+            .fail(function () {
+                // Revert
                 $btn.toggleClass('liked', isLiked);
                 $icon.toggleClass('far', !isLiked).toggleClass('fas', isLiked);
                 $btn.find('.like-count').text(parseInt($btn.find('.like-count').text()) + (isLiked ? 1 : -1));
@@ -673,136 +769,269 @@ $(document).ready(function() {
             });
     });
 
-    /* ---------- Update comment badge ---------- */
+    /* ── UPDATE COMMENT COUNT BADGE ── */
     function updateCommentCounts(feedId, delta) {
-        const $span = $(`.comment-toggle[data-feed-id="${feedId}"] .comment-count`);
+        var $span = $('.comment-toggle[data-feed-id="' + feedId + '"] .comment-count');
         $span.text(parseInt($span.text() || 0) + delta);
     }
 
-    /* ---------- Modal open ---------- */
-    $('#feedCommentModal').on('show.bs.modal', function(e) {
-        const trigger = $(e.relatedTarget);
+    /* ── MODAL OPEN ── */
+    $('#feedCommentModal').on('show.bs.modal', function (e) {
+        var trigger = $(e.relatedTarget);
         currentFeedId = trigger.data('feed-id');
-        const title  = trigger.data('feed-title') || 'Feed KAMCUP';
-        const image  = trigger.data('feed-image');
+        var title = trigger.data('feed-title') || 'Feed KAMCUP';
+        var image = trigger.data('feed-image');
 
         $('#modal-feed-title').text(title);
 
         if (image) {
             $('#modal-image-panel').removeClass('no-image').show();
-            $('#modal-feed-image').attr('src', `/storage/${image}`);
+            $('#modal-feed-image').attr('src', '/storage/' + image);
         } else {
             $('#modal-image-panel').addClass('no-image').hide();
         }
 
+        cancelReply();
         loadComments();
     });
 
+    /* ── LOAD COMMENTS ── */
     function loadComments() {
-        $('#modal-comments-list').html(`
-            <div class="no-comments">
-                <i class="fas fa-spinner fa-spin"></i>
-                Memuat komentar...
-            </div>
-        `);
-        $.get(`/feeds/${currentFeedId}/comments`)
-            .done(function(comments) {
+        $('#modal-comments-list').html(
+            '<div class="no-comments"><i class="fas fa-spinner fa-spin"></i> Memuat komentar...</div>'
+        );
+        $.get('/feeds/' + currentFeedId + '/comments')
+            .done(function (comments) {
                 if (!comments.length) {
-                    $('#modal-comments-list').html(`
-                        <div class="no-comments">
-                            <i class="far fa-comment-dots"></i>
-                            Belum ada komentar. Jadilah yang pertama!
-                        </div>
-                    `);
+                    $('#modal-comments-list').html(
+                        '<div class="no-comments"><i class="far fa-comment-dots"></i><br>Belum ada komentar. Jadilah yang pertama!</div>'
+                    );
                 } else {
-                    $('#modal-comments-list').html(comments.map(buildCommentHtml).join(''));
+                    $('#modal-comments-list').html(
+                        comments.map(function (c) { return buildTopLevelHtml(c); }).join('')
+                    );
                 }
             })
-            .fail(function() {
-                $('#modal-comments-list').html('<div class="no-comments" style="color:#f87171;">Gagal memuat komentar.</div>');
+            .fail(function () {
+                $('#modal-comments-list').html(
+                    '<div class="no-comments" style="color:#f87171;">Gagal memuat komentar.</div>'
+                );
             });
     }
 
-    /* ---------- Post comment ---------- */
-    $('#modal-comment-send').click(postComment);
-    $('#modal-comment-input').on('keypress', function(e) {
+    /* ── REPLY STATE ── */
+    function setReply(parentId, username) {
+        replyParentId = parentId;
+        replyUsername  = username;
+        $('#reply-banner-text').text('Membalas ' + username);
+        $('#reply-banner').addClass('show');
+        $('#modal-comment-input').attr('placeholder', 'Balas ' + username + '...').focus();
+    }
+
+    function cancelReply() {
+        replyParentId = null;
+        replyUsername  = '';
+        $('#reply-banner').removeClass('show');
+        $('#modal-comment-input').attr('placeholder', 'Tulis komentar...');
+    }
+
+    $('#reply-banner-cancel').on('click', cancelReply);
+    $('#modal-comment-input').on('keydown', function (e) {
+        if (e.key === 'Escape') cancelReply();
+    });
+
+    /* ── REPLY CLICK ── */
+    $(document).on('click', '.btn-reply', function () {
+        var $item     = $(this).closest('.comment-item');
+        var parentId  = $(this).data('parent-id');
+        var username  = $item.find('.comment-username').first().text().trim();
+
+        // Always reply to root-level comment
+        var $rootWrap = $item.closest('.comment-root-wrap');
+        var rootId    = $rootWrap.length ? $rootWrap.data('comment-id') : parentId;
+
+        setReply(rootId, username);
+    });
+
+    /* ── POST COMMENT ── */
+    $('#modal-comment-send').on('click', postComment);
+    $('#modal-comment-input').on('keypress', function (e) {
         if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); postComment(); }
     });
 
     function postComment() {
-        const content = $('#modal-comment-input').val().trim();
+        var content = $('#modal-comment-input').val().trim();
         if (!content || !currentFeedId) return;
 
+        var commentData = { content: content };
+        if (replyParentId) commentData.parent_id = replyParentId;
+
         $('#modal-comment-send').prop('disabled', true);
-        $.post(`/feeds/${currentFeedId}/comments`, { content })
-            .done(function(comment) {
+
+        $.post('/feeds/' + currentFeedId + '/comments', commentData)
+            .done(function (comment) {
                 $('#modal-comments-list .no-comments').remove();
-                $('#modal-comments-list').prepend(buildCommentHtml(comment));
+
+                if (comment.parent_id) {
+                    // Find root wrapper that contains the parent comment
+                    var $rootWrap = $('.comment-root-wrap[data-comment-id="' + comment.parent_id + '"]');
+                    if (!$rootWrap.length) {
+                        // parent might be a child — find root that contains it
+                        $rootWrap = $('.comment-root-wrap').filter(function () {
+                            return $(this).find('[data-comment-id="' + comment.parent_id + '"]').length > 0;
+                        });
+                    }
+
+                    if ($rootWrap.length) {
+                        var $replies = $rootWrap.find('.comment-replies');
+                        if (!$replies.length) {
+                            // First reply — create container + toggle button
+                            $rootWrap.append('<button class="toggle-replies-btn" data-count="1"><span class="toggle-line"></span>Lihat 1 balasan</button>');
+                            $rootWrap.append('<div class="comment-replies open"></div>');
+                            $replies = $rootWrap.find('.comment-replies');
+                        } else {
+                            // Update count on toggle button
+                            var $toggleBtn = $rootWrap.find('.toggle-replies-btn');
+                            var newCount   = $replies.find('.comment-item').length + 1;
+                            $toggleBtn.data('count', newCount);
+                            // Keep open if already open, update label
+                            var isOpen = $replies.hasClass('open');
+                            $toggleBtn.html('<span class="toggle-line"></span>' + (isOpen ? 'Sembunyikan balasan' : 'Lihat ' + newCount + ' balasan'));
+                        }
+                        $replies.append(buildReplyHtml(comment));
+                        // Auto-open replies panel after posting
+                        $replies.addClass('open');
+                        $rootWrap.find('.toggle-replies-btn').html('<span class="toggle-line"></span>Sembunyikan balasan');
+                    } else {
+                        $('#modal-comments-list').prepend(buildTopLevelHtml(comment));
+                    }
+                } else {
+                    $('#modal-comments-list').prepend(buildTopLevelHtml(comment));
+                }
+
                 $('#modal-comment-input').val('');
+                cancelReply();
                 updateCommentCounts(currentFeedId, 1);
             })
-            .fail(function() { alert('Gagal posting komentar'); })
-            .always(function() { $('#modal-comment-send').prop('disabled', false); });
+            .fail(function (xhr) {
+                alert('Gagal posting komentar: ' + (xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Coba lagi'));
+            })
+            .always(function () { $('#modal-comment-send').prop('disabled', false); });
     }
 
-    /* ---------- Delete comment ---------- */
-    $(document).on('click', '.btn-delete', function() {
-        const commentId = $(this).data('comment-id');
+    /* ── DELETE COMMENT ── */
+    $(document).on('click', '.btn-delete', function () {
+        var commentId = $(this).data('comment-id');
         if (!confirm('Hapus komentar ini?')) return;
-        $.ajax({ url: `/feeds/${commentId}/comment`, type: 'DELETE' })
-            .done(function() {
-                $(`[data-comment-id="${commentId}"]`).fadeOut(250, function() { $(this).remove(); });
+
+        $.ajax({ url: '/feeds/' + commentId + '/comment', type: 'DELETE' })
+            .done(function () {
+                var $rootWrap = $('.comment-root-wrap[data-comment-id="' + commentId + '"]');
+                if ($rootWrap.length) {
+                    $rootWrap.fadeOut(250, function () { $(this).remove(); });
+                } else {
+                    $('[data-comment-id="' + commentId + '"]').fadeOut(250, function () { $(this).remove(); });
+                }
                 updateCommentCounts(currentFeedId, -1);
             })
-            .fail(function() { alert('Gagal hapus komentar'); });
+            .fail(function () { alert('Gagal hapus komentar'); });
     });
 
-    /* ---------- Build comment HTML ---------- */
-    function buildCommentHtml(comment) {
-        const avatar = comment.user.profile?.avatar
-            ? `/storage/${comment.user.profile.avatar}`
-            : '{{ asset("assets/img/default-avatar.png") }}';
-        const time = moment(comment.created_at).fromNow();
-        const isOwner = comment.user_id == {{ auth()->id() }};
+    /* ── BUILD HTML HELPERS ── */
+    var defaultAvatar = '{{ asset("assets/img/default-avatar.png") }}';
+    var authId        = {{ auth()->id() }};
 
-        return `
-        <div class="comment-item" data-comment-id="${comment.id}">
-            <img src="${avatar}" alt="${comment.user.name}" class="comment-avatar">
-            <div class="comment-right">
-                <div class="comment-bubble">
-                    <span class="comment-username">${comment.user.name}</span>
-                    <p class="comment-text">${comment.content}</p>
-                </div>
-                <div class="comment-meta">
-                    <span class="comment-time-label">${time}</span>
-                    <button class="comment-action-btn btn-reply" data-parent-id="${comment.id}">Balas</button>
-                    ${isOwner ? `<button class="comment-action-btn btn-delete" data-comment-id="${comment.id}">Hapus</button>` : ''}
-                </div>
-            </div>
-        </div>`;
+    function getAvatar(user) {
+        return (user.profile && user.profile.avatar)
+            ? '/storage/' + user.profile.avatar
+            : defaultAvatar;
     }
 
-    /* ---------- Share ---------- */
-    $(document).on('click', '.share-btn', function() {
-        const url = $(this).data('url');
-        const fullUrl = window.location.origin + '/' + url;
+    function buildTopLevelHtml(comment) {
+        var avatar  = getAvatar(comment.user);
+        var time    = moment(comment.created_at).fromNow();
+        var isOwner = comment.user_id == authId;
+
+        var repliesHtml = '';
+        var toggleBtn   = '';
+
+        if (comment.children && comment.children.length) {
+            var count = comment.children.length;
+            repliesHtml = '<div class="comment-replies">' +
+                comment.children.map(function (c) { return buildReplyHtml(c); }).join('') +
+                '</div>';
+            toggleBtn = '<button class="toggle-replies-btn" data-count="' + count + '">' +
+                '<span class="toggle-line"></span>' +
+                'Lihat ' + count + ' balasan' +
+            '</button>';
+        }
+
+        return '<div class="comment-root-wrap" data-comment-id="' + comment.id + '" data-root="1">' +
+            buildCommentItemHtml(comment.id, avatar, comment.user.name, comment.content, time, isOwner, false) +
+            toggleBtn +
+            repliesHtml +
+        '</div>';
+    }
+
+    function buildReplyHtml(comment) {
+        var avatar  = getAvatar(comment.user);
+        var time    = moment(comment.created_at).fromNow();
+        var isOwner = comment.user_id == authId;
+        return buildCommentItemHtml(comment.id, avatar, comment.user.name, comment.content, time, isOwner, true);
+    }
+
+    function buildCommentItemHtml(id, avatar, name, content, time, isOwner, isReply) {
+        var deleteBtn = isOwner
+            ? '<button class="comment-action-btn btn-delete" data-comment-id="' + id + '">Hapus</button>'
+            : '';
+
+        return '<div class="comment-item" data-comment-id="' + id + '">' +
+            '<img src="' + avatar + '" alt="' + name + '" class="comment-avatar">' +
+            '<div class="comment-right">' +
+                '<div class="comment-bubble">' +
+                    '<span class="comment-username">' + name + '</span>' +
+                    '<p class="comment-text">' + content + '</p>' +
+                '</div>' +
+                '<div class="comment-meta">' +
+                    '<span class="comment-time-label">' + time + '</span>' +
+                    '<button class="comment-action-btn btn-reply" data-parent-id="' + id + '">Balas</button>' +
+                    deleteBtn +
+                '</div>' +
+            '</div>' +
+        '</div>';
+    }
+
+    /* ── TOGGLE REPLIES ── */
+    $(document).on('click', '.toggle-replies-btn', function () {
+        var $btn     = $(this);
+        var $replies = $btn.closest('.comment-root-wrap').find('.comment-replies');
+        var count    = $btn.data('count') || $replies.find('.comment-item').length;
+
+        if ($replies.hasClass('open')) {
+            $replies.removeClass('open');
+            $btn.html('<span class="toggle-line"></span>Lihat ' + count + ' balasan');
+        } else {
+            $replies.addClass('open');
+            $btn.html('<span class="toggle-line"></span>Sembunyikan balasan');
+        }
+    });
+
+    /* ── SHARE ── */
+    $(document).on('click', '.share-btn', function () {
+        var url     = $(this).data('url');
+        var fullUrl = window.location.origin + '/' + url;
         if (navigator.share) {
             navigator.share({ title: 'KAMCUP Feed', url: fullUrl });
         } else {
-            navigator.clipboard.writeText(fullUrl).then(() => {
-                // small toast
-                const toast = $('<div>')
-                    .text('Link disalin!')
-                    .css({
-                        position:'fixed', bottom:'1.5rem', left:'50%',
-                        transform:'translateX(-50%)',
-                        background:'#0d1117', color:'#fff',
-                        padding:'0.5rem 1.25rem', borderRadius:'50px',
-                        fontSize:'0.85rem', fontWeight:600, zIndex:9999,
-                        boxShadow:'0 4px 20px rgba(0,0,0,0.25)'
-                    })
-                    .appendTo('body');
-                setTimeout(() => toast.fadeOut(300, () => toast.remove()), 2000);
+            navigator.clipboard.writeText(fullUrl).then(function () {
+                var toast = $('<div>').text('Link disalin!').css({
+                    position: 'fixed', bottom: '1.5rem', left: '50%',
+                    transform: 'translateX(-50%)', background: '#0d1117',
+                    color: '#fff', padding: '0.5rem 1.25rem', borderRadius: '50px',
+                    fontSize: '0.85rem', fontWeight: 600, zIndex: 9999,
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.25)'
+                }).appendTo('body');
+                setTimeout(function () { toast.fadeOut(300, function () { toast.remove(); }); }, 2000);
             });
         }
     });
