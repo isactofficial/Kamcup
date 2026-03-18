@@ -1,21 +1,36 @@
-# TODO: Remove Navbar & Footer from User2026 Pages
+# Create Meets Feature - Implementation Progress
 
-## Plan Status: Awaiting Approval
+## Plan Summary
+Add user-created "Meets" on `/user2026/feeds` page. Meets become feeds with like/comment/share + "Ikut" (join) button.
 
-**✅ Step 1: Create this TODO.md** - DONE
+**Status: [IN PROGRESS]**
 
-**✅ Step 2-5: Added CSS overrides to hide navbar/footer on user2026.komunitas, user2026.teman, user2026.feeds pages only**
+## TODO Steps (Sequential)
 
-**✅ Step 6: Verified file edits successful**
+### 1. [✅] DB Migrations
+   - ✅ Created `database/migrations/2024_11_25_000001_add_meets_fields_to_feeds_table.php`
+   - ✅ Created `database/migrations/2024_11_25_000002_create_feed_user_joins_table.php`
+   - [ ] Run `php artisan migrate`
 
+### 2. [ ] Models
+   - Edit `app/Models/Feed.php` (+ fillable, joinedBy relation)
+   - Create `app/Models/FeedUserJoin.php`
 
-**⏳ Step 6: Test all 3 URLs**
+### 3. [ ] Validation
+   - Create `app/Http/Requests/UserStoreFeedRequest.php`
 
-**⏳ Step 7: Mark complete & attempt_completion**
+### 4. [ ] Controller
+   - Edit `app/Http/Controllers/FeedController.php` (+ store, join methods)
 
-## Current Progress
-- [x] Analyzed files & layout structure
-- [ ] User plan approval
-- [ ] Implement CSS overrides
-- [ ] Test & verify
+### 5. [ ] Routes
+   - Edit `routes/web.php` (+ POST feeds store, POST join)
+
+### 6. [ ] Views
+   - Major edit `resources/views/User2026/feeds.blade.php` (+ create modal, meets display, JS)
+
+### 7. [ ] Test
+   - Manual test: create meets → verify feed → ikut/like/comment
+
+**Next Step: 1. Run migrations → 2. Models**
+
 

@@ -133,6 +133,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/feeds/{feed}/comments', [App\Http\Controllers\FeedController::class, 'commentStore'])->name('feeds.comment.store');
     Route::delete('/feeds/{comment}/comment', [App\Http\Controllers\FeedController::class, 'commentDelete'])->name('feeds.comment.delete');
     
+    // Meets creation and join
+    Route::post('/user2026/feeds', [App\Http\Controllers\FeedController::class, 'store'])->name('user2026.feeds.store');
+    Route::post('/feeds/{feed}/join', [App\Http\Controllers\FeedController::class, 'join'])->name('feeds.join');
+    
     // User Profile Management
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');

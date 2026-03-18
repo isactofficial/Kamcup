@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\UserStoreFeedRequest;
 use App\Models\Feed;
-use App\Models\FeedComment;  // ← FIX #1: import yang hilang
+use App\Models\FeedComment;
+use App\Models\FeedUserJoin;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class FeedController extends Controller
 {
@@ -15,10 +19,16 @@ class FeedController extends Controller
 
         $feeds = Feed::withLikesCount()
             ->withCommentsCount()
+            ->withJoinsCount()
             ->when($userId, function ($query) use ($userId) {
-                return $query->with(['likes' => function ($q) use ($userId) {
-                    $q->where('user_id', $userId);
-                }]);
+                return $query->with([
+                    'likes' => function ($q) use ($userId) {
+                        $q->where('user_id', $userId);
+                    },
+                    'joinedBy' => function ($q) use ($userId) {
+                        $q->where('user_id', $userId);
+                    }
+                ]);
             })
             ->latest()
             ->paginate(10);
@@ -86,4 +96,72 @@ class FeedController extends Controller
 
         return response()->json($comments);
     }
+
+    /**
+     * Store new user meet (as feed)
+     */
+    public function store(UserStoreFeedRequest $request)
+    {
+        $data = $request->validated();
+        $data['user_id'] = auth()->id();
+
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('feeds', 'public');
+        }
+
+        $feed = Feed::create($data);
+
+        $feed->load(['user.profile', 'joinedBy']);
+
+        return response()->json([
+            'success' => true,
+            'feed' => $feed,
+            'message' => 'Meets berhasil dibuat dan diposting!'
+        ]);
+    }
+
+    /**
+     * Toggle user join meet
+     */
+    public function join(Request $request, Feed $feed)
+    {
+        $userId = auth()->id();
+
+        $join = FeedUserJoin::where('feed_id', $feed->id)
+                           ->where('user_id', $userId)
+                           ->first();
+
+        if ($join) {
+            // Unjoin
+            $join->delete();
+            $count = $feed->joins_count - 1;
+            return response()->json([
+                'joined' => false,
+                'count' => $count,
+                'message' => 'Kamu batal ikut meets'
+            ]);
+        }
+
+        // Check if meet is full
+        if ($feed->meet_max_people && $feed->joins_count >= $feed->meet_max_people) {
+            return response()->json([
+                'error' => true,
+                'message' => 'Meets sudah penuh!'
+            ], 422);
+        }
+
+        // Join
+        FeedUserJoin::create([
+            'feed_id' => $feed->id,
+            'user_id' => $userId
+        ]);
+
+        $count = $feed->joins_count + 1;
+        return response()->json([
+            'joined' => true,
+            'count' => $count,
+            'message' => 'Kamu ikut meets!'
+        ]);
+    }
 }
+

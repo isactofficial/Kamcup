@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Models\Community;
 use App\Models\FeedComment;
 use App\Models\FeedLike;
+use App\Models\FeedUserJoin;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -18,6 +20,14 @@ class Feed extends Model
         'title',
         'content',
         'image',
+        'meet_date',
+        'meet_location',
+        'meet_max_people',
+        'meet_description',
+    ];
+
+    protected $casts = [
+        'meet_date' => 'date',
     ];
 
     public function community()
@@ -41,18 +51,13 @@ class Feed extends Model
     }
 
     /**
-     * FIX #3: cek apakah user SPESIFIK sudah like.
-     * Sebelumnya: $this->likes->isNotEmpty() → selalu true kalau ada siapapun yang like.
-     * Sekarang: filter berdasarkan user_id yang dikirim.
+     * Check if specific user liked this feed
      */
     public function likedBy(User $user): bool
     {
-        // Kalau likes sudah di-eager load (via withLikesCount + with['likes']),
-        // gunakan koleksi yang sudah ada agar tidak query ulang.
         if ($this->relationLoaded('likes')) {
             return $this->likes->contains('user_id', $user->id);
         }
-
         return $this->likes()->where('user_id', $user->id)->exists();
     }
 
@@ -77,4 +82,49 @@ class Feed extends Model
             $q->where('user_id', $userId);
         });
     }
+
+    /**
+     * Users who joined this meet
+     */
+    public function joinedBy()
+    {
+        return $this->belongsToMany(User::class, 'feed_user_joins')
+                    ->using(FeedUserJoin::class)
+                    ->withPivot('joined_at')
+                    ->withTimestamps()
+                    ->orderByPivot('joined_at');
+    }
+
+    /**
+     * Check if user joined this meet
+     */
+    public function joinedByUser(User $user): bool
+    {
+        if ($this->relationLoaded('joinedBy')) {
+            return $this->joinedBy->contains('id', $user->id);
+        }
+        return $this->joinedBy()->where('user_id', $user->id)->exists();
+    }
+
+    /**
+     * Meets only scope
+     */
+    public function scopeMeets($query)
+    {
+        return $query->whereNotNull('meet_date');
+    }
+
+    /**
+     * Joins count
+     */
+    public function getJoinsCountAttribute()
+    {
+        return $this->joins_count ?? $this->joinedBy()->count();
+    }
+
+    public function scopeWithJoinsCount($query)
+    {
+        return $query->withCount('joinedBy as joins_count');
+    }
 }
+
