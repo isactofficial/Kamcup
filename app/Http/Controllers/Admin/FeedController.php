@@ -12,10 +12,14 @@ class FeedController extends Controller
 {
     public function index()
     {
-        $feeds = Feed::withCount('likes', 'comments')->latest()->paginate(15);
+        $feeds = Feed::withCount(['likes', 'comments', 'joinedBy as joins_count'])
+            ->with('user:id,name')
+            ->latest()
+            ->paginate(15);
 
         return view('Dashboard2026.feeds', compact('feeds'));
     }
+
 
     public function create()
     {

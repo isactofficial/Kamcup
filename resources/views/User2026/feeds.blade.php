@@ -258,8 +258,8 @@ body { font-family: 'DM Sans', sans-serif; background-color: #f0f2f5; }
         {{-- Header --}}
         <div class="feed-card-header">
             @if($feed->user)
-                <img src="{{ $feed->user->profile?->avatar ? asset('storage/' . $feed->user->profile->avatar) : asset('assets/img/default-avatar.png') }}" 
-                     alt="{{ $feed->user->name }}" class="user-avatar" onerror="this.src='{{ asset('assets/img/default-avatar.png') }}'">
+{{ $feed->user->profile?->avatar ? asset('storage/' . $feed->user->profile->avatar) : asset('assets/img/default-avatar.svg') }}
+onerror="this.src='{{ asset('assets/img/default-avatar.svg') }}'"
                 <div class="feed-brand-info">
                     <p class="brand-name">{{ $feed->user->name }}</p>
                     <p class="feed-time">{{ $feed->created_at->diffForHumans() }}</p>

@@ -50,12 +50,25 @@
                                 @endif
                             </td>
                             <td>
+                                @if($feed->meet_date)
+                                    <span class="badge bg-success mb-1 d-block">MEETS</span>
+                                @endif
+                                @if($feed->user)
+                                    <small class="text-muted d-block">Oleh: {{ $feed->user->name }}</small>
+                                @endif
                                 <strong>{{ Str::limit($feed->title ?? 'Tanpa judul', 50) }}</strong>
                             </td>
-                            <td>{{ Str::limit($feed->content ?? '', 100) }}</td>
+                            <td>{{ Str::limit($feed->meet_description ?? $feed->content ?? '', 100) }}</td>
                             <td><span class="badge bg-primary">{{ $feed->likes_count }}</span></td>
                             <td><span class="badge bg-info">{{ $feed->comments_count }}</span></td>
-                            <td>{{ $feed->created_at->format('d M Y H:i') }}</td>
+                            <td>
+                                <span class="badge bg-warning">{{ $feed->joins_count ?? 0 }}</span>
+                                @if($feed->meet_date)
+                                    <br><small>{{ \Carbon\Carbon::parse($feed->meet_date)->format('d/m') }}</small>
+                                @else
+                                    {{ $feed->created_at->format('d M Y H:i') }}
+                                @endif
+                            </td>
                             <td>
                                 <form action="{{ route('admin.feeds.destroy', $feed) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus feed ini?')">
                                     @csrf
