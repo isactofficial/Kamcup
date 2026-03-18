@@ -28,7 +28,9 @@
                     <span class="text-uppercase small fw-bold tracking-wider" style="color: #cb2786; letter-spacing: 1px; font-size: 0.75rem;">
                         {{ $community->category }}
                     </span>
-                    <h5 class="fw-bold mb-0 text-dark">{{ $community->name }} {{ $community->is_official ? '[Official]' : '' }}</h5>
+                    <a href="{{ route('user2026.komunitas.show', $community->slug) }}" class="text-decoration-none stretched-link">
+                        <h5 class="fw-bold mb-0 text-dark community-title-hover">{{ $community->name }} {{ $community->is_official ? '[Official]' : '' }}</h5>
+                    </a>
                     <small class="text-muted">by {{ $community->creator->name }}</small>
                 </div>
             </div>
@@ -53,9 +55,9 @@
                             <i class="fas fa-check-circle text-success me-1"></i> Member
                         </span>
                     @else
-                        <button class="btn join-btn px-4 py-2" style="background-color: #cb2786; color: #fff; border-radius: 10px; font-weight: 600; font-size: 0.9rem;">
-                            Join <i class="fas fa-plus ms-1" style="font-size: 0.7rem;"></i>
-                        </button>
+                        <span class="badge py-2 px-3 bg-light text-muted border text-uppercase" style="border-radius: 8px; font-weight: 600; font-size: 0.75rem;">
+                            Non-member
+                        </span>
                     @endif
                 </div>
             </div>

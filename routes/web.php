@@ -178,6 +178,7 @@ Route::middleware(['auth'])->group(function () {
     // New User 2026 Pages (require auth)
     Route::get('/user2026/komunitas', [FrontController::class, 'komunitas'])->name('user2026.komunitas'); // Changed to controller for data
     Route::get('/user2026/komunitas/buat', [App\Http\Controllers\CommunityController::class, 'create'])->name('user2026.komunitas.create');
+    Route::get('/user2026/komunitas/{community:slug}', [App\Http\Controllers\CommunityController::class, 'show'])->name('user2026.komunitas.show');
     Route::post('/user2026/komunitas', [App\Http\Controllers\CommunityController::class, 'store'])->name('user2026.komunitas.store');
     
     Route::get('/user2026/teman', function () {

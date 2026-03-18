@@ -15,6 +15,15 @@ class CommunityController extends Controller
         return view('User2026.communities.create');
     }
 
+    /*Display the specified community.*/
+    public function show(Community $community)
+    {
+        $community->load(['creator', 'members']);
+        $isJoined = $community->members->contains(Auth::id());
+        
+        return view('User2026.communities.show', compact('community', 'isJoined'));
+    }
+
     /*Store a newly created community in storage.*/
     public function store(Request $request)
     {
@@ -23,7 +32,7 @@ class CommunityController extends Controller
             'category' => 'required|string',
             'description' => 'nullable|string',
             'status' => 'required|in:public,private',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
 
         $community = new Community();

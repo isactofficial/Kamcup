@@ -166,11 +166,15 @@
         overflow: hidden;
     }
 
-    /* Scroll Reveal Fallback */
     .scroll-reveal {
         opacity: 0;
         transform: translateY(30px);
         transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .community-title-hover:hover {
+        color: #cb2786 !important;
+        transition: color 0.3s;
     }
 
     .scroll-reveal.revealed {
