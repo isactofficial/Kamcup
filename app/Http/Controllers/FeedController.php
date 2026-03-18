@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Feed;
+use App\Models\FeedComment;  // ← FIX #1: import yang hilang
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -11,11 +12,11 @@ class FeedController extends Controller
     public function index()
     {
         $userId = auth()->id();
-        
+
         $feeds = Feed::withLikesCount()
             ->withCommentsCount()
             ->when($userId, function ($query) use ($userId) {
-                return $query->with(['likes' => function($q) use ($userId) {
+                return $query->with(['likes' => function ($q) use ($userId) {
                     $q->where('user_id', $userId);
                 }]);
             })
@@ -45,14 +46,14 @@ class FeedController extends Controller
     public function commentStore(Request $request, Feed $feed)
     {
         $request->validate([
-            'content' => 'required|string|max:500',
-            'parent_id' => 'nullable|exists:feed_comments,id'
+            'content'   => 'required|string|max:500',
+            'parent_id' => 'nullable|exists:feed_comments,id',
         ]);
 
         $comment = $feed->comments()->create([
-            'user_id' => Auth::id(),
-            'content' => $request->content,
-            'parent_id' => $request->parent_id
+            'user_id'   => Auth::id(),
+            'content'   => $request->content,
+            'parent_id' => $request->parent_id,
         ]);
 
         $comment->load('user.profile');
@@ -60,10 +61,11 @@ class FeedController extends Controller
         return response()->json($comment);
     }
 
-    public function commentDelete(FeedComment $comment)
+    public function commentDelete(FeedComment $comment)  // ← FIX #1 berlaku di sini
     {
+        // FIX #2: pastikan hanya pemilik komentar yang bisa hapus
         if ($comment->user_id !== Auth::id()) {
-            abort(403);
+            abort(403, 'Unauthorized');
         }
 
         $comment->delete();
@@ -79,8 +81,7 @@ class FeedController extends Controller
             ->latest()
             ->limit(50)
             ->get();
-        
+
         return response()->json($comments);
     }
 }
-

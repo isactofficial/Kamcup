@@ -219,8 +219,6 @@ body {
     color: #cb2786;
     background-color: #fdf2f8;
 }
-.action-btn.liked i.far { display: none; }
-.action-btn:not(.liked) i.fas.fa-heart { display: none; }
 
 .action-btn-share {
     margin-left: auto;
@@ -544,8 +542,7 @@ body {
                 data-feed-id="{{ $feed->id }}"
                 title="Suka"
             >
-                <i class="far fa-heart"></i>
-                <i class="fas fa-heart"></i>
+                <i class="{{ $feed->likedBy(auth()->user()) ? 'fas' : 'far' }} fa-heart"></i>
                 <span class="like-count">{{ $feed->likes_count }}</span>
             </button>
 
@@ -652,12 +649,28 @@ $(document).ready(function() {
     $(document).on('click', '.like-btn', function() {
         const $btn = $(this);
         const feedId = $btn.data('feed-id');
+
+        // Optimistic UI update
+        const isLiked = $btn.hasClass('liked');
+        const $icon = $btn.find('i.fa-heart');
+        $btn.toggleClass('liked', !isLiked);
+        $icon.toggleClass('far', isLiked).toggleClass('fas', !isLiked);
+        $btn.find('.like-count').text(parseInt($btn.find('.like-count').text()) + (isLiked ? -1 : 1));
+
         $.post(`/feeds/${feedId}/like`, {})
             .done(function(data) {
+                // Sync with server truth
                 $btn.toggleClass('liked', data.liked);
+                $icon.toggleClass('far', !data.liked).toggleClass('fas', data.liked);
                 $btn.find('.like-count').text(data.count);
             })
-            .fail(function() { alert('Gagal like/unlike'); });
+            .fail(function() {
+                // Revert optimistic update
+                $btn.toggleClass('liked', isLiked);
+                $icon.toggleClass('far', !isLiked).toggleClass('fas', isLiked);
+                $btn.find('.like-count').text(parseInt($btn.find('.like-count').text()) + (isLiked ? 1 : -1));
+                alert('Gagal like/unlike');
+            });
     });
 
     /* ---------- Update comment badge ---------- */

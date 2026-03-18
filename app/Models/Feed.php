@@ -28,12 +28,23 @@ class Feed extends Model
         return $this->hasMany(FeedLike::class);
     }
 
-    public function likedBy(User $user)
+    /**
+     * FIX #3: cek apakah user SPESIFIK sudah like.
+     * Sebelumnya: $this->likes->isNotEmpty() → selalu true kalau ada siapapun yang like.
+     * Sekarang: filter berdasarkan user_id yang dikirim.
+     */
+    public function likedBy(User $user): bool
     {
-        return $this->likes->isNotEmpty();
+        // Kalau likes sudah di-eager load (via withLikesCount + with['likes']),
+        // gunakan koleksi yang sudah ada agar tidak query ulang.
+        if ($this->relationLoaded('likes')) {
+            return $this->likes->contains('user_id', $user->id);
+        }
+
+        return $this->likes()->where('user_id', $user->id)->exists();
     }
 
-    public function likeCount()
+    public function likeCount(): int
     {
         return $this->likes_count ?? $this->likes->count();
     }
@@ -50,7 +61,7 @@ class Feed extends Model
 
     public function scopeLikedByUser($query, $userId)
     {
-        return $query->whereHas('likes', function($q) use ($userId) {
+        return $query->whereHas('likes', function ($q) use ($userId) {
             $q->where('user_id', $userId);
         });
     }
