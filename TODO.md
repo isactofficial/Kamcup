@@ -1,12 +1,10 @@
-# TODO: Fix Like/Comment on /user2026/feeds (Instagram-style popup)
+# Fix Feed Unlike PDOException (Unknown column 'id')
 
-## Steps:
+## Plan Steps:
+- [ ] 1. Update FeedLike model with composite primary key config
+- [ ] 2. Clear Laravel caches
+- [ ] 3. Test unlike feature in browser
+- [ ] 4. Verify no errors in storage/logs/laravel.log
+- [ ] 5. Mark complete
 
-### 1. ✅ Analysis & Planning Complete
-### 2. ✅ Add scopes to Feed model (app/Models/Feed.php)
-### 3. ✅ Update FeedController index() (app/Http/Controllers/FeedController.php)
-### 4. ✅ Add jQuery CDN to layout (resources/views/layouts/master_nav.blade.php)
-### 5. ✅ Added comments API endpoint (controller + route)
-### 6. ✅ Implemented Instagram-style popup modal + fixed JS (resources/views/User2026/feeds.blade.php)
-### 7. ✅ Task Complete
-
+Current: Starting step 1.

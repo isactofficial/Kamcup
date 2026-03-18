@@ -14,6 +14,10 @@ class FeedLike extends Model
         'user_id',
     ];
 
+    // Tabel ini tidak punya kolom 'id' — composite key dari feed_id + user_id
+    public $incrementing = false;
+    protected $primaryKey = null;
+
     public function feed()
     {
         return $this->belongsTo(Feed::class);

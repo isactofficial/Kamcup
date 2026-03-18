@@ -28,17 +28,19 @@ class FeedController extends Controller
 
     public function like(Request $request, Feed $feed)
     {
-        $user = Auth::user();
+        $userId = Auth::id();
 
-        $like = $feed->likes()->where('user_id', $user->id)->first();
+        $exists = $feed->likes()->where('user_id', $userId)->exists();
 
-        if ($like) {
-            $like->delete();
+        if ($exists) {
+            // Hapus via query builder — bukan model instance
+            // karena tabel feed_likes tidak punya kolom 'id'
+            $feed->likes()->where('user_id', $userId)->delete();
             $count = $feed->likes()->count();
             return response()->json(['liked' => false, 'count' => $count]);
         }
 
-        $feed->likes()->create(['user_id' => $user->id]);
+        $feed->likes()->create(['user_id' => $userId]);
         $count = $feed->likes()->count();
         return response()->json(['liked' => true, 'count' => $count]);
     }
