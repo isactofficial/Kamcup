@@ -42,12 +42,11 @@
                                 <select name="category" class="form-select py-3 @error('category') is-invalid @enderror" required
                                         style="border-radius: 10px;">
                                     <option value="" disabled selected>Pilih Cabang Olahraga</option>
-                                    <option value="Sepak Bola">Sepak Bola</option>
                                     <option value="Futsal">Futsal</option>
                                     <option value="Bulutangkis">Bulutangkis</option>
-                                    <option value="Voli">Voli</button>
-                                    <option value="Basket">Basket</option>
-                                    <option value="E-Sports">E-Sports</option>
+                                    <option value="Voli">Voli</option>
+                                    <option value="Tenis meja">Tenis meja</option>
+                                    <option value="Kasti">Kasti</option>
                                     <option value="Lainnya">Lainnya</option>
                                 </select>
                                 @error('category')

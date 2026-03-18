@@ -4,15 +4,6 @@
 
 @section('content')
 <div class="container py-5">
-    <!-- Header Section -->
-    <div class="row mb-5 mt-4">
-        <div class="col-lg-7 mx-auto text-center scroll-reveal">
-            <span class="badge px-3 py-2 mb-3" style="background-color: #cb27861A; color: #cb2786; border-radius: 30px; font-weight: 600; letter-spacing: 1px;">KONSOLIDASI & KOLABORASI</span>
-            <h1 class="display-4 fw-bold mb-3" style="color: #cb2786;">Komunitas <span style="color: #00617a;">KAMCUP</span></h1>
-            <p class="text-muted fs-5">Temukan teman baru, bagikan minatmu, dan berkembang bersama ribuan anggota lainnya di berbagai komunitas favorit.</p>
-        </div>
-    </div>
-
     <!-- Search & Quick Navigation -->
     <div class="row mb-4 g-3 align-items-center scroll-reveal">
         <div class="col-md-9">
@@ -34,7 +25,7 @@
     <!-- Category Pills -->
     <div class="d-flex flex-nowrap gap-2 mb-5 scroll-reveal justify-content-start justify-content-md-center overflow-auto pb-3 no-scrollbar">
         <a href="{{ route('user2026.komunitas') }}" class="btn btn-category {{ !$category || $category == 'Semua' ? 'active' : '' }}">Semua</a>
-        @foreach(['Sepak Bola', 'Futsal', 'Bulutangkis', 'Voli', 'Basket', 'E-Sports'] as $cat)
+        @foreach(['Voli', 'Futsal', 'Bulutangkis', 'Tenis meja', 'Kasti'] as $cat)
             <a href="{{ route('user2026.komunitas', ['category' => $cat]) }}" 
                class="btn btn-category {{ $category == $cat ? 'active' : '' }} text-decoration-none">{{ $cat }}</a>
         @endforeach
