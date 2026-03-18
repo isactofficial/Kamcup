@@ -3,10 +3,20 @@
 @section('title', 'Feeds - KAMCUP')
 
 @push('styles')
+@if(request()->routeIs('user2026.feeds'))
+<style>
+.navbar { display: none !important; }
+footer { display: none !important; }
+.content { padding-top: 0 !important; }
+.main-wrapper { min-height: 100vh; }
+
+</style>
+@endif
 <link rel="stylesheet" href="{{ asset('css/profile.css') }}">
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
 <style>
 /* ===== BASE ===== */
+
 *, *::before, *::after { box-sizing: border-box; }
 
 body {

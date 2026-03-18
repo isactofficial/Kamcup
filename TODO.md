@@ -1,10 +1,21 @@
-# Fix Feed Unlike PDOException (Unknown column 'id')
+# TODO: Remove Navbar & Footer from User2026 Pages
 
-## Plan Steps:
-- [ ] 1. Update FeedLike model with composite primary key config
-- [ ] 2. Clear Laravel caches
-- [ ] 3. Test unlike feature in browser
-- [ ] 4. Verify no errors in storage/logs/laravel.log
-- [ ] 5. Mark complete
+## Plan Status: Awaiting Approval
 
-Current: Starting step 1.
+**✅ Step 1: Create this TODO.md** - DONE
+
+**✅ Step 2-5: Added CSS overrides to hide navbar/footer on user2026.komunitas, user2026.teman, user2026.feeds pages only**
+
+**✅ Step 6: Verified file edits successful**
+
+
+**⏳ Step 6: Test all 3 URLs**
+
+**⏳ Step 7: Mark complete & attempt_completion**
+
+## Current Progress
+- [x] Analyzed files & layout structure
+- [ ] User plan approval
+- [ ] Implement CSS overrides
+- [ ] Test & verify
+

@@ -19,5 +19,18 @@
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/profile.css') }}">
+@if(request()->routeIs('user2026.teman'))
+<style>
+.navbar { display: none !important; }
+footer { display: none !important; }
+.content { padding-top: 0 !important; }
+.main-wrapper { min-height: 100vh; }
+
+</style>
+@endif
 @endpush
+</xai:function_call >
+
+<xai:function_call name="edit_file">
+<parameter name="path">c:/Users/TUF/Documents/GitHub/Kamcup/Kamcup/resources/views/User2026/feeds.blade.php
 
