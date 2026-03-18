@@ -121,7 +121,7 @@
                         @endif
 
                         <div class="posts-list d-flex flex-column gap-4">
-                            @forelse($community->feeds->sortByDesc('created_at') as $post)
+@forelse($community->feeds()->whereNotNull('community_id')->orWhere('community_id', $community->id)->get()->sortByDesc('created_at') as $post)
                                 <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
                                     @if($post->image)
                                         <div style="max-height: 400px; overflow: hidden;">
