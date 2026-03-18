@@ -51,12 +51,12 @@
                     </a>
 
                     <a href="{{ route('admin.userpages.komunitas') }}" class="{{ request()->routeIs('admin.userpages.komunitas') ? 'active' : '' }}">
-                        <i class="fas fa-users me-2"></i> Komunitas
+                        <i class="fas fa-users me-2"></i> Manage Community
                     </a>
                     <a href="{{ route('admin.userpages.teman') }}" class="{{ request()->routeIs('admin.userpages.teman') ? 'active' : '' }}">
-                        <i class="fas fa-user-friends me-2"></i> Teman
+                        <i class="fas fa-user-friends me-2"></i> Manage Friend
                     </a>
                     <a href="{{ route('admin.feeds.index') }}" class="{{ request()->routeIs('admin.feeds.index') ? 'active' : '' }}">
-                        <i class="fas fa-rss me-2"></i> Feeds
+                        <i class="fas fa-rss me-2"></i> Manage Feeds
                     </a>
                 </div>

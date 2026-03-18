@@ -35,4 +35,14 @@ class Community extends Model
     {
         return $this->belongsToMany(User::class)->withPivot('role', 'status')->withTimestamps();
     }
+
+    public function feeds()
+    {
+        return $this->hasMany(Feed::class);
+    }
+
+    public function messages()
+    {
+        return $this->hasMany(CommunityMessage::class);
+    }
 }

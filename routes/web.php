@@ -184,6 +184,15 @@ Route::middleware(['auth'])->group(function () {
     // New User 2026 Pages (require auth)
     Route::get('/user2026/komunitas', [FrontController::class, 'komunitas'])->name('user2026.komunitas'); // Changed to controller for data
     Route::get('/user2026/komunitas/buat', [App\Http\Controllers\CommunityController::class, 'create'])->name('user2026.komunitas.create');
+    Route::get('/user2026/komunitas/{community:slug}', [App\Http\Controllers\CommunityController::class, 'show'])->name('user2026.komunitas.show');
+    Route::get('/user2026/komunitas/{community:slug}/messages', [App\Http\Controllers\CommunityController::class, 'getMessages'])->name('user2026.komunitas.messages');
+    Route::post('/user2026/komunitas/{community:slug}/messages', [App\Http\Controllers\CommunityController::class, 'sendMessage'])->name('user2026.komunitas.messages.store');
+    Route::post('/user2026/komunitas/{community:slug}/report', [App\Http\Controllers\CommunityController::class, 'report'])->name('user2026.komunitas.report');
+    Route::post('/user2026/komunitas/{community:slug}/join', [App\Http\Controllers\CommunityController::class, 'join'])->name('user2026.komunitas.join');
+    Route::post('/user2026/komunitas/{community:slug}/post', [App\Http\Controllers\CommunityController::class, 'storePost'])->name('user2026.komunitas.post.store');
+    Route::post('/user2026/komunitas/{community:slug}/members/{user}/role', [App\Http\Controllers\CommunityController::class, 'updateMemberRole'])->name('user2026.komunitas.member.role');
+    Route::delete('/user2026/komunitas/{community:slug}/members/{user}', [App\Http\Controllers\CommunityController::class, 'removeMember'])->name('user2026.komunitas.member.remove');
+    Route::post('/user2026/komunitas/{community:slug}/members/{user}/approve', [App\Http\Controllers\CommunityController::class, 'approveMember'])->name('user2026.komunitas.member.approve');
     Route::post('/user2026/komunitas', [App\Http\Controllers\CommunityController::class, 'store'])->name('user2026.komunitas.store');
     
     Route::get('/user2026/teman', function () {
@@ -271,6 +280,8 @@ Route::prefix('donations')->name('donations.')->group(function () {
     Route::get('/teman', function () {
         return view('Dashboard2026.teman');
     })->name('userpages.teman');
+    Route::get('/reports', [App\Http\Controllers\CommunityController::class, 'adminReports'])->name('userpages.reports.index');
+    Route::delete('/reports/{report}', [App\Http\Controllers\CommunityController::class, 'dismissReport'])->name('userpages.reports.dismiss');
     Route::resource('feeds', App\Http\Controllers\Admin\FeedController::class)->only(['index', 'store', 'destroy']);
 
 

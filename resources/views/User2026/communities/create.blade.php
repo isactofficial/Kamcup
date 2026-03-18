@@ -8,19 +8,8 @@
         <div class="col-lg-8 scroll-reveal">
             <div class="card profile-info-card border-0 shadow-sm">
                 <div class="card-body p-4 p-md-5">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <div>
-                            <h2 class="fw-bold mb-1" style="color: #cb2786;">Buat Komunitas Baru</h2>
-                            <p class="text-muted">Bangun ruang kolaborasi baru untuk hobi favoritmu.</p>
-                        </div>
-                        <a href="{{ route('user2026.komunitas') }}" class="btn btn-light rounded-circle p-3 shadow-sm border">
-                            <i class="fas fa-times text-muted"></i>
-                        </a>
-                    </div>
-
                     <form action="{{ route('user2026.komunitas.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
-                        
                         <div class="row g-4">
                             <!-- Community Name -->
                             <div class="col-12">
@@ -39,12 +28,11 @@
                                 <select name="category" class="form-select py-3 @error('category') is-invalid @enderror" required
                                         style="border-radius: 12px; background-color: #f8f9fa; border: 1px solid #dee2e6;">
                                     <option value="" disabled selected>Pilih Cabang Olahraga</option>
-                                    <option value="Sepak Bola">Sepak Bola</option>
                                     <option value="Futsal">Futsal</option>
                                     <option value="Bulutangkis">Bulutangkis</option>
-                                    <option value="Voli">Voli</button>
-                                    <option value="Basket">Basket</option>
-                                    <option value="E-Sports">E-Sports</option>
+                                    <option value="Voli">Voli</option>
+                                    <option value="Tenis meja">Tenis meja</option>
+                                    <option value="Kasti">Kasti</option>
                                     <option value="Lainnya">Lainnya</option>
                                 </select>
                                 @error('category')
