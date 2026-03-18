@@ -82,4 +82,14 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Community::class)->withPivot('role', 'status')->withTimestamps();
     }
+
+    public function feedLikes()
+    {
+        return $this->hasMany(FeedLike::class);
+    }
+
+    public function feedComments()
+    {
+        return $this->hasMany(FeedComment::class);
+    }
 }

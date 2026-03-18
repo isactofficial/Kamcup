@@ -126,6 +126,12 @@ Route::get('auth/google/callback', [App\Http\Controllers\Auth\GoogleController::
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth'])->group(function () {
+
+    // Feeds interactions
+    Route::get('/feeds/{feed}/comments', [App\Http\Controllers\FeedController::class, 'comments'])->name('feeds.comments');
+    Route::post('/feeds/{feed}/like', [App\Http\Controllers\FeedController::class, 'like'])->name('feeds.like');
+    Route::post('/feeds/{feed}/comments', [App\Http\Controllers\FeedController::class, 'commentStore'])->name('feeds.comment.store');
+    Route::delete('/feeds/{comment}/comment', [App\Http\Controllers\FeedController::class, 'commentDelete'])->name('feeds.comment.delete');
     
     // User Profile Management
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
@@ -185,9 +191,7 @@ Route::middleware(['auth'])->group(function () {
         return view('User2026.teman');
     })->name('user2026.teman');
     
-    Route::get('/user2026/feeds', function () {
-        return view('User2026.feeds');
-    })->name('user2026.feeds');
+    Route::get('/user2026/feeds', [App\Http\Controllers\FeedController::class, 'index'])->name('user2026.feeds');
 });
 
 /*
@@ -268,9 +272,7 @@ Route::prefix('donations')->name('donations.')->group(function () {
     Route::get('/teman', function () {
         return view('Dashboard2026.teman');
     })->name('userpages.teman');
-    Route::get('/feeds', function () {
-        return view('Dashboard2026.feeds');
-    })->name('userpages.feeds');
+    Route::resource('feeds', App\Http\Controllers\Admin\FeedController::class)->only(['index', 'store', 'destroy']);
 
 
 

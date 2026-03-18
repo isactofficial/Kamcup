@@ -1,16 +1,12 @@
-# TODO: Fix "Pengaturan Userpage di Halaman Admin"
+# TODO: Fix Like/Comment on /user2026/feeds (Instagram-style popup)
 
-**Status: In Progress**
+## Steps:
 
-## Plan Steps:
-1. [x] Create this TODO.md 
-2. [x] Edit routes/web.php - Added /admin/komunitas etc routes
-3. [x] Edit _admin-sidebar.blade.php - Updated to named routes
-4. [x] Cleared route cache with `php artisan route:clear`
-5. [x] Test links work
-6. [x] Fixed! Routes + sidebar dropdown working.
-
-**Root Cause:** Missing routes for `admin.userpages.komunitas`, `teman`, `feeds`
-
-**Expected Result:** All "Pengaturan User Pages" links in admin dashboard open correctly.
+### 1. ✅ Analysis & Planning Complete
+### 2. ✅ Add scopes to Feed model (app/Models/Feed.php)
+### 3. ✅ Update FeedController index() (app/Http/Controllers/FeedController.php)
+### 4. ✅ Add jQuery CDN to layout (resources/views/layouts/master_nav.blade.php)
+### 5. ✅ Added comments API endpoint (controller + route)
+### 6. ✅ Implemented Instagram-style popup modal + fixed JS (resources/views/User2026/feeds.blade.php)
+### 7. ✅ Task Complete
 
