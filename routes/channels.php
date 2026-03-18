@@ -16,3 +16,7 @@ use Illuminate\Support\Facades\Broadcast;
 Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
     return (int) $user->id === (int) $id;
 });
+
+Broadcast::channel('community.{communityId}', function ($user, $communityId) {
+    return $user->communities()->where('community_id', $communityId)->where('status', 'approved')->exists();
+});

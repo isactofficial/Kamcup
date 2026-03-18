@@ -112,10 +112,14 @@
 
     {{-- Add Button & Stats --}}
     <div class="row mb-4">
-        <div class="col-12 d-flex justify-content-end">
-            <a href="{{ route('admin.userpages.komunitas.create') }}" class="btn btn-sporty-primary d-flex align-items-center px-4 py-2">
+        <div class="col-12 d-flex justify-content-end gap-2">
+            <a href="{{ route('admin.userpages.reports.index') }}" class="btn btn-outline-danger d-flex align-items-center px-4 py-2 border-2" style="border-radius: 0.75rem;">
+                <i class="fas fa-flag me-2"></i>
+                <span class="fw-semibold">Moderasi Laporan</span>
+            </a>
+            <a href="{{ route('admin.userpages.komunitas.create') }}" class="btn btn-sporty-primary d-flex align-items-center px-4 py-2 text-white">
                 <i class="fas fa-plus me-2"></i>
-                <span class="fw-semibold">Tambah Komunitas Official</span>
+                <span class="fw-semibold">Tambah Official</span>
             </a>
         </div>
     </div>
