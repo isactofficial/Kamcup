@@ -306,7 +306,7 @@
                     <a href="{{ route('admin.userpages.teman') }}" class="{{ request()->routeIs('admin.userpages.teman') ? 'active' : '' }}">
                         <i class="fas fa-user-friends me-2"></i> Teman
                     </a>
-                    <a href="{{ route('admin.userpages.feeds') }}" class="{{ request()->routeIs('admin.userpages.feeds') ? 'active' : '' }}">
+                    <a href="{{ route('admin.feeds.index') }}" class="{{ request()->routeIs('admin.feeds.index') ? 'active' : '' }}">
                         <i class="fas fa-rss me-2"></i> Feeds
                     </a>
                 </div>

@@ -1,16 +1,12 @@
-# TODO: Fix "Pengaturan Userpage di Halaman Admin"
+# Fix RouteNotFoundException for admin.userpages.feeds ✅
 
-**Status: In Progress**
+## Plan Summary
+Update sidebar Feeds links to use existing `admin.feeds.index` route instead of undefined `admin.userpages.feeds`.
 
-## Plan Steps:
-1. [x] Create this TODO.md 
-2. [x] Edit routes/web.php - Added /admin/komunitas etc routes
-3. [x] Edit _admin-sidebar.blade.php - Updated to named routes
-4. [x] Cleared route cache with `php artisan route:clear`
-5. [x] Test links work
-6. [x] Fixed! Routes + sidebar dropdown working.
-
-**Root Cause:** Missing routes for `admin.userpages.komunitas`, `teman`, `feeds`
-
-**Expected Result:** All "Pengaturan User Pages" links in admin dashboard open correctly.
-
+## Steps
+- [x] 1. Update `resources/views/layouts/_admin-sidebar.blade.php`
+- [x] 2. Update `resources/views/layouts/admin.blade.php` 
+- [x] 3. Clear route/config cache: `php artisan route:clear && php artisan config:clear` (manual if needed)
+- [x] 4. Test `/admin/dashboard` loads without error
+- [x] 5. Verify Feeds link goes to `/admin/feeds`
+- [x] 6. Complete task ✅
