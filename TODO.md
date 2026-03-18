@@ -1,12 +1,12 @@
-# Fix RouteNotFoundException for admin.userpages.feeds ✅
+# TODO: Fix Like/Comment on /user2026/feeds (Instagram-style popup)
 
-## Plan Summary
-Update sidebar Feeds links to use existing `admin.feeds.index` route instead of undefined `admin.userpages.feeds`.
+## Steps:
 
-## Steps
-- [x] 1. Update `resources/views/layouts/_admin-sidebar.blade.php`
-- [x] 2. Update `resources/views/layouts/admin.blade.php` 
-- [x] 3. Clear route/config cache: `php artisan route:clear && php artisan config:clear` (manual if needed)
-- [x] 4. Test `/admin/dashboard` loads without error
-- [x] 5. Verify Feeds link goes to `/admin/feeds`
-- [x] 6. Complete task ✅
+### 1. ✅ Analysis & Planning Complete
+### 2. ✅ Add scopes to Feed model (app/Models/Feed.php)
+### 3. ✅ Update FeedController index() (app/Http/Controllers/FeedController.php)
+### 4. ✅ Add jQuery CDN to layout (resources/views/layouts/master_nav.blade.php)
+### 5. ✅ Added comments API endpoint (controller + route)
+### 6. ✅ Implemented Instagram-style popup modal + fixed JS (resources/views/User2026/feeds.blade.php)
+### 7. ✅ Task Complete
+

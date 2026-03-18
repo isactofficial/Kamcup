@@ -46,23 +46,7 @@
 }
 .action-btn.liked {
     color: #cb2786;
-}
-.action-btn.active {
     background-color: rgba(203, 39, 134, 0.1);
-    color: #cb2786;
-}
-.comment-section {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease;
-}
-.comment-section.show {
-    max-height: 1000px;
-}
-.comment-form {
-    border-top: 1px solid #eee;
-    padding-top: 1rem;
-    margin-top: 1rem;
 }
 .comment {
     display: flex;
@@ -97,12 +81,24 @@
     font-size: 0.8rem;
     color: #6c757d;
 }
-.reply-btn {
+.reply-btn, .delete-comment {
     background: none;
     border: none;
     color: #6c757d;
     font-size: 0.8rem;
     cursor: pointer;
+    margin-right: 0.5rem;
+}
+.delete-comment {
+    color: #dc3545 !important;
+}
+.modal-header-feed {
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+.modal-comment-form {
+    border-top: 1px solid #dee2e6;
+    padding-top: 1rem;
 }
 </style>
 @endpush
@@ -122,9 +118,9 @@
             </div>
 
             @forelse ($feeds as $feed)
-            <div class="card feed-card">
+            <div class="card feed-card" id="feed-{{ $feed->id }}">
                 @if ($feed->image)
-                <img src="{{ asset('storage/' . $feed->image) }}" class="feed-image" alt="{{ $feed->title }}">
+                <img src="{{ asset('storage/' . $feed->image) }}" class="feed-image" alt="{{ $feed->title }}" data-feed-id="{{ $feed->id }}">
                 @endif
                 <div class="card-body p-4">
                     @if ($feed->title)
@@ -134,45 +130,16 @@
                     <div class="feed-actions">
                         <button class="action-btn like-btn {{ $feed->likedBy(auth()->user()) ? 'liked' : '' }}" data-feed-id="{{ $feed->id }}">
                             <i class="far fa-heart"></i>
-                            <span class="like-count">{{ $feed->likeCount() }}</span>
+                            <span class="like-count">{{ $feed->likes_count }}</span>
                         </button>
-                        <button class="action-btn comment-toggle" data-feed-id="{{ $feed->id }}">
+                        <button class="action-btn comment-toggle" data-bs-toggle="modal" data-bs-target="#feedCommentModal" data-feed-id="{{ $feed->id }}" data-feed-title="{{ $feed->title }}" data-feed-image="{{ $feed->image }}">
                             <i class="far fa-comment"></i>
-                            <span>{{ $feed->comments->count() }}</span>
+                            <span class="comment-count">{{ $feed->comments_count }}</span>
                         </button>
                         <button class="action-btn share-btn" data-url="{{ route('user2026.feeds') }}#feed-{{ $feed->id }}">
                             <i class="fas fa-share-alt"></i>
                             Bagikan
                         </button>
-                    </div>
-
-                    <div class="comment-section" id="comments-{{ $feed->id }}">
-                        <div class="comment-form">
-                            <div class="input-group">
-                                <input type="text" class="form-control comment-input" placeholder="Tulis komentar...">
-                                <button class="btn btn-primary" type="button">
-                                    <i class="fas fa-paper-plane"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="comments-list mt-3">
-                            @foreach ($feed->comments->whereNull('parent_id') as $comment)
-                            <div class="comment" data-comment-id="{{ $comment->id }}">
-                                <img src="{{ $comment->user->profile?->avatar ?? asset('assets/img/default-avatar.png') }}" alt="{{ $comment->user->name }}" class="comment-avatar">
-                                <div class="comment-content">
-                                    <div class="comment-header">
-                                        <span class="comment-user">{{ $comment->user->name }}</span>
-                                        <span class="comment-time">{{ $comment->created_at->diffForHumans() }}</span>
-                                    </div>
-                                    <p class="mb-1">{{ $comment->content }}</p>
-                                    <button class="reply-btn">Balas</button>
-                                    @if ($comment->user_id === auth()->id())
-                                    <button class="reply-btn text-danger delete-comment" data-comment-id="{{ $comment->id }}">Hapus</button>
-                                    @endif
-                                </div>
-                            </div>
-                            @endforeach
-                        </div>
                     </div>
                 </div>
             </div>
@@ -191,63 +158,137 @@
     </div>
 </div>
 
+<!-- Instagram-style Comment Modal -->
+<div class="modal fade" id="feedCommentModal" tabindex="-1" aria-labelledby="feedCommentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header d-flex align-items-start">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="modal-feed-preview p-3 border-bottom">
+                    <img id="modal-feed-image" class="img-fluid rounded" style="max-height: 200px; object-fit: cover;" alt="Feed preview">
+                    <h6 id="modal-feed-title" class="mt-2 fw-bold" style="color: #00617a;"></h6>
+                </div>
+                <div id="modal-comments-list" class="p-3" style="max-height: 400px; overflow-y: auto;">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2 text-muted">Loading komentar...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 p-0">
+                <div class="modal-comment-form p-3">
+                    <div class="input-group">
+                        <input type="text" id="modal-comment-input" class="form-control" placeholder="Tulis komentar..." maxlength="500">
+                        <button class="btn btn-primary" id="modal-comment-send" type="button">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+$(document).ready(function() {
     $.ajaxSetup({
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         }
     });
 
+    let currentFeedId = null;
+
     // Like functionality
-    $('.like-btn').click(function() {
-        const btn = $(this);
-        const feedId = btn.data('feed-id');
+    $(document).on('click', '.like-btn', function() {
+        const $btn = $(this);
+        const feedId = $btn.data('feed-id');
         
         $.post(`/feeds/${feedId}/like`, {})
-        .done(function(data) {
-            btn.toggleClass('liked', data.liked);
-            btn.find('.like-count').text(data.count);
-            const icon = btn.find('i');
-            icon.toggleClass('far fas', data.liked);
-        });
+            .done(function(data) {
+                $btn.toggleClass('liked', data.liked);
+                $btn.find('.like-count').text(data.count);
+                const $icon = $btn.find('i');
+                $icon.removeClass('far fas').addClass(data.liked ? 'fas' : 'far');
+            })
+            .fail(function(xhr) {
+                console.error('Like failed:', xhr);
+                alert('Gagal like/unlike');
+            });
     });
 
-    // Toggle comments
-    $('.comment-toggle').click(function() {
-        const feedId = $(this).data('feed-id');
-        $(`#comments-${feedId}`).toggleClass('show');
-        $(this).toggleClass('active');
+    // Update comment count on all buttons when modal updates count
+    function updateCommentCounts(feedId, delta = 0) {
+        $(`.comment-toggle[data-feed-id="${feedId}"] .comment-count`).text(parseInt($(`.comment-toggle[data-feed-id="${feedId}"] .comment-count`).text()) + delta);
+    }
+
+    // Modal events
+    $('#feedCommentModal').on('show.bs.modal', function (e) {
+        const trigger = $(e.relatedTarget);
+        currentFeedId = trigger.data('feed-id');
+        const title = trigger.data('feed-title') || 'Feed';
+        const image = trigger.data('feed-image');
+        
+        $('#modal-feed-title').text(title);
+        if (image) {
+            $('#modal-feed-image').show().attr('src', `/storage/${image}`);
+        } else {
+            $('#modal-feed-image').hide();
+        }
+
+        // Load comments
+        $('#modal-comments-list').html(`
+            <div class="text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2 text-muted">Loading komentar...</p>
+            </div>
+        `);
+        
+        $.get(`/feeds/${currentFeedId}/comments`)
+            .done(function(comments) {
+                let html = '';
+                if (comments.length === 0) {
+                    html = '<div class="text-center py-4 text-muted">Belum ada komentar</div>';
+                } else {
+                    comments.forEach(comment => {
+                        html += buildCommentHtml(comment);
+                    });
+                }
+                $('#modal-comments-list').html(html);
+            })
+            .fail(function() {
+                $('#modal-comments-list').html('<div class="text-center py-4 text-danger">Gagal memuat komentar</div>');
+            });
     });
 
-    // Comment form
-    $('.comment-input').on('keypress', function(e) {
-        if (e.key === 'Enter') {
-            const input = $(this);
-            const feedId = input.closest('.comment-section').attr('id').replace('comments-', '');
-            const content = input.val().trim();
-            
-            if (content) {
-                $.post(`/feeds/${feedId}/comments`, { content: content })
-                .done(function(comment) {
-                    const commentHtml = `
-                        <div class="comment" data-comment-id="${comment.id}">
-                            <img src="${comment.user.profile ? comment.user.profile.avatar : '{{ asset('assets/img/default-avatar.png') }}'}" alt="${comment.user.name}" class="comment-avatar">
-                            <div class="comment-content">
-                                <div class="comment-header">
-                                    <span class="comment-user">${comment.user.name}</span>
-                                    <span class="comment-time">${moment().fromNow()}</span>
-                                </div>
-                                <p class="mb-1">${comment.content}</p>
-                                <button class="reply-btn text-danger delete-comment" data-comment-id="${comment.id}">Hapus</button>
-                            </div>
-                        </div>
-                    `;
-                    $(`#comments-${feedId} .comments-list`).prepend(commentHtml);
-                    input.val('');
-                });
-            }
+    $('#modal-comment-send').click(function() {
+        const content = $('#modal-comment-input').val().trim();
+        if (!content || !currentFeedId) return;
+
+        $.post(`/feeds/${currentFeedId}/comments`, { content: content })
+            .done(function(comment) {
+                // Add to top
+                $('#modal-comments-list').prepend(buildCommentHtml(comment));
+                $('#modal-comment-input').val('');
+                updateCommentCounts(currentFeedId, 1);
+            })
+            .fail(function(xhr) {
+                console.error('Comment failed:', xhr);
+                alert('Gagal posting komentar');
+            });
+    });
+
+    $('#modal-comment-input').on('keypress', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            $('#modal-comment-send').click();
         }
     });
 
@@ -259,14 +300,44 @@ document.addEventListener('DOMContentLoaded', function() {
                 url: `/feeds/${commentId}/comment`,
                 type: 'DELETE',
                 success: function() {
-                    $(`[data-comment-id="${commentId}"]`).remove();
+                    $(`[data-comment-id="${commentId}"]`).fadeOut(300, function() {
+                        $(this).remove();
+                    });
+                    updateCommentCounts(currentFeedId, -1);
+                },
+                error: function() {
+                    alert('Gagal hapus komentar');
                 }
             });
         }
     });
 
+    function buildCommentHtml(comment) {
+        const avatar = comment.user.profile?.avatar ? `/storage/${comment.user.profile.avatar}` : '{{ asset("assets/img/default-avatar.png") }}';
+        const time = moment(comment.created_at).fromNow();
+        let html = `
+            <div class="comment" data-comment-id="${comment.id}">
+                <img src="${avatar}" alt="${comment.user.name}" class="comment-avatar">
+                <div class="comment-content">
+                    <div class="comment-header">
+                        <span class="comment-user">${comment.user.name}</span>
+                        <span class="comment-time">${time}</span>
+                    </div>
+                    <p class="mb-1">${comment.content}</p>
+        `;
+        html += `    <button class="reply-btn" data-parent-id="${comment.id}">Balas</button>`;
+        if (comment.user_id == {{ auth()->id() }}) {
+            html += ` <button class="delete-comment" data-comment-id="${comment.id}">Hapus</button>`;
+        }
+        html += `
+                </div>
+            </div>
+        `;
+        return html;
+    }
+
     // Share
-    $('.share-btn').click(function() {
+    $(document).on('click', '.share-btn', function() {
         const url = $(this).data('url');
         if (navigator.share) {
             navigator.share({
@@ -274,12 +345,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 url: window.location.origin + '/' + url
             });
         } else {
-            navigator.clipboard.writeText(window.location.origin + '/' + url);
-            alert('Link disalin ke clipboard!');
+            navigator.clipboard.writeText(window.location.origin + '/' + url).then(() => {
+                alert('Link disalin!');
+            });
         }
     });
 });
 </script>
-<script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
 @endpush
 @endsection

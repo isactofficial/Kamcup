@@ -10,7 +10,17 @@ class FeedController extends Controller
 {
     public function index()
     {
-        $feeds = Feed::with(['likes', 'comments.user.profile', 'likes.user'])->latest()->paginate(10);
+        $userId = auth()->id();
+        
+        $feeds = Feed::withLikesCount()
+            ->withCommentsCount()
+            ->when($userId, function ($query) use ($userId) {
+                return $query->with(['likes' => function($q) use ($userId) {
+                    $q->where('user_id', $userId);
+                }]);
+            })
+            ->latest()
+            ->paginate(10);
 
         return view('User2026.feeds', compact('feeds'));
     }
@@ -23,12 +33,13 @@ class FeedController extends Controller
 
         if ($like) {
             $like->delete();
-            return response()->json(['liked' => false, 'count' => $feed->fresh()->likeCount()]);
+            $count = $feed->likes()->count();
+            return response()->json(['liked' => false, 'count' => $count]);
         }
 
         $feed->likes()->create(['user_id' => $user->id]);
-
-        return response()->json(['liked' => true, 'count' => $feed->fresh()->likeCount()]);
+        $count = $feed->likes()->count();
+        return response()->json(['liked' => true, 'count' => $count]);
     }
 
     public function commentStore(Request $request, Feed $feed)
@@ -58,6 +69,18 @@ class FeedController extends Controller
         $comment->delete();
 
         return response()->json(['success' => true]);
+    }
+
+    public function comments(Feed $feed)
+    {
+        $comments = $feed->comments()
+            ->whereNull('parent_id')
+            ->with(['user.profile', 'children.user.profile'])
+            ->latest()
+            ->limit(50)
+            ->get();
+        
+        return response()->json($comments);
     }
 }
 

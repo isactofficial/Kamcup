@@ -128,6 +128,7 @@ Route::get('auth/google/callback', [App\Http\Controllers\Auth\GoogleController::
 Route::middleware(['auth'])->group(function () {
 
     // Feeds interactions
+    Route::get('/feeds/{feed}/comments', [App\Http\Controllers\FeedController::class, 'comments'])->name('feeds.comments');
     Route::post('/feeds/{feed}/like', [App\Http\Controllers\FeedController::class, 'like'])->name('feeds.like');
     Route::post('/feeds/{feed}/comments', [App\Http\Controllers\FeedController::class, 'commentStore'])->name('feeds.comment.store');
     Route::delete('/feeds/{comment}/comment', [App\Http\Controllers\FeedController::class, 'commentDelete'])->name('feeds.comment.delete');

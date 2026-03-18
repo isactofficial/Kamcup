@@ -30,11 +30,28 @@ class Feed extends Model
 
     public function likedBy(User $user)
     {
-        return $this->likes->contains('user_id', $user->id);
+        return $this->likes->isNotEmpty();
     }
 
     public function likeCount()
     {
-        return $this->likes->count();
+        return $this->likes_count ?? $this->likes->count();
+    }
+
+    public function scopeWithLikesCount($query)
+    {
+        return $query->withCount('likes as likes_count');
+    }
+
+    public function scopeWithCommentsCount($query)
+    {
+        return $query->withCount('comments as comments_count');
+    }
+
+    public function scopeLikedByUser($query, $userId)
+    {
+        return $query->whereHas('likes', function($q) use ($userId) {
+            $q->where('user_id', $userId);
+        });
     }
 }
