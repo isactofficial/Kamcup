@@ -13,27 +13,48 @@ use Illuminate\Support\Facades\Storage;
 
 class FeedController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $userId = auth()->id();
+        $filter = $request->get('filter', 'all');
 
-        $feeds = Feed::withLikesCount()
-            ->withCommentsCount()
-            ->withJoinsCount()
-            ->when($userId, function ($query) use ($userId) {
-                return $query->with([
-                    'likes' => function ($q) use ($userId) {
-                        $q->where('user_id', $userId);
-                    },
-                    'joinedBy' => function ($q) use ($userId) {
-                        $q->where('user_id', $userId);
-                    }
-                ]);
-            })
-            ->latest()
-            ->paginate(10);
+        $query = Feed::query()
+            ->with(['user.profile']);
 
-        return view('User2026.feeds', compact('feeds'));
+        if ($filter === 'feeds') {
+            $query->whereNull('meet_date');
+        } elseif ($filter === 'meets') {
+            $query->whereNotNull('meet_date');
+        }
+
+        // Pre-load counts and user flags in ONE selectRaw to avoid nesting
+        $extraSelect = ', 
+            (SELECT COUNT(DISTINCT fl.user_id) FROM feed_likes fl WHERE fl.feed_id = feeds.id) as likes_count,
+            (SELECT COUNT(*) FROM feed_comments fc WHERE fc.feed_id = feeds.id) as comments_count,
+            (SELECT COUNT(DISTINCT fuj.user_id) FROM feed_user_joins fuj WHERE fuj.feed_id = feeds.id) as joins_count';
+
+        $bindings = [];
+        if ($userId) {
+            $extraSelect .= ', EXISTS(SELECT 1 FROM feed_likes WHERE feed_id = feeds.id AND user_id = ?) as current_user_liked,
+            EXISTS(SELECT 1 FROM feed_user_joins WHERE feed_id = feeds.id AND user_id = ?) as current_user_joined';
+            $bindings = [$userId, $userId];
+        } else {
+            $extraSelect .= ', 0 as current_user_liked, 0 as current_user_joined';
+        }
+
+        $query->selectRaw('feeds.*' . $extraSelect, $bindings);
+
+        $feeds = $query->latest()->paginate(10);
+
+        $filterTitles = [
+            'all' => 'Semua Aktivitas',
+            'feeds' => 'Feeds',
+            'meets' => 'Meets'
+        ];
+        $title = $filterTitles[$filter] ?? 'Feeds';
+        $feedCount = $feeds->total();
+
+        return view('User2026.feeds', compact('feeds', 'filter', 'title', 'feedCount'));
     }
 
     public function like(Request $request, Feed $feed)

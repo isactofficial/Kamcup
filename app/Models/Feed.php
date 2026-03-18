@@ -55,15 +55,27 @@ class Feed extends Model
      */
     public function likedBy(User $user): bool
     {
+        if (isset($this->attributes['current_user_liked'])) {
+            return (bool) $this->attributes['current_user_liked'];
+        }
+
         if ($this->relationLoaded('likes')) {
             return $this->likes->contains('user_id', $user->id);
         }
         return $this->likes()->where('user_id', $user->id)->exists();
     }
 
+    /**
+     * Accessor for current_user_liked (from controller subquery)
+     */
+    public function getCurrentUserLikedAttribute(): bool
+    {
+        return (bool) ($this->attributes['current_user_liked'] ?? false);
+    }
+
     public function likeCount(): int
     {
-        return $this->likes_count ?? $this->likes->count();
+        return $this->attributes['likes_count'] ?? $this->likes()->count();
     }
 
     public function scopeWithLikesCount($query)
@@ -100,10 +112,22 @@ class Feed extends Model
      */
     public function joinedByUser(User $user): bool
     {
+        if (isset($this->attributes['current_user_joined'])) {
+            return (bool) $this->attributes['current_user_joined'];
+        }
+
         if ($this->relationLoaded('joinedBy')) {
             return $this->joinedBy->contains('id', $user->id);
         }
         return $this->joinedBy()->where('user_id', $user->id)->exists();
+    }
+
+    /**
+     * Accessor for current_user_joined (from controller subquery)
+     */
+    public function getCurrentUserJoinedAttribute(): bool
+    {
+        return (bool) ($this->attributes['current_user_joined'] ?? false);
     }
 
     /**
@@ -115,11 +139,11 @@ class Feed extends Model
     }
 
     /**
-     * Joins count
+     * Accessor for joins_count — FIX: pakai $this->attributes untuk hindari infinite loop
      */
     public function getJoinsCountAttribute()
     {
-        return $this->joins_count ?? $this->joinedBy()->count();
+        return $this->attributes['joins_count'] ?? $this->joinedBy()->count();
     }
 
     public function scopeWithJoinsCount($query)
@@ -127,4 +151,3 @@ class Feed extends Model
         return $query->withCount('joinedBy as joins_count');
     }
 }
-
