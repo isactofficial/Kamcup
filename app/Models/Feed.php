@@ -27,7 +27,7 @@ class Feed extends Model
     ];
 
     protected $casts = [
-        'meet_date' => 'date',
+        'meet_date' => 'datetime',
     ];
 
     public function community()

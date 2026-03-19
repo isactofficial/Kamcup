@@ -121,7 +121,10 @@
                         @endif
 
                         <div class="posts-list d-flex flex-column gap-4">
-@forelse($community->feeds()->whereNotNull('community_id')->orWhere('community_id', $community->id)->get()->sortByDesc('created_at') as $post)
+                            @php
+                                $posts = $community->feeds->whereNull('meet_date')->sortByDesc('created_at');
+                            @endphp
+                            @forelse($posts as $post)
                                 <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
                                     @if($post->image)
                                         <div style="max-height: 400px; overflow: hidden;">
@@ -265,16 +268,68 @@
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <h5 class="fw-bold mb-0" style="color: #cb2786;">Jadwal Pertemuan & Latihan</h5>
                             @if($isCommunityAdmin)
-                                <button class="btn btn-sm btn-outline-primary px-3 rounded-pill">
+                                <button class="btn btn-sm btn-outline-primary px-3 rounded-pill" data-bs-toggle="modal" data-bs-target="#createAgendaModal">
                                     <i class="fas fa-plus me-1"></i> Buat Agenda
                                 </button>
                             @endif
                         </div>
                         
-                        <div class="alert bg-light border-0 text-center py-5">
-                            <i class="fas fa-calendar-times fs-2 mb-3 text-muted"></i>
-                            <h6 class="fw-bold">Belum ada agenda terdekat</h6>
-                            <p class="text-muted small mb-0">Nantinya data ini akan terhubung ke halaman Meets.</p>
+                        <div class="row g-4">
+                            @php
+                                $agendas = $community->feeds->filter(function($f) {
+                                    return !is_null($f->meet_date);
+                                })->sortBy('meet_date');
+                            @endphp
+
+                            @forelse($agendas as $agenda)
+                                <div class="col-md-6">
+                                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+                                        @if($agenda->image)
+                                            <img src="{{ asset('storage/' . $agenda->image) }}" class="card-img-top" style="height: 150px; object-fit: cover;">
+                                        @endif
+                                        <div class="card-body p-4">
+                                            <div class="badge bg-primary-subtle text-primary mb-2 rounded-pill px-3">Agenda</div>
+                                            <h6 class="fw-bold mb-3">{{ $agenda->title }}</h6>
+                                            
+                                            <div class="d-flex flex-column gap-2 mb-4">
+                                                <div class="small text-muted d-flex align-items-center">
+                                                    <i class="fas fa-calendar-day me-2 text-primary"></i>
+                                                    {{ \Carbon\Carbon::parse($agenda->meet_date)->translatedFormat('d F Y, H:i') }}
+                                                </div>
+                                                <div class="small text-muted d-flex align-items-center">
+                                                    <i class="fas fa-map-marker-alt me-2 text-primary"></i>
+                                                    {{ $agenda->meet_location }}
+                                                </div>
+                                                <div class="small text-muted d-flex align-items-center">
+                                                    <i class="fas fa-users me-2 text-primary"></i>
+                                                    {{ $agenda->joins_count ?? 0 }} / {{ $agenda->meet_max_people }} Peserta
+                                                </div>
+                                            </div>
+
+                                            <div class="d-grid mt-auto pt-3">
+                                                <button 
+                                                    onclick="toggleJoinMeet(this, {{ $agenda->id }})" 
+                                                    class="btn rounded-pill btn-sm fw-bold {{ $agenda->current_user_joined ? 'btn-danger' : 'btn-primary' }}"
+                                                    data-joined="{{ $agenda->current_user_joined ? '1' : '0' }}"
+                                                >
+                                                    <span class="btn-text">
+                                                        {{ $agenda->current_user_joined ? 'Batal Ikut' : 'Gabung Sekarang' }}
+                                                    </span>
+                                                    <i class="fas {{ $agenda->current_user_joined ? 'fa-times' : 'fa-plus' }} ms-1"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="col-12">
+                                    <div class="alert bg-light border-0 text-center py-5 rounded-4">
+                                        <i class="fas fa-calendar-times fs-2 mb-3 text-muted"></i>
+                                        <h6 class="fw-bold">Belum ada agenda terdekat</h6>
+                                        <p class="text-muted small mb-0">Nantinya data ini akan terhubung ke halaman Meets.</p>
+                                    </div>
+                                </div>
+                            @endforelse
                         </div>
                     </div>
                 </div>
@@ -417,6 +472,54 @@
         </div>
     </div>
 </div>
+
+{{-- Create Agenda Modal --}}
+<div class="modal fade" id="createAgendaModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow rounded-4">
+            <div class="modal-header border-0 pb-0 shadow-none p-4">
+                <h5 class="fw-bold mb-0">Buat Agenda Pertemuan / Meets</h5>
+                <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ route('user2026.komunitas.agenda.store', $community->slug) }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-12">
+                            <label class="form-label small fw-bold">Judul Agenda</label>
+                            <input type="text" name="title" class="form-control rounded-3 border-light bg-light shadow-none" placeholder="Contoh: Latihan Rutin Basket" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Tanggal & Waktu</label>
+                            <input type="datetime-local" name="meet_date" class="form-control rounded-3 border-light bg-light shadow-none" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Maksimal Peserta</label>
+                            <input type="number" name="meet_max_people" class="form-control rounded-3 border-light bg-light shadow-none" placeholder="2-1000" min="2" max="1000" required>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label small fw-bold">Lokasi</label>
+                            <input type="text" name="meet_location" class="form-control rounded-3 border-light bg-light shadow-none" placeholder="Alamat lengkap atau nama tempat" required>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label small fw-bold">Deskripsi / Detail Agenda</label>
+                            <textarea name="meet_description" class="form-control rounded-3 border-light bg-light shadow-none" rows="4" placeholder="Jelaskan apa saja kegiatannya..." required></textarea>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label small fw-bold">Foto Banner (Opsional)</label>
+                            <input type="file" name="image" class="form-control rounded-3 border-light bg-light shadow-none" accept="image/*">
+                            <div class="form-text small">Max 2MB, format support: jpg, png, webp</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0 p-4 justify-content-between">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm">Publikasikan Agenda</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endif
 
 @push('scripts')
@@ -530,6 +633,61 @@
                 });
         }
     });
+
+    // --- JOIN MEET FUNCTION ---
+    window.toggleJoinMeet = async function(btn, feedId) {
+        const isJoined = btn.getAttribute('data-joined') === '1';
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        
+        // Show loading state
+        const originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Processing...';
+
+        try {
+            const response = await fetch(`/feeds/${feedId}/join`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+            
+            if (response.ok) {
+                // Update button UI
+                if (data.joined) {
+                    btn.classList.add('btn-danger');
+                    btn.classList.remove('btn-primary');
+                    btn.setAttribute('data-joined', '1');
+                    btn.innerHTML = '<span class="btn-text">Batal Ikut</span> <i class="fas fa-times ms-1"></i>';
+                } else {
+                    btn.classList.add('btn-primary');
+                    btn.classList.remove('btn-danger');
+                    btn.setAttribute('data-joined', '0');
+                    btn.innerHTML = '<span class="btn-text">Gabung Sekarang</span> <i class="fas fa-plus ms-1"></i>';
+                }
+                
+                // Optional: Update joins_count on the card
+                const countContainer = btn.closest('.card-body').querySelector('.fa-users').parentElement;
+                countContainer.innerHTML = `<i class="fas fa-users me-2 text-primary"></i> ${data.count} / ${countContainer.innerText.split(' / ')[1]}`;
+                
+                // Show success toast/alert if needed
+                alert(data.message);
+            } else if (data.message) {
+                alert(data.message);
+                btn.innerHTML = originalHtml;
+            }
+        } catch (error) {
+            console.error('Error toggling join:', error);
+            alert('Gagal memproses permintaan.');
+            btn.innerHTML = originalHtml;
+        } finally {
+            btn.disabled = false;
+        }
+    }
 </script>
 @endpush
 

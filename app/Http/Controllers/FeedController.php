@@ -19,7 +19,8 @@ class FeedController extends Controller
         $filter = $request->get('filter', 'all');
 
         $query = Feed::query()
-            ->with(['user.profile']);
+            ->with(['user.profile'])
+            ->whereNull('community_id'); // Only non-community feeds/meets on global page
 
         if ($filter === 'feeds') {
             $query->whereNull('meet_date');

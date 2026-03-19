@@ -194,6 +194,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/user2026/komunitas/{community:slug}/report', [App\Http\Controllers\CommunityController::class, 'report'])->name('user2026.komunitas.report');
     Route::post('/user2026/komunitas/{community:slug}/join', [App\Http\Controllers\CommunityController::class, 'join'])->name('user2026.komunitas.join');
     Route::post('/user2026/komunitas/{community:slug}/post', [App\Http\Controllers\CommunityController::class, 'storePost'])->name('user2026.komunitas.post.store');
+    Route::post('/user2026/komunitas/{community:slug}/agenda', [App\Http\Controllers\CommunityController::class, 'storeAgenda'])->name('user2026.komunitas.agenda.store');
     Route::post('/user2026/komunitas/{community:slug}/members/{user}/role', [App\Http\Controllers\CommunityController::class, 'updateMemberRole'])->name('user2026.komunitas.member.role');
     Route::delete('/user2026/komunitas/{community:slug}/members/{user}', [App\Http\Controllers\CommunityController::class, 'removeMember'])->name('user2026.komunitas.member.remove');
     Route::post('/user2026/komunitas/{community:slug}/members/{user}/approve', [App\Http\Controllers\CommunityController::class, 'approveMember'])->name('user2026.komunitas.member.approve');

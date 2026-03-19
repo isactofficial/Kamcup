@@ -23,7 +23,14 @@ class CommunityController extends Controller
     /*Display the specified community.*/
     public function show(Community $community)
     {
-        $community->load(['creator', 'members', 'feeds.user.profile']);
+        $userId = Auth::id();
+        $community->load(['creator', 'members', 'feeds' => function($q) use ($userId) {
+            $q->with(['user.profile'])
+              ->selectRaw('feeds.*, 
+                EXISTS(SELECT 1 FROM feed_user_joins WHERE feed_id = feeds.id AND user_id = ?) as current_user_joined', [$userId])
+              ->withCount(['likes as likes_count', 'comments as comments_count', 'joinedBy as joins_count'])
+              ->latest();
+        }]);
         $community->loadCount(['members', 'feeds']);
         
         $userMember = $community->members()->where('user_id', Auth::id())->first();
@@ -215,6 +222,41 @@ class CommunityController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Komunitas telah dilaporkan. Admin akan segera meninjau.');
+    }
+
+    /**
+     * Store a new agenda (meet) for the community.
+     */
+    public function storeAgenda(Request $request, Community $community)
+    {
+        $userMember = $community->members()->where('user_id', Auth::id())->first();
+        $isCommunityAdmin = ($userMember && $userMember->pivot->role === 'admin') || $community->user_id === Auth::id();
+
+        if (!$isCommunityAdmin) {
+            return redirect()->back()->with('error', 'Hanya admin komunitas yang dapat membuat agenda.');
+        }
+
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'meet_date' => 'required|date|after:now',
+            'meet_location' => 'required|string|max:255',
+            'meet_max_people' => 'required|integer|min:2|max:1000',
+            'meet_description' => 'required|string|max:2000',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        ]);
+
+        $community->feeds()->create([
+            'user_id' => Auth::id(),
+            'title' => $request->title,
+            'content' => $request->meet_description,
+            'meet_date' => $request->meet_date,
+            'meet_location' => $request->meet_location,
+            'meet_max_people' => $request->meet_max_people,
+            'meet_description' => $request->meet_description,
+            'image' => $request->hasFile('image') ? $request->file('image')->store('feeds', 'public') : null,
+        ]);
+
+        return redirect()->back()->with('success', 'Agenda komunitas berhasil dibuat!');
     }
 
     /**
