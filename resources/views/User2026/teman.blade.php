@@ -459,6 +459,15 @@
             const text = chatInput.value.trim();
             if (!text || !currentFriendId) return;
             chatInput.value = '';
+
+            // Optimistic update — show message instantly
+            const now = new Date();
+            appendMsg({
+                sender_id: userId,
+                message: text,
+                created_at: now.toISOString()
+            });
+            chatBox.scrollTop = chatBox.scrollHeight;
             
             try {
                 const res = await fetch(`/user2026/teman/${currentFriendId}/messages`, {
@@ -466,10 +475,12 @@
                     headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                     body: JSON.stringify({ message: text })
                 });
-                const data = await res.json();
-                appendMsg(data);
-                chatBox.scrollTop = chatBox.scrollHeight;
-            } catch(e) {}
+                if (!res.ok) {
+                    console.error('Failed to send message:', res.status);
+                }
+            } catch(e) {
+                console.error('Error sending message:', e);
+            }
         };
 
         if (typeof Echo !== 'undefined') {
