@@ -200,9 +200,15 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/user2026/komunitas/{community:slug}/members/{user}/approve', [App\Http\Controllers\CommunityController::class, 'approveMember'])->name('user2026.komunitas.member.approve');
     Route::post('/user2026/komunitas', [App\Http\Controllers\CommunityController::class, 'store'])->name('user2026.komunitas.store');
     
-    Route::get('/user2026/teman', function () {
-        return view('User2026.teman');
-    })->name('user2026.teman');
+    Route::get('/user2026/teman', [App\Http\Controllers\FriendshipController::class, 'index'])->name('user2026.teman');
+    Route::get('/user2026/teman/search', [App\Http\Controllers\FriendshipController::class, 'search'])->name('user2026.teman.search');
+    Route::post('/user2026/teman/{user}/add', [App\Http\Controllers\FriendshipController::class, 'addFriend'])->name('user2026.teman.add');
+    Route::post('/user2026/teman/accept/{friendship}', [App\Http\Controllers\FriendshipController::class, 'acceptFriend'])->name('user2026.teman.accept');
+    Route::delete('/user2026/teman/{user}/remove', [App\Http\Controllers\FriendshipController::class, 'removeFriend'])->name('user2026.teman.remove');
+    
+    // Private Messaging
+    Route::get('/user2026/teman/{friend}/messages', [App\Http\Controllers\FriendshipController::class, 'getMessages'])->name('user2026.teman.messages');
+    Route::post('/user2026/teman/{friend}/messages', [App\Http\Controllers\FriendshipController::class, 'sendMessage'])->name('user2026.teman.messages.store');
     
     Route::get('/user2026/feeds', [App\Http\Controllers\FeedController::class, 'index'])->name('user2026.feeds');
 });

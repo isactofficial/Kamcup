@@ -92,4 +92,30 @@ class User extends Authenticatable
     {
         return $this->hasMany(FeedComment::class);
     }
+
+    /**
+     * Friends relationship.
+     */
+    public function friends()
+    {
+        return $this->belongsToMany(User::class, 'friendships', 'user_id', 'friend_id')
+                    ->wherePivot('status', 'accepted');
+    }
+
+    public function friendshipRequests()
+    {
+        return $this->belongsToMany(User::class, 'friendships', 'friend_id', 'user_id')
+                    ->wherePivot('status', 'pending');
+    }
+
+    public function friendships()
+    {
+        return $this->hasMany(Friendship::class, 'user_id');
+    }
+
+    public function friendshipRequestsSent()
+    {
+        return $this->belongsToMany(User::class, 'friendships', 'user_id', 'friend_id')
+                    ->wherePivot('status', 'pending');
+    }
 }
