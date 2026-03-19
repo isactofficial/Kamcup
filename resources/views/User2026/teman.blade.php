@@ -16,17 +16,17 @@
             <!-- Search / Top Section -->
             <div class="p-3 shadow-sm border-bottom">
                 <div class="search-box position-relative">
-                    <input type="text" id="user-search-input" class="form-control form-control-sm border-0 bg-light rounded-pill ps-4" placeholder="Cari teman baru...">
+                    <input type="text" id="user-search-input" class="form-control form-control-sm border-0 bg-light rounded-pill ps-4" placeholder="Cari atau mulai percakapan">
                     <i class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted small"></i>
                 </div>
             </div>
 
             <!-- Friends & Requests Navigation -->
             <div class="flex-grow-1 overflow-auto custom-scrollbar px-2 py-3">
-                <div class="nav-item-friends mb-1 active" onclick="closeChat()">
+                <div class="nav-item-friends mb-1" id="sidebar-all-btn" onclick="showAllFriends()">
                     <i class="fas fa-user-friends me-3 text-accent"></i> Semua Teman
                 </div>
-                
+
                 @if($pendingRequests->count() > 0)
                 <div class="nav-item-friends mb-1 text-pink" onclick="showRequests()">
                     <i class="fas fa-envelope-open-text me-3"></i> Permintaan <span class="badge bg-danger ms-auto rounded-pill">{{ $pendingRequests->count() }}</span>
@@ -74,31 +74,41 @@
 
         <!-- MAIN CONTENT AREA -->
         <div class="main-chat-area flex-grow-1 d-flex flex-column bg-white">
-            <!-- Header -->
-            <div class="chat-header p-3 border-bottom d-flex align-items-center bg-white">
-                <div class="d-flex align-items-center" id="header-content">
-                    <i class="fas fa-at fs-5 text-accent me-2"></i>
-                    <h6 class="fw-bold mb-0 text-dark" id="chat-friend-name">Teman</h6>
-                </div>
-                <div class="ms-auto d-flex gap-3 text-muted fs-5">
-                    <i class="fas fa-phone-alt cursor-pointer hover-accent"></i>
-                    <i class="fas fa-video cursor-pointer hover-accent"></i>
-                    <i class="fas fa-users-cog cursor-pointer hover-accent"></i>
-                </div>
-            </div>
 
             <!-- Views -->
             <div class="flex-grow-1 overflow-hidden" style="position:relative;">
                 <!-- FRIENDS DASHBOARD (Landing View) -->
                 <div id="welcome-view" class="flex-grow-1 d-flex flex-column p-4 animate-fade-in">
-                    <div class="d-flex align-items-center gap-4 mb-4 border-bottom pb-3">
-                        <h5 class="fw-bold text-dark mb-0"><i class="fas fa-user-friends me-2 text-accent"></i> Teman</h5>
-                        <div class="btn-group-friends">
-                            <button class="btn-friends active">Online</button>
-                            <button class="btn-friends">Semua</button>
-                            <button class="btn-friends" onclick="showRequests()">Tertunda <span class="badge bg-danger rounded-pill ms-1">{{ $pendingRequests->count() }}</span></button>
-                            <button class="btn-friends btn-add-friend" onclick="document.getElementById('user-search-input').focus()">Tambah Teman</button>
+                    <div class="d-flex align-items-center gap-3 mb-4 border-bottom pb-3">
+                        <h5 class="fw-bold text-dark mb-0" id="main-view-title">Teman</h5>
+                        <div class="btn-group-friends ms-2">
+                            <button class="btn-friends active" id="tab-semua" onclick="showAllFriends()">Semua</button>
+                            <button class="btn-friends" id="tab-tertunda" onclick="showRequests()">Tertunda <span class="badge bg-danger rounded-pill ms-1">{{ $pendingRequests->count() }}</span></button>
+                            <button class="btn-friends btn-add-friend" id="tab-tambah" onclick="showAddFriend()">Tambah Teman</button>
                         </div>
+                    </div>
+
+                    <!-- All Friends View -->
+                    <div id="all-friends-view">
+                        @forelse($friends as $friend)
+                        <div class="d-flex align-items-center p-3 border rounded-4 hover-light mb-2 transition-all cursor-pointer" onclick="openChat({{ $friend->id }}, '{{ $friend->name }}')">
+                            <div class="me-3 position-relative">
+                                <div class="rounded-circle bg-accent-light d-flex align-items-center justify-content-center text-accent fw-bold" style="width:45px;height:45px;">{{ strtoupper(substr($friend->name, 0, 1)) }}</div>
+                                <span class="status-dot online"></span>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="fw-bold text-dark">{{ $friend->name }}</div>
+                                <div class="text-muted small">Online</div>
+                            </div>
+                            <button class="btn btn-sm btn-outline-accent rounded-pill px-3" style="font-size:0.75rem;border-color:var(--teman-accent);color:var(--teman-accent);">Chat</button>
+                        </div>
+                        @empty
+                        <div id="empty-friends-state" class="flex-grow-1 d-flex flex-column align-items-center justify-content-center text-center opacity-75 py-5">
+                            <div class="mb-4 text-accent" style="font-size:4rem;"><i class="fas fa-ghost"></i></div>
+                            <h5 class="fw-bold">Belum ada teman</h5>
+                            <p class="text-muted small">Klik "Tambah Teman" untuk mulai!</p>
+                        </div>
+                        @endforelse
                     </div>
 
                     <!-- Requests View -->
@@ -130,26 +140,25 @@
                         @endforeach
                     </div>
 
-                    <!-- Search View Section (Integrated in Welcome) -->
+                    <!-- Add Friend View -->
                     <div id="search-view" class="d-none">
-                        <h6 class="text-muted mb-3">HASIL PENCARIAN</h6>
-                        <div id="search-results-container" class="row g-3">
-                            <!-- JS Inject -->
+                        <div class="d-flex align-items-center mb-4">
+                            <h6 class="fw-bold mb-0">Tambah Teman</h6>
+                            <button class="btn btn-sm btn-light rounded-pill ms-auto px-3" onclick="closeAddFriend()"><i class="fas fa-times me-1"></i> Tutup</button>
                         </div>
+                        <div class="bg-light rounded-4 p-3 mb-4 border">
+                            <p class="text-muted small mb-2">Cari teman berdasarkan nama atau username.</p>
+                            <div class="d-flex gap-2">
+                                <input type="text" id="add-friend-input" class="form-control border-0 bg-white rounded-3 shadow-sm" placeholder="Cari nama pengguna...">
+                            </div>
+                        </div>
+                        <div id="search-results-container" class="row g-3"></div>
                     </div>
 
-                    <!-- Default Empty State -->
-                    <div id="empty-friends-state" class="flex-grow-1 d-flex flex-column align-items-center justify-content-center text-center opacity-75">
-                        <div class="mb-4 text-accent" style="font-size: 5rem;">
-                            <i class="fas fa-ghost"></i>
-                        </div>
-                        <h5 class="fw-bold">Belum ada aktivitas</h5>
-                        <p class="text-muted small">Cari teman baru untuk mulai mengobrol!</p>
-                    </div>
                 </div>
 
                 <!-- CHAT VIEW -->
-                <div id="chat-view" class="d-none flex-column" style="position:absolute; inset:0; display:flex !important; flex-direction:column; height:100%;">
+                <div id="chat-view" class="chat-view-hidden" style="position:absolute; inset:0; flex-direction:column; height:100%;">
                     <div class="flex-grow-1 overflow-auto p-4 d-flex flex-column custom-scrollbar" id="chat-box">
                         <div id="chat-messages-inner" class="mt-auto d-flex flex-column">
                             <!-- Messages -->
@@ -294,6 +303,10 @@
     .hover-accent:hover { color: var(--teman-accent); }
     .cursor-pointer { cursor: pointer; }
     .transition-all { transition: all 0.2s; }
+
+    /* Chat view toggle */
+    #chat-view.chat-view-hidden { display: none !important; pointer-events: none; }
+    #chat-view.chat-view-visible { display: flex !important; }
 </style>
 @endpush
 
@@ -301,63 +314,103 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const userId = {{ Auth::id() }};
-        const searchInput = document.getElementById('user-search-input');
+        const sidebarSearchInput = document.getElementById('user-search-input');
         const searchResults = document.getElementById('search-results-container');
         const welcomeView = document.getElementById('welcome-view');
         const chatView = document.getElementById('chat-view');
-        const requestsView = document.getElementById('requests-view');
-        const searchView = document.getElementById('search-view');
         const chatBox = document.getElementById('chat-box');
         const chatInput = document.getElementById('chat-input');
-        const headerName = document.getElementById('chat-friend-name');
         
         let currentFriendId = null;
-        let searchTimeout = null;
+        let currentFriendName = '';
+        let addFriendTimeout = null;
+
+        // --- SIDEBAR SEARCH: filter friends list only (client-side) ---
+        sidebarSearchInput.addEventListener('input', function() {
+            const query = this.value.trim().toLowerCase();
+            document.querySelectorAll('.friend-item-sidebar').forEach(el => {
+                const name = el.querySelector('.fw-bold').innerText.toLowerCase();
+                el.style.display = name.includes(query) ? '' : 'none';
+            });
+        });
 
         // --- NAVIGATION ---
+        function setActiveTab(tabId) {
+            ['tab-semua', 'tab-tertunda', 'tab-tambah'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.remove('active');
+            });
+            const active = document.getElementById(tabId);
+            if (active) active.classList.add('active');
+        }
+
+        function hideChatView() {
+            chatView.classList.remove('chat-view-visible');
+            chatView.classList.add('chat-view-hidden');
+        }
+        function showChatViewFn() {
+            chatView.classList.remove('chat-view-hidden');
+            chatView.classList.add('chat-view-visible');
+        }
+
+        window.showAllFriends = function() {
+            setActiveTab('tab-semua');
+            welcomeView.classList.remove('d-none');
+            hideChatView();
+            document.getElementById('main-view-title').innerText = 'Teman';
+            document.getElementById('all-friends-view').classList.remove('d-none');
+            document.getElementById('requests-view').classList.add('d-none');
+            document.getElementById('search-view').classList.add('d-none');
+        };
+
         window.closeChat = function() {
             currentFriendId = null;
-            chatView.classList.add('d-none');
+            hideChatView();
             welcomeView.classList.remove('d-none');
-            requestsView.classList.add('d-none');
-            searchView.classList.add('d-none');
-            headerName.innerText = 'Teman';
+            showAllFriends();
             document.getElementById('member-sidebar').style.opacity = '0.5';
         };
 
         window.showRequests = function() {
+            setActiveTab('tab-tertunda');
             welcomeView.classList.remove('d-none');
-            requestsView.classList.remove('d-none');
-            searchView.classList.add('d-none');
-            chatView.classList.add('d-none');
-            headerName.innerText = 'Permintaan Pertemanan';
+            hideChatView();
+            document.getElementById('main-view-title').innerText = 'Permintaan Pertemanan';
+            document.getElementById('requests-view').classList.remove('d-none');
+            document.getElementById('all-friends-view').classList.add('d-none');
+            document.getElementById('search-view').classList.add('d-none');
         };
 
-        // --- SEARCH ---
-        searchInput.addEventListener('input', function() {
-            const query = this.value.trim();
-            if (query.length < 3) return;
+        window.showAddFriend = function() {
+            setActiveTab('tab-tambah');
+            welcomeView.classList.remove('d-none');
+            hideChatView();
+            document.getElementById('main-view-title').innerText = 'Tambah Teman';
+            document.getElementById('search-view').classList.remove('d-none');
+            document.getElementById('all-friends-view').classList.add('d-none');
+            document.getElementById('requests-view').classList.add('d-none');
+            document.getElementById('search-results-container').innerHTML = '';
+            setTimeout(() => document.getElementById('add-friend-input').focus(), 100);
+        };
 
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                showSearchDashboard(query);
+        window.closeAddFriend = function() {
+            showAllFriends();
+        };
+
+        // --- ADD FRIEND SEARCH (global search API) ---
+        document.getElementById('add-friend-input').addEventListener('input', function() {
+            const query = this.value.trim();
+            clearTimeout(addFriendTimeout);
+            if (query.length < 3) { searchResults.innerHTML = ''; return; }
+            addFriendTimeout = setTimeout(async () => {
+                searchResults.innerHTML = '<div class="col-12 text-center p-5"><div class="spinner-border text-accent"></div></div>';
+                try {
+                    const response = await fetch(`/user2026/teman/search?query=${encodeURIComponent(query)}`);
+                    const users = await response.json();
+                    renderResults(users);
+                } catch (e) { console.error(e); }
             }, 500);
         });
-
-        async function showSearchDashboard(query) {
-            welcomeView.classList.remove('d-none');
-            searchView.classList.remove('d-none');
-            requestsView.classList.add('d-none');
-            chatView.classList.add('d-none');
-            
-            searchResults.innerHTML = '<div class="col-12 text-center p-5"><div class="spinner-border text-accent"></div></div>';
-            
-            try {
-                const response = await fetch(`/user2026/teman/search?query=${encodeURIComponent(query)}`);
-                const users = await response.json();
-                renderResults(users);
-            } catch (e) { console.error(e); }
-        }
 
         function renderResults(users) {
             if (users.length === 0) {
@@ -367,7 +420,7 @@
             searchResults.innerHTML = users.map(u => `
                 <div class="col-md-4">
                     <div class="p-3 bg-light rounded-4 text-center border h-100 transition-all">
-                        <div class="avatar-md mx-auto mb-2" style="width: 50px; height: 50px; background: var(--teman-accent); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-weight:bold;"> ${u.name[0].toUpperCase()} </div>
+                        <div class="mx-auto mb-2" style="width:50px;height:50px;background:var(--teman-accent);border-radius:12px;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;"> ${u.name[0].toUpperCase()} </div>
                         <div class="fw-bold text-dark small">${u.name}</div>
                         <div class="text-muted x-small mb-3">ID: #${u.id}</div>
                         ${getResButton(u)}
@@ -378,23 +431,28 @@
 
         function getResButton(u) {
             if (u.friendship_status === 'none') return `<button onclick="addFriend(${u.id})" class="btn btn-accent btn-sm w-100 rounded-pill x-small">Tambah Teman</button>`;
-            return `<button class="btn btn-outline-secondary btn-sm w-100 rounded-pill x-small disabled">${u.friendship_status}</button>`;
+            if (u.friendship_status === 'pending') return `<button class="btn btn-outline-secondary btn-sm w-100 rounded-pill x-small disabled">${u.is_sender ? 'Menunggu...' : 'Terima?'}</button>`;
+            return `<button class="btn btn-outline-success btn-sm w-100 rounded-pill x-small disabled"><i class="fas fa-check me-1"></i> Sudah Teman</button>`;
         }
 
         window.addFriend = async function(id) {
             try {
-                await fetch(`/user2026/teman/${id}/add`, { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } });
-                alert('Permintaan Terkirim!');
-                showSearchDashboard(searchInput.value);
+                const res = await fetch(`/user2026/teman/${id}/add`, { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } });
+                if (res.ok) {
+                    // Refresh search results
+                    const query = document.getElementById('add-friend-input').value.trim();
+                    const response = await fetch(`/user2026/teman/search?query=${encodeURIComponent(query)}`);
+                    renderResults(await response.json());
+                }
             } catch(e) {}
         };
 
         // --- CHAT ---
         window.openChat = async function(id, name) {
             currentFriendId = id;
+            currentFriendName = name;
             welcomeView.classList.add('d-none');
-            chatView.classList.remove('d-none');
-            headerName.innerText = name;
+            showChatViewFn();
             chatInput.placeholder = `Kirim pesan ke @${name}`;
             
             // Highlight active friend in sidebar
@@ -436,7 +494,7 @@
             item.className = 'chat-msg-container animate-fade-in mb-2';
             
             const time = new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            const senderName = m.sender_id == userId ? '{{ Auth::user()->name }}' : headerName.innerText;
+            const senderName = m.sender_id == userId ? '{{ Auth::user()->name }}' : currentFriendName;
             const senderInitial = senderName[0].toUpperCase();
             
             item.innerHTML = `
