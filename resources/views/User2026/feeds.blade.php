@@ -491,20 +491,16 @@
 
                     <div class="feed-card-header">
                         @if($feed->user)
-                            @if($feed->user->profile?->avatar)
-                                {{-- Avatar ada di storage, tampilkan. Kalau gagal load, sembunyikan saja --}}
-                                <img src="{{ asset('storage/' . $feed->user->profile->avatar) }}" 
-                                     alt="{{ $feed->user->name }}" 
+@if($feed->user->profile?->profile_photo)
+                                {{-- Profile photo ada di storage, tampilkan. Fallback ke placeholder --}}
+                                <img src="{{ asset('storage/' . $feed->user->profile->profile_photo) }}"
+                                     alt="{{ $feed->user->name }}"
                                      class="user-avatar"
-                                     onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                <div class="avatar-fallback" style="display:none;">
-                                    {{ strtoupper(substr($feed->user->name, 0, 1)) }}
-                                </div>
+                                     onerror="this.onerror=null; this.src='{{ asset('assets/img/profile-placeholder.png') }}';">
                             @else
-                                {{-- Tidak ada avatar, langsung tampilkan inisial --}}
-                                <div class="avatar-fallback">
-                                    {{ strtoupper(substr($feed->user->name, 0, 1)) }}
-                                </div>
+                                <img src="{{ asset('assets/img/profile-placeholder.png') }}"
+                                     alt="{{ $feed->user->name }}"
+                                     class="user-avatar">
                             @endif
                             <div class="feed-brand-info">
                                 <p class="brand-name">{{ $feed->user->name }}</p>
@@ -784,15 +780,14 @@ $(document).ready(function () {
         let headerHtml = '';
         if (hasUser) {
             const initial = user.name ? user.name.charAt(0).toUpperCase() : '?';
-            if (user.profile?.avatar) {
-                // Ada avatar — tampilkan img, kalau gagal load sembunyikan dan tampilkan fallback inisial
+            if (user.profile?.profile_photo) {
+                // Profile photo ada — tampilkan img, fallback ke placeholder.png
                 headerHtml = `
-                    <img src="/storage/${user.profile.avatar}" alt="${user.name}" class="user-avatar"
-                         onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                    <div class="avatar-fallback" style="display:none;">${initial}</div>`;
+                    <img src="/storage/${user.profile.profile_photo}" alt="${user.name}" class="user-avatar"
+                         onerror="this.onerror=null; this.src='/assets/img/profile-placeholder.png';">`;
             } else {
-                // Tidak ada avatar — langsung inisial, TIDAK request gambar apapun
-                headerHtml = `<div class="avatar-fallback">${initial}</div>`;
+                // Tidak ada profile photo — langsung placeholder.png
+                headerHtml = `<img src="/assets/img/profile-placeholder.png" alt="${user.name}" class="user-avatar">`;
             }
             headerHtml += `
                 <div class="feed-brand-info">
