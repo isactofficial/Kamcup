@@ -43,12 +43,24 @@ class FriendshipController extends Controller
                             return $f->user_id == $userId ? $f->friend_id : $f->user_id;
                         });
 
-        $currentUserCommunityIds = Auth::user()->joinedCommunities()->pluck('community_id')->toArray();
+        $currentUserCommunities = Auth::user()->joinedCommunities;
+        $currentUserCommunityIds = $currentUserCommunities->pluck('id')->toArray();
         
-        return User::whereIn('id', $friendIds)->with('profile')->get()->map(function($user) use ($currentUserCommunityIds) {
+        return User::whereIn('id', $friendIds)->with('profile', 'joinedCommunities')->get()->map(function($user) use ($currentUserCommunities, $currentUserCommunityIds) {
             $user->member_since = $user->created_at->format('M d, Y');
-            $friendCommunityIds = $user->joinedCommunities()->pluck('community_id')->toArray();
-            $user->mutual_communities_count = count(array_intersect($currentUserCommunityIds, $friendCommunityIds));
+            
+            $friendCommunityIds = $user->joinedCommunities->pluck('id')->toArray();
+            $mutualIds = array_intersect($currentUserCommunityIds, $friendCommunityIds);
+            
+            $user->mutual_communities = $currentUserCommunities->whereIn('id', $mutualIds)->map(function($c) {
+                return [
+                    'id' => $c->id,
+                    'name' => $c->name,
+                    'image' => $c->image ? asset('storage/' . $c->image) : null
+                ];
+            })->values();
+            
+            $user->mutual_communities_count = count($mutualIds);
             return $user;
         });
     }

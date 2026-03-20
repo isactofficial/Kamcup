@@ -40,7 +40,7 @@
                 <div id="friends-list" class="d-flex flex-column gap-1 px-1">
                     @foreach($friends as $friend)
                     <div class="friend-item-sidebar d-flex align-items-center p-2 rounded-3 cursor-pointer" 
-                        onclick="openChat({{ $friend->id }}, '{{ $friend->name }}', '{{ $friend->profile->profile_photo ?? '' }}', '{{ str_replace(["\r", "\n"], ' ', $friend->profile->description ?? 'Pemain KAMCUP yang siap bertanding!') }}', '{{ $friend->member_since }}', {{ $friend->mutual_communities_count }})">
+                        onclick="openChat({{ $friend->id }}, '{{ $friend->name }}', '{{ $friend->profile->profile_photo ?? '' }}', '{{ str_replace(["\r", "\n"], ' ', $friend->profile->description ?? 'Pemain KAMCUP yang siap bertanding!') }}', '{{ $friend->member_since }}', {{ $friend->mutual_communities_count }}, {{ json_encode($friend->mutual_communities) }})">
                         <div class="avatar-sm me-3 position-relative">
                             @if($friend->profile && $friend->profile->profile_photo)
                                 <img src="{{ asset('storage/' . $friend->profile->profile_photo) }}" class="rounded-circle object-fit-contain bg-light" style="width: 35px; height: 35px;" alt="">
@@ -75,9 +75,6 @@
                     <div class="fw-bold text-dark small text-truncate">{{ Auth::user()->name }}</div>
                     <div class="text-muted x-small text-truncate">Online</div>
                 </div>
-                <div class="d-flex gap-3 text-muted">
-                    <i class="fas fa-cog cursor-pointer hover-accent"></i>
-                </div>
             </div>
         </div>
 
@@ -101,7 +98,7 @@
                     <div id="all-friends-view">
                         @forelse($friends as $friend)
                         <div class="d-flex align-items-center p-3 border rounded-4 hover-light mb-2 transition-all cursor-pointer" 
-                            onclick="openChat({{ $friend->id }}, '{{ $friend->name }}', '{{ $friend->profile->profile_photo ?? '' }}', '{{ str_replace(["\r", "\n"], ' ', $friend->profile->description ?? 'Pemain KAMCUP yang siap bertanding!') }}', '{{ $friend->member_since }}', {{ $friend->mutual_communities_count }})">
+                            onclick="openChat({{ $friend->id }}, '{{ $friend->name }}', '{{ $friend->profile->profile_photo ?? '' }}', '{{ str_replace(["\r", "\n"], ' ', $friend->profile->description ?? 'Pemain KAMCUP yang siap bertanding!') }}', '{{ $friend->member_since }}', {{ $friend->mutual_communities_count }}, {{ json_encode($friend->mutual_communities) }})">
                             <div class="me-3 position-relative">
                                 @if($friend->profile && $friend->profile->profile_photo)
                                     <img src="{{ asset('storage/' . $friend->profile->profile_photo) }}" class="rounded-circle object-fit-contain bg-light" style="width: 45px; height: 45px;" alt="">
@@ -220,12 +217,14 @@
                     <p id="member-since-sidebar" class="small mb-0 fw-medium text-dark">Join date...</p>
                 </div>
 
-                <div class="p-3 rounded-4 mb-3 border bg-light shadow-sm-hover transition-all" style="background-color: #fcfcfd;">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h6 class="text-uppercase x-small fw-bold text-muted mb-0" style="letter-spacing: 0.8px;">Mutual Servers — <span id="mutual-count" class="text-accent">0</span></h6>
-                        <i class="fas fa-chevron-down text-muted small"></i>
+                <div class="p-3 rounded-4 mb-3 border bg-light shadow-sm-hover transition-all cursor-pointer" style="background-color: #fcfcfd;" onclick="toggleMutualList()">
+                    <div class="d-flex justify-content-between align-items-center mb-0">
+                        <h6 class="text-uppercase x-small fw-bold text-muted mb-0" style="letter-spacing: 0.8px;">Komunitas Bersama — <span id="mutual-count" class="text-accent">0</span></h6>
+                        <i class="fas fa-chevron-down text-muted small transition-all" id="mutual-chevron"></i>
                     </div>
-                    <div class="small text-muted">Komunitas yang sama-sama kalian ikuti.</div>
+                    <div id="mutual-list-container" class="mt-3 d-none animate-fade-in border-top pt-3">
+                        <!-- JS Populate -->
+                    </div>
                 </div>
 
                 <div class="p-3 rounded-4 mb-3 border bg-light shadow-sm-hover transition-all" style="background-color: #fcfcfd;">
@@ -354,6 +353,18 @@
         const searchResults = document.getElementById('search-results-container');
         const welcomeView = document.getElementById('welcome-view');
         const chatView = document.getElementById('chat-view');
+        window.toggleMutualList = function() {
+            const container = document.getElementById('mutual-list-container');
+            const chevron = document.getElementById('mutual-chevron');
+            if (container.classList.contains('d-none')) {
+                container.classList.remove('d-none');
+                chevron.style.transform = 'rotate(180deg)';
+            } else {
+                container.classList.add('d-none');
+                chevron.style.transform = 'rotate(0deg)';
+            }
+        };
+
         const chatBox = document.getElementById('chat-box');
         const chatInput = document.getElementById('chat-input');
         
@@ -491,7 +502,7 @@
         };
 
         // --- CHAT ---
-        window.openChat = async function(id, name, avatar = '', bio = '', joinDate = 'Jan 01, 2026', mutualCount = 0) {
+        window.openChat = async function(id, name, avatar = '', bio = '', joinDate = 'Jan 01, 2026', mutualCount = 0, mutuals = []) {
             currentFriendId = id;
             currentFriendName = name;
             welcomeView.classList.add('d-none');
@@ -502,7 +513,8 @@
             document.querySelectorAll('.friend-item-sidebar').forEach(el => el.classList.remove('bg-white', 'shadow-sm', 'text-dark'));
             const items = document.querySelectorAll('.friend-item-sidebar');
             items.forEach(item => {
-                if(item.querySelector('.fw-bold').innerText === name) item.classList.add('bg-white', 'shadow-sm');
+                const nameEl = item.querySelector('.fw-bold');
+                if(nameEl && nameEl.innerText === name) item.classList.add('bg-white', 'shadow-sm');
             });
 
             // Side info update
@@ -512,6 +524,28 @@
             document.getElementById('member-since-sidebar').innerText = joinDate;
             document.getElementById('mutual-count').innerText = mutualCount;
             
+            // Populate mutual list
+            const container = document.getElementById('mutual-list-container');
+            if (mutuals && mutuals.length > 0) {
+                container.innerHTML = mutuals.map(c => `
+                    <div class="d-flex align-items-center mb-2 animate-fade-in">
+                        <div class="bg-accent-light rounded-2 me-2 d-flex align-items-center justify-content-center" style="width:28px;height:28px;">
+                            ${c.image ? 
+                                `<img src="${c.image}" class="rounded-2" style="width:28px;height:28px;object-fit:cover;">` : 
+                                `<i class="fas fa-users text-accent small"></i>`
+                            }
+                        </div>
+                        <span class="small fw-bold text-dark text-truncate">${c.name}</span>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = '<div class="text-muted x-small p-2 text-center">Tidak ada komunitas yang sama.</div>';
+            }
+
+            // Reset dropdown state
+            container.classList.add('d-none');
+            document.getElementById('mutual-chevron').style.transform = 'rotate(0deg)';
+
             const avatarContainer = document.getElementById('member-avatar-container');
             if (avatar) {
                 avatarContainer.innerHTML = `<img src="/storage/${avatar}" class="rounded-circle object-fit-contain shadow-sm h-100 w-100 border border-4 border-white bg-light" style="background:#f8f9fa;" alt="">`;
