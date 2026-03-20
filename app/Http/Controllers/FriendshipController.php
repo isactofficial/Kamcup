@@ -42,8 +42,15 @@ class FriendshipController extends Controller
                         ->map(function($f) use ($userId) {
                             return $f->user_id == $userId ? $f->friend_id : $f->user_id;
                         });
+
+        $currentUserCommunityIds = Auth::user()->joinedCommunities()->pluck('community_id')->toArray();
         
-        return User::whereIn('id', $friendIds)->with('profile')->get();
+        return User::whereIn('id', $friendIds)->with('profile')->get()->map(function($user) use ($currentUserCommunityIds) {
+            $user->member_since = $user->created_at->format('M d, Y');
+            $friendCommunityIds = $user->joinedCommunities()->pluck('community_id')->toArray();
+            $user->mutual_communities_count = count(array_intersect($currentUserCommunityIds, $friendCommunityIds));
+            return $user;
+        });
     }
 
     public function search(Request $request)

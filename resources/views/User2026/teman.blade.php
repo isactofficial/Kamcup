@@ -39,11 +39,16 @@
 
                 <div id="friends-list" class="d-flex flex-column gap-1 px-1">
                     @foreach($friends as $friend)
-                    <div class="friend-item-sidebar d-flex align-items-center p-2 rounded-3 cursor-pointer" onclick="openChat({{ $friend->id }}, '{{ $friend->name }}')">
+                    <div class="friend-item-sidebar d-flex align-items-center p-2 rounded-3 cursor-pointer" 
+                        onclick="openChat({{ $friend->id }}, '{{ $friend->name }}', '{{ $friend->profile->profile_photo ?? '' }}', '{{ str_replace(["\r", "\n"], ' ', $friend->profile->description ?? 'Pemain KAMCUP yang siap bertanding!') }}', '{{ $friend->member_since }}', {{ $friend->mutual_communities_count }})">
                         <div class="avatar-sm me-3 position-relative">
-                            <div class="placeholder-avatar rounded-circle bg-accent-light d-flex align-items-center justify-content-center text-accent fw-bold text-uppercase">
-                                {{ substr($friend->name, 0, 1) }}
-                            </div>
+                            @if($friend->profile && $friend->profile->profile_photo)
+                                <img src="{{ asset('storage/' . $friend->profile->profile_photo) }}" class="rounded-circle object-fit-contain bg-light" style="width: 35px; height: 35px;" alt="">
+                            @else
+                                <div class="placeholder-avatar rounded-circle bg-accent-light d-flex align-items-center justify-content-center text-accent fw-bold text-uppercase" style="width: 35px; height: 35px; font-size: 0.8rem;">
+                                    {{ substr($friend->name, 0, 1) }}
+                                </div>
+                            @endif
                             <span class="status-dot online"></span>
                         </div>
                         <div class="flex-grow-1 overflow-hidden">
@@ -58,9 +63,13 @@
             <!-- User Status Bottom -->
             <div class="user-status-strip d-flex align-items-center p-3 border-top mt-auto bg-white">
                 <div class="avatar-sm-circle me-3">
-                    <div class="rounded-circle bg-pink-light d-flex align-items-center justify-content-center text-pink fw-bold">
-                        {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-                    </div>
+                    @if(Auth::user()->profile && Auth::user()->profile->profile_photo)
+                        <img src="{{ asset('storage/' . Auth::user()->profile->profile_photo) }}" class="rounded-circle object-fit-contain bg-light" style="width: 35px; height: 35px;" alt="">
+                    @else
+                        <div class="rounded-circle bg-pink-light d-flex align-items-center justify-content-center text-pink fw-bold" style="width: 35px; height: 45px;">
+                            {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                        </div>
+                    @endif
                 </div>
                 <div class="flex-grow-1 overflow-hidden">
                     <div class="fw-bold text-dark small text-truncate">{{ Auth::user()->name }}</div>
@@ -91,9 +100,14 @@
                     <!-- All Friends View -->
                     <div id="all-friends-view">
                         @forelse($friends as $friend)
-                        <div class="d-flex align-items-center p-3 border rounded-4 hover-light mb-2 transition-all cursor-pointer" onclick="openChat({{ $friend->id }}, '{{ $friend->name }}')">
+                        <div class="d-flex align-items-center p-3 border rounded-4 hover-light mb-2 transition-all cursor-pointer" 
+                            onclick="openChat({{ $friend->id }}, '{{ $friend->name }}', '{{ $friend->profile->profile_photo ?? '' }}', '{{ str_replace(["\r", "\n"], ' ', $friend->profile->description ?? 'Pemain KAMCUP yang siap bertanding!') }}', '{{ $friend->member_since }}', {{ $friend->mutual_communities_count }})">
                             <div class="me-3 position-relative">
-                                <div class="rounded-circle bg-accent-light d-flex align-items-center justify-content-center text-accent fw-bold" style="width:45px;height:45px;">{{ strtoupper(substr($friend->name, 0, 1)) }}</div>
+                                @if($friend->profile && $friend->profile->profile_photo)
+                                    <img src="{{ asset('storage/' . $friend->profile->profile_photo) }}" class="rounded-circle object-fit-contain bg-light" style="width: 45px; height: 45px;" alt="">
+                                @else
+                                    <div class="rounded-circle bg-accent-light d-flex align-items-center justify-content-center text-accent fw-bold" style="width:45px;height:45px;">{{ strtoupper(substr($friend->name, 0, 1)) }}</div>
+                                @endif
                                 <span class="status-dot online"></span>
                             </div>
                             <div class="flex-grow-1">
@@ -182,23 +196,45 @@
         </div>
 
         <!-- MEMBER INFO (Sidebar Right) -->
-        <div class="member-info-bar d-none d-xl-flex flex-column h-100 p-4 border-start" id="member-sidebar" style="background-color: #fafbfc; width: 300px;">
-             <div class="text-center">
-                <div class="avatar-lg-circle mx-auto mb-3">
-                    <div class="rounded-circle bg-accent d-flex align-items-center justify-content-center text-white fw-bold fs-2" style="width: 90px; height: 90px;" id="member-avatar-text">?</div>
+        <div class="member-info-bar d-none d-xl-flex flex-column h-100 border-start overflow-auto custom-scrollbar shadow-sm" id="member-sidebar" style="background-color: #ffffff; width: 340px; border-left: 1px solid #eee; color: #333;">
+             <!-- Banner Overlay -->
+             <div class="profile-banner-top w-100" style="height: 100px; background-color: var(--teman-accent); position: relative; overflow: hidden;">
+                <div style="position: absolute; inset: 0; background: linear-gradient(rgba(0,0,0,0.1), transparent);"></div>
+             </div>
+             
+             <div class="px-3" style="margin-top: -45px;">
+                <div class="avatar-container-outer mb-3 position-relative" style="width: 90px;">
+                    <div id="member-avatar-container" class="rounded-circle p-1" style="width: 92px; height: 92px; background-color: #ffffff;">
+                        <div class="rounded-circle bg-accent d-flex align-items-center justify-content-center text-white fw-bold fs-2 h-100 w-100 shadow-sm border border-3 border-white">?</div>
+                    </div>
+                    <span class="status-dot online me-1 border-4" style="width: 24px; height: 24px; bottom: 4px; right: 4px; border-color: #ffffff !important;"></span>
                 </div>
-                <h5 class="fw-bold text-dark mb-1" id="member-name-sidebar">Pilih Teman</h5>
-                <p class="text-muted small mb-4">Anggota KAMCUP</p>
-                <div class="dropdown mb-4" id="chat-actions-dropdown">
-                    <!-- JS Inject context menu (Unfriend, etc) -->
+
+                <div class="p-3 pt-0 rounded-4 mb-3 text-center text-xl-start">
+                    <h5 class="fw-bold text-dark mb-0" id="member-name-sidebar">Pilih Teman</h5>
+                    <p class="text-muted small mb-0">Member KAMCUP</p>
                 </div>
-                <hr>
-                <div class="text-start mt-4">
-                    <h6 class="x-small fw-bold text-muted text-uppercase mb-2">Catatan</h6>
-                    <textarea class="form-control bg-white border x-small p-2 rounded-3 mb-4" rows="3" placeholder="Tambah catatan..."></textarea>
-                    
-                    <h6 class="x-small fw-bold text-muted text-uppercase mb-2">Tentang</h6>
-                    <p class="text-muted x-small">Pemain KAMCUP yang siap bertanding!</p>
+
+                <div class="p-3 rounded-4 mb-3 border bg-light shadow-sm-hover transition-all" style="background-color: #fcfcfd;">
+                    <h6 class="text-uppercase x-small fw-bold text-muted mb-2" style="letter-spacing: 0.8px;">Member Since</h6>
+                    <p id="member-since-sidebar" class="small mb-0 fw-medium text-dark">Join date...</p>
+                </div>
+
+                <div class="p-3 rounded-4 mb-3 border bg-light shadow-sm-hover transition-all" style="background-color: #fcfcfd;">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="text-uppercase x-small fw-bold text-muted mb-0" style="letter-spacing: 0.8px;">Mutual Servers — <span id="mutual-count" class="text-accent">0</span></h6>
+                        <i class="fas fa-chevron-down text-muted small"></i>
+                    </div>
+                    <div class="small text-muted">Komunitas yang sama-sama kalian ikuti.</div>
+                </div>
+
+                <div class="p-3 rounded-4 mb-3 border bg-light shadow-sm-hover transition-all" style="background-color: #fcfcfd;">
+                    <h6 class="text-uppercase x-small fw-bold text-muted mb-2" style="letter-spacing: 0.8px;">Biodata</h6>
+                    <p class="small mb-0 text-dark opacity-75" id="member-bio-sidebar" style="line-height: 1.5;">Klik teman untuk liat profile.</p>
+                </div>
+
+                <div class="mt-auto pt-3 border-top py-3 d-flex flex-column gap-2" id="chat-actions-dropdown">
+                    <!-- JS Actions Inject -->
                 </div>
              </div>
         </div>
@@ -417,16 +453,23 @@
                 searchResults.innerHTML = '<div class="col-12 text-center p-5 text-muted">Tidak ada user ditemukan.</div>';
                 return;
             }
-            searchResults.innerHTML = users.map(u => `
+            searchResults.innerHTML = users.map(u => {
+                const photo = (u.profile && u.profile.profile_photo) ? `/storage/${u.profile.profile_photo}` : null;
+                const bio = (u.profile && u.profile.description) ? u.profile.description.replace(/[\r\n]/g, ' ') : 'Pemain KAMCUP yang siap bertanding!';
+                
+                return `
                 <div class="col-md-4">
                     <div class="p-3 bg-light rounded-4 text-center border h-100 transition-all">
-                        <div class="mx-auto mb-2" style="width:50px;height:50px;background:var(--teman-accent);border-radius:12px;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;"> ${u.name[0].toUpperCase()} </div>
-                        <div class="fw-bold text-dark small">${u.name}</div>
+                        ${photo ? 
+                            `<img src="${photo}" class="rounded-circle mb-2 object-fit-contain bg-white" style="width:50px;height:50px;" alt="">` :
+                            `<div class="mx-auto mb-2" style="width:50px;height:50px;background:var(--teman-accent);border-radius:12px;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;"> ${u.name[0].toUpperCase()} </div>`
+                        }
+                        <div class="fw-bold text-dark small text-truncate">${u.name}</div>
                         <div class="text-muted x-small mb-3">ID: #${u.id}</div>
                         ${getResButton(u)}
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
         }
 
         function getResButton(u) {
@@ -448,7 +491,7 @@
         };
 
         // --- CHAT ---
-        window.openChat = async function(id, name) {
+        window.openChat = async function(id, name, avatar = '', bio = '', joinDate = 'Jan 01, 2026', mutualCount = 0) {
             currentFriendId = id;
             currentFriendName = name;
             welcomeView.classList.add('d-none');
@@ -456,16 +499,25 @@
             chatInput.placeholder = `Kirim pesan ke @${name}`;
             
             // Highlight active friend in sidebar
-            document.querySelectorAll('.friend-item-sidebar').forEach(el => el.classList.remove('bg-white', 'shadow-sm'));
+            document.querySelectorAll('.friend-item-sidebar').forEach(el => el.classList.remove('bg-white', 'shadow-sm', 'text-dark'));
             const items = document.querySelectorAll('.friend-item-sidebar');
             items.forEach(item => {
-                if(item.innerText.includes(name)) item.classList.add('bg-white', 'shadow-sm');
+                if(item.querySelector('.fw-bold').innerText === name) item.classList.add('bg-white', 'shadow-sm');
             });
 
             // Side info update
-            document.getElementById('member-sidebar').style.opacity = '1';
+            document.getElementById('member-sidebar').style.display = 'flex';
             document.getElementById('member-name-sidebar').innerText = name;
-            document.getElementById('member-avatar-text').innerText = name[0].toUpperCase();
+            document.getElementById('member-bio-sidebar').innerText = bio || 'Pemain KAMCUP yang siap bertanding!';
+            document.getElementById('member-since-sidebar').innerText = joinDate;
+            document.getElementById('mutual-count').innerText = mutualCount;
+            
+            const avatarContainer = document.getElementById('member-avatar-container');
+            if (avatar) {
+                avatarContainer.innerHTML = `<img src="/storage/${avatar}" class="rounded-circle object-fit-contain shadow-sm h-100 w-100 border border-4 border-white bg-light" style="background:#f8f9fa;" alt="">`;
+            } else {
+                avatarContainer.innerHTML = `<div class="rounded-circle bg-accent d-flex align-items-center justify-content-center text-white fw-bold fs-2 h-100 w-100 shadow-sm border border-4 border-white">${name[0].toUpperCase()}</div>`;
+            }
             
             document.getElementById('chat-actions-dropdown').innerHTML = `
                 <form action="/user2026/teman/${id}/remove" method="POST" onsubmit="return confirm('Hapus teman?')">
