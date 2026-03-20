@@ -134,7 +134,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/feeds/{comment}/comment', [App\Http\Controllers\FeedController::class, 'commentDelete'])->name('feeds.comment.delete');
     
     // Meets creation and join
-    Route::post('/user2026/feeds', [App\Http\Controllers\FeedController::class, 'store'])->name('user2026.feeds.store');
+    Route::post('/user/feeds', [App\Http\Controllers\FeedController::class, 'store'])->name('user2026.feeds.store');
     Route::post('/feeds/{feed}/join', [App\Http\Controllers\FeedController::class, 'join'])->name('feeds.join');
     
     // User Profile Management
@@ -185,32 +185,36 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/ajukan-sponsorship', [DonationController::class, 'create'])->name('sponsorship.form');
     Route::get('/donasi', [DonationController::class, 'create'])->name('donation.form.alt');
 
-    // New User 2026 Pages (require auth)
-    Route::get('/user2026/komunitas', [FrontController::class, 'komunitas'])->name('user2026.komunitas'); // Changed to controller for data
-    Route::get('/user2026/komunitas/buat', [App\Http\Controllers\CommunityController::class, 'create'])->name('user2026.komunitas.create');
-    Route::get('/user2026/komunitas/{community:slug}', [App\Http\Controllers\CommunityController::class, 'show'])->name('user2026.komunitas.show');
-    Route::get('/user2026/komunitas/{community:slug}/messages', [App\Http\Controllers\CommunityController::class, 'getMessages'])->name('user2026.komunitas.messages');
-    Route::post('/user2026/komunitas/{community:slug}/messages', [App\Http\Controllers\CommunityController::class, 'sendMessage'])->name('user2026.komunitas.messages.store');
-    Route::post('/user2026/komunitas/{community:slug}/report', [App\Http\Controllers\CommunityController::class, 'report'])->name('user2026.komunitas.report');
-    Route::post('/user2026/komunitas/{community:slug}/join', [App\Http\Controllers\CommunityController::class, 'join'])->name('user2026.komunitas.join');
-    Route::post('/user2026/komunitas/{community:slug}/post', [App\Http\Controllers\CommunityController::class, 'storePost'])->name('user2026.komunitas.post.store');
-    Route::post('/user2026/komunitas/{community:slug}/agenda', [App\Http\Controllers\CommunityController::class, 'storeAgenda'])->name('user2026.komunitas.agenda.store');
-    Route::post('/user2026/komunitas/{community:slug}/members/{user}/role', [App\Http\Controllers\CommunityController::class, 'updateMemberRole'])->name('user2026.komunitas.member.role');
-    Route::delete('/user2026/komunitas/{community:slug}/members/{user}', [App\Http\Controllers\CommunityController::class, 'removeMember'])->name('user2026.komunitas.member.remove');
-    Route::post('/user2026/komunitas/{community:slug}/members/{user}/approve', [App\Http\Controllers\CommunityController::class, 'approveMember'])->name('user2026.komunitas.member.approve');
-    Route::post('/user2026/komunitas', [App\Http\Controllers\CommunityController::class, 'store'])->name('user2026.komunitas.store');
+    // User Pages (require auth) - Protected with 'user.pages' middleware
+    Route::middleware('user.pages')->group(function () {
+        Route::get('/user/komunitas', [FrontController::class, 'komunitas'])->name('user2026.komunitas');
+        Route::get('/user/teman', [App\Http\Controllers\FriendshipController::class, 'index'])->name('user2026.teman');
+        Route::get('/user/feeds', [App\Http\Controllers\FeedController::class, 'index'])->name('user2026.feeds');
+    });
+    Route::get('/user/komunitas/buat', [App\Http\Controllers\CommunityController::class, 'create'])->name('user2026.komunitas.create');
+    Route::get('/user/komunitas/{community:slug}', [App\Http\Controllers\CommunityController::class, 'show'])->name('user2026.komunitas.show');
+    Route::get('/user/komunitas/{community:slug}/messages', [App\Http\Controllers\CommunityController::class, 'getMessages'])->name('user2026.komunitas.messages');
+    Route::post('/user/komunitas/{community:slug}/messages', [App\Http\Controllers\CommunityController::class, 'sendMessage'])->name('user2026.komunitas.messages.store');
+    Route::post('/user/komunitas/{community:slug}/report', [App\Http\Controllers\CommunityController::class, 'report'])->name('user2026.komunitas.report');
+    Route::post('/user/komunitas/{community:slug}/join', [App\Http\Controllers\CommunityController::class, 'join'])->name('user2026.komunitas.join');
+    Route::post('/user/komunitas/{community:slug}/post', [App\Http\Controllers\CommunityController::class, 'storePost'])->name('user2026.komunitas.post.store');
+    Route::post('/user/komunitas/{community:slug}/agenda', [App\Http\Controllers\CommunityController::class, 'storeAgenda'])->name('user2026.komunitas.agenda.store');
+    Route::post('/user/komunitas/{community:slug}/members/{user}/role', [App\Http\Controllers\CommunityController::class, 'updateMemberRole'])->name('user2026.komunitas.member.role');
+    Route::delete('/user/komunitas/{community:slug}/members/{user}', [App\Http\Controllers\CommunityController::class, 'removeMember'])->name('user2026.komunitas.member.remove');
+    Route::post('/user/komunitas/{community:slug}/members/{user}/approve', [App\Http\Controllers\CommunityController::class, 'approveMember'])->name('user2026.komunitas.member.approve');
+    Route::post('/user/komunitas', [App\Http\Controllers\CommunityController::class, 'store'])->name('user2026.komunitas.store');
     
-    Route::get('/user2026/teman', [App\Http\Controllers\FriendshipController::class, 'index'])->name('user2026.teman');
-    Route::get('/user2026/teman/search', [App\Http\Controllers\FriendshipController::class, 'search'])->name('user2026.teman.search');
-    Route::post('/user2026/teman/{user}/add', [App\Http\Controllers\FriendshipController::class, 'addFriend'])->name('user2026.teman.add');
-    Route::post('/user2026/teman/accept/{friendship}', [App\Http\Controllers\FriendshipController::class, 'acceptFriend'])->name('user2026.teman.accept');
-    Route::delete('/user2026/teman/{user}/remove', [App\Http\Controllers\FriendshipController::class, 'removeFriend'])->name('user2026.teman.remove');
+    Route::get('/user/teman', [App\Http\Controllers\FriendshipController::class, 'index'])->name('user2026.teman');
+    Route::get('/user/teman/search', [App\Http\Controllers\FriendshipController::class, 'search'])->name('user2026.teman.search');
+    Route::post('/user/teman/{user}/add', [App\Http\Controllers\FriendshipController::class, 'addFriend'])->name('user2026.teman.add');
+    Route::post('/user/teman/accept/{friendship}', [App\Http\Controllers\FriendshipController::class, 'acceptFriend'])->name('user2026.teman.accept');
+    Route::delete('/user/teman/{user}/remove', [App\Http\Controllers\FriendshipController::class, 'removeFriend'])->name('user2026.teman.remove');
     
     // Private Messaging
-    Route::get('/user2026/teman/{friend}/messages', [App\Http\Controllers\FriendshipController::class, 'getMessages'])->name('user2026.teman.messages');
-    Route::post('/user2026/teman/{friend}/messages', [App\Http\Controllers\FriendshipController::class, 'sendMessage'])->name('user2026.teman.messages.store');
+    Route::get('/user/teman/{friend}/messages', [App\Http\Controllers\FriendshipController::class, 'getMessages'])->name('user2026.teman.messages');
+    Route::post('/user/teman/{friend}/messages', [App\Http\Controllers\FriendshipController::class, 'sendMessage'])->name('user2026.teman.messages.store');
     
-    Route::get('/user2026/feeds', [App\Http\Controllers\FeedController::class, 'index'])->name('user2026.feeds');
+    Route::get('/user/feeds', [App\Http\Controllers\FeedController::class, 'index'])->name('user2026.feeds');
 });
 
 /*
@@ -218,7 +222,6 @@ Route::middleware(['auth'])->group(function () {
 | Admin Routes
 |--------------------------------------------------------------------------
 */
-// PERBAIKAN: Menggunakan 'role:admin' dan MENGGABUNGKAN semua rute admin
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     
     // Admin Dashboard
@@ -265,25 +268,26 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
         Route::get('/{tournamentHostRequest}', [TournamentHostRequestController::class, 'show'])->name('show');
         Route::put('/{tournamentHostRequest}/approve', [TournamentHostRequestController::class, 'approve'])->name('approve');
         Route::put('/{tournamentHostRequest}/reject', [TournamentHostRequestController::class, 'reject'])->name('reject');
-        
-        // --- INI BARIS BARU YANG DITAMBAHKAN ---
         Route::delete('/{tournamentHostRequest}', [TournamentHostRequestController::class, 'destroy'])->name('destroy');
     });
     
     // Donation/Sponsorship Management (Admin)
-Route::prefix('donations')->name('donations.')->group(function () {
-    Route::get('/', [DonationController::class, 'index'])->name('index');
-    Route::get('/{donation}', [DonationController::class, 'show'])->name('show');
-    Route::put('/{donation}/status', [DonationController::class, 'updateStatus'])->name('updateStatus');
-    Route::delete('/{donation}', [DonationController::class, 'destroy'])->name('destroy');
-    Route::get('/export/csv', [DonationController::class, 'export'])->name('export');
-    Route::get('/statistics/json', [DonationController::class, 'statistics'])->name('statistics');
-});
+    Route::prefix('donations')->name('donations.')->group(function () {
+        Route::get('/', [DonationController::class, 'index'])->name('index');
+        Route::get('/{donation}', [DonationController::class, 'show'])->name('show');
+        Route::put('/{donation}/status', [DonationController::class, 'updateStatus'])->name('updateStatus');
+        Route::delete('/{donation}', [DonationController::class, 'destroy'])->name('destroy');
+        Route::get('/export/csv', [DonationController::class, 'export'])->name('export');
+        Route::get('/statistics/json', [DonationController::class, 'statistics'])->name('statistics');
+    });
 
     // User Pages Management - Pengaturan Userpage Admin
     Route::get('/userpages', function () {
         return view('Dashboard2026.manage-user-pages');
     })->name('userpages.index');
+    
+    // Toggle user pages visibility (Admin only)
+    Route::post('/toggle-user-pages', [AdminDashboardController::class, 'toggleUserPages'])->name('toggle.userpages');
     Route::get('/komunitas', [App\Http\Controllers\CommunityController::class, 'adminIndex'])->name('userpages.komunitas');
     Route::get('/komunitas/buat', [App\Http\Controllers\CommunityController::class, 'adminCreate'])->name('userpages.komunitas.create');
     Route::post('/komunitas', [App\Http\Controllers\CommunityController::class, 'store'])->name('userpages.komunitas.store');
@@ -295,42 +299,27 @@ Route::prefix('donations')->name('donations.')->group(function () {
     Route::delete('/reports/{report}', [App\Http\Controllers\CommunityController::class, 'dismissReport'])->name('userpages.reports.dismiss');
     Route::resource('feeds', App\Http\Controllers\Admin\FeedController::class)->only(['index', 'store', 'destroy']);
 
-
-
     // =====================================================
     // MATCH MANAGEMENT (Admin)
     // =====================================================
     Route::prefix('matches')->name('matches.')->group(function () {
-        
-        // ⚠️ PENTING: AJAX Endpoints HARUS DI ATAS Resource Routes
-        // Jika ditaruh di bawah, akan ter-capture oleh {match} parameter
-        
-        // AJAX Endpoints untuk Form Create/Edit
         Route::get('/get-confirmed-teams', [MatchController::class, 'getConfirmedTeams'])
              ->name('get-confirmed-teams');
-        
         Route::get('/get-tournament-location', [MatchController::class, 'getTournamentLocation'])
              ->name('get-tournament-location');
-        
-        // Live Score dan Stats Endpoints (Optional)
         Route::get('/{match}/score', [MatchController::class, 'getScore'])
              ->name('get-score');
     });
     
     // Match Resource Routes (CRUD operations)
-    // Ini HARUS setelah AJAX routes di atas
     Route::resource('matches', MatchController::class);
 
-    // Rute Manajemen Tim (DIPINDAHKAN KE SINI)
+    // Team Management (Admin)
     Route::get('teams', [AdminTeamController::class, 'index'])->name('teams.index');
     Route::get('teams/{team}/edit', [AdminTeamController::class, 'edit'])->name('teams.edit');
     Route::put('teams/{team}', [AdminTeamController::class, 'update'])->name('teams.update');
     Route::delete('teams/{team}', [AdminTeamController::class, 'destroy'])->name('teams.destroy');
 });
-
-// GRUP ADMIN KEDUA YANG SALAH (DIHAPUS)
-// Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () { ... });
-
 
 /*
 |--------------------------------------------------------------------------
@@ -351,26 +340,29 @@ Route::middleware(['auth', 'role:reader'])->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| API Routes (Optional - untuk akses eksternal)
+| API Routes
 |--------------------------------------------------------------------------
 */
 Route::prefix('api')->name('api.')->group(function () {
-    // Public API endpoints (tidak perlu auth)
-    Route::get('/matches/{match}/score', [MatchController::class, 'getScore'])->name('api.match.score'); // Nama diubah agar unik
+    Route::get('/matches/{match}/score', [MatchController::class, 'getScore'])->name('api.match.score');
     Route::get('/tournaments/{tournament}/matches', function($tournament) {
         return App\Models\Tournament::findOrFail($tournament)
             ->matches()
             ->with(['team1', 'team2'])
             ->get();
-    })->name('api.tournament.matches'); // Nama diubah agar unik
+    })->name('api.tournament.matches');
 });
 
-// Tes error page, bisa di hapus setelah testing atau presentasi
+/*
+|--------------------------------------------------------------------------
+| Test Error Pages
+|--------------------------------------------------------------------------
+*/
 Route::get('/401', fn() => abort(401, 'Unauthorized'));
 Route::get('/402', fn() => abort(402, 'Unauthorized'));
 Route::get('/403', fn() => abort(403, 'Forbidden'));
 Route::get('/419', fn() => abort(419, 'Page Expired'));
 Route::get('/429', fn() => abort(429, 'Too Many Requests'));
 Route::get('/500', fn() => abort(500, 'Internal Server Error'));
-Route::get('/5G3', fn() => abort(503, 'Service Unavailable')); // Typo? 5G3 -> 503
+Route::get('/5G3', fn() => abort(503, 'Service Unavailable'));
 Route::get('/503', fn() => abort(503, 'Service Unavailable'));

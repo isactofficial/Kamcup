@@ -7,62 +7,65 @@ use App\Models\Article;
 use App\Models\Gallery;
 use App\Models\Visit;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
 
 class AdminDashboardController extends Controller
 {
     public function dashboard()
     {
-        // Ambil semua artikel dan galeri (opsional)
         $articles = Article::all();
         $galleries = Gallery::all();
 
-        // Statistik kunjungan umum
         $today = Visit::whereDate('visited_at', Carbon::today())->count();
-        $week = Visit::whereBetween('visited_at', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])->count();
+        $week  = Visit::whereBetween('visited_at', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])->count();
         $month = Visit::whereMonth('visited_at', Carbon::now()->month)->count();
-        $year = Visit::whereYear('visited_at', Carbon::now()->year)->count();
+        $year  = Visit::whereYear('visited_at', Carbon::now()->year)->count();
 
-        // URL yang dianggap sebagai homepage
-        $homepageUrls = ['https://kamcup.com', 'https://kamcup.com/']; // Changed from kersa.id
+        $homepageUrls = ['https://kamcup.com', 'https://kamcup.com/'];
 
-        // Statistik kunjungan per halaman (Homepage)
-        $homeVisitToday = Visit::whereIn('url', $homepageUrls)
-            ->whereDate('visited_at', Carbon::today())
-            ->count();
+        $homeVisitToday = Visit::whereIn('url', $homepageUrls)->whereDate('visited_at', Carbon::today())->count();
+        $homeVisitWeek  = Visit::whereIn('url', $homepageUrls)->whereBetween('visited_at', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])->count();
+        $homeVisitMonth = Visit::whereIn('url', $homepageUrls)->whereMonth('visited_at', Carbon::now()->month)->count();
+        $homeVisitYear  = Visit::whereIn('url', $homepageUrls)->whereYear('visited_at', Carbon::now()->year)->count();
 
-        $homeVisitWeek = Visit::whereIn('url', $homepageUrls)
-            ->whereBetween('visited_at', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
-            ->count();
+        $homeVisit    = Visit::whereIn('url', $homepageUrls)->count();
+        $articleVisit = Visit::where('url', 'https://kamcup.com/articles')->count();
+        $galleryVisit = Visit::where('url', 'https://kamcup.com/galleries')->count();
+        $contactVisit = Visit::where('url', 'https://kamcup.com/contact')->count();
 
-        $homeVisitMonth = Visit::whereIn('url', $homepageUrls)
-            ->whereMonth('visited_at', Carbon::now()->month)
-            ->count();
+        // Pakai Cache agar persist (tidak hilang saat session expire)
+        $hideUserPages = Cache::get('hide_user_pages', false);
 
-        $homeVisitYear = Visit::whereIn('url', $homepageUrls)
-            ->whereYear('visited_at', Carbon::now()->year)
-            ->count();
-
-        // Statistik total berdasarkan halaman
-        $homeVisit = Visit::whereIn('url', $homepageUrls)->count();
-        $articleVisit = Visit::where('url', 'https://kamcup.com/articles')->count(); // Changed from kersa.id
-        $galleryVisit = Visit::where('url', 'https://kamcup.com/galleries')->count(); // Changed from kersa.id
-        $contactVisit = Visit::where('url', 'https://kamcup.com/contact')->count(); // Changed from kersa.id
-
-        // Siapkan data untuk Chart.js
         $visitData = [
             'Homepage' => $homeVisit,
             'Articles' => $articleVisit,
             'Galleries' => $galleryVisit,
-            'Contact' => $contactVisit,
+            'Contact'  => $contactVisit,
         ];
 
-        // Kirim semua data ke blade
         return view('dashboard.admin', compact(
             'articles', 'galleries',
             'today', 'week', 'month', 'year',
             'homeVisitToday', 'homeVisitWeek', 'homeVisitMonth', 'homeVisitYear',
-            'homeVisit',
-            'articleVisit', 'galleryVisit', 'contactVisit'
-        ))->with('visitData', $visitData);
+            'homeVisit', 'articleVisit', 'galleryVisit', 'contactVisit',
+            'hideUserPages', 'visitData'
+        ));
+    }
+
+    /**
+     * Toggle visibility tombol Komunitas, Teman, Feeds di profile user
+     * Dipanggil via AJAX dari dashboard
+     */
+    public function toggleUserPages(Request $request)
+    {
+        $current  = Cache::get('hide_user_pages', false);
+        $newValue = !$current;
+
+        Cache::forever('hide_user_pages', $newValue);
+
+        return response()->json([
+            'success' => true,
+            'hidden'  => $newValue,
+        ]);
     }
 }
