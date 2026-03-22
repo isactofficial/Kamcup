@@ -1,14 +1,25 @@
-# Profile Photo Fix - Feeds Page
-Status: 🚀 In Progress
+# Add Save Feeds Feature Progress
 
-## Plan Breakdown:
-- [ ] 1. Create TODO.md with steps ✅ **DONE**
-- [x] 2. Edit resources/views/User2026/feeds.blade.php (Blade template + JS) ✅ **DONE**
-  - Replaced `avatar` → `profile_photo` (all occurrences)
-  - Updated fallback logic to `profile-placeholder.png`
-  - Fixed JS buildFeedHtml() function
-- [ ] 3. Clear view cache: `php artisan view:clear`
-- [ ] 4. Test: Verify profile photos load consistently
-- [ ] 5. Mark complete & attempt_completion
+## Plan Steps (Approved)
 
-**Next:** Edit feeds.blade.php
+### 1. ✅ Migration: database/migrations/2024_12_01_000000_create_feed_saved_users_table.php created
+### 2. ✅ Model: app/Models/FeedSave.php created
+### 3. ✅ Model: app/Models/Feed.php - added savedBy(), scopes, attributes
+
+### 4. ✅ Model: app/Models/User.php - added feedSaves()
+### 5. ✅ Controller: app/Http/Controllers/FeedController.php - added save() method + index query update
+
+### 6. ✅ Routes: routes/web.php - added feeds.save route
+
+### 7. ✅ Blade: resources/views/User2026/feeds.blade.php - added save button + JS handler + CSS
+
+### 8. ✅ Migration run: php artisan migrate executed
+
+**Current: Step 9**
+### 9. Test feature - Visit /user/feeds, toggle save buttons, check DB + UI updates
+### 6. Edit routes/web.php
+### 7. Edit resources/views/User2026/feeds.blade.php
+### 8. Run php artisan migrate
+### 9. Test feature
+
+**Current: Step 1**

@@ -102,6 +102,7 @@
 .action-btn i { font-size: 1rem; }
 .action-btn:hover { background-color: #fdf2f8; color: #cb2786; }
 .action-btn.liked { color: #cb2786; background-color: #fdf2f8; }
+.action-btn.saved { color: #f59e0b; background-color: #fef3c7; }
 .action-btn-share { margin-left: auto; }
 .avatar-fallback { width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, #cb2786, #00617a); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-family: 'Sora', sans-serif; font-size: 0.9rem; flex-shrink: 0; }
 .feeds-empty { text-align: center; padding: 4rem 1rem; background: #fff; border-radius: 18px; border: 1px solid #e8ecef; }
@@ -795,6 +796,10 @@
                     <span class="category-icon"><i class="fas fa-calendar-plus"></i></span>
                     <span>Meets</span>
                 </a>
+                <a href="{{ route('user2026.saved') }}" class="category-item {{ request()->routeIs('user2026.saved') ? 'active' : '' }}">
+                    <span class="category-icon"><i class="fas fa-bookmark"></i></span>
+                    <span>Tersimpan</span>
+                </a>
             </nav>
         </div>
         <div class="sidebar-footer">
@@ -909,6 +914,13 @@
                                 data-feed-id="{{ $feed->id }}" title="Suka">
                             <i class="{{ $feed->current_user_liked ? 'fas' : 'far' }} fa-heart"></i>
                             <span class="like-count">{{ $feed->likes_count }}</span>
+                        </button>
+
+                        <!-- Save -->
+                        <button class="action-btn save-btn {{ $feed->current_user_saved ? 'saved' : '' }}"
+                                data-feed-id="{{ $feed->id }}" title="Simpan">
+                            <i class="{{ $feed->current_user_saved ? 'fas' : 'far' }} fa-bookmark"></i>
+                            <span class="save-count">{{ $feed->saves_count ?? 0 }}</span>
                         </button>
 
                         <!-- Comment -->
@@ -1230,6 +1242,22 @@ $(document).ready(function () {
                 }
             })
             .fail(() => showToast('Gagal like/unlike', 'error'));
+    });
+
+    /* ─────────────────────────────────────────────────────────
+       SAVE FEED
+       ───────────────────────────────────────────────────────── */
+    $(document).on('click', '.save-btn', function () {
+        const $btn   = $(this);
+        const feedId = $btn.data('feed-id');
+        $.post(`/feeds/${feedId}/save`)
+            .done(data => {
+                $btn.toggleClass('saved', data.saved);
+                $btn.find('i').toggleClass('far', !data.saved).toggleClass('fas', data.saved);
+                $btn.find('.save-count').text(data.count);
+                showToast(data.message, data.saved ? 'success' : 'info');
+            })
+            .fail(() => showToast('Gagal simpan/hapus simpanan', 'error'));
     });
 
     /* ─────────────────────────────────────────────────────────
@@ -1749,6 +1777,7 @@ $(document).ready(function () {
             <div class="feed-action-bar ${isMeets?'meets-action-bar':''}">${actionHtml}</div>
         </article>`;
     }
+    
 });
 </script>
 @endpush

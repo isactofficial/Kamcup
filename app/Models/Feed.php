@@ -98,13 +98,60 @@ class Feed extends Model
     /**
      * Users who joined this meet
      */
-    public function joinedBy()
+public function joinedBy()
     {
         return $this->belongsToMany(User::class, 'feed_user_joins')
                     ->using(FeedUserJoin::class)
                     ->withPivot('joined_at')
                     ->withTimestamps()
                     ->orderByPivot('joined_at');
+    }
+
+    /**
+     * Users who saved this feed
+     */
+    public function savedBy()
+    {
+        return $this->belongsToMany(User::class, 'feed_saved_users')
+                    ->using(FeedSave::class)
+                    ->withPivot('saved_at')
+                    ->withTimestamps()
+                    ->orderByPivot('saved_at');
+    }
+
+    /**
+     * Check if user saved this feed
+     */
+    public function savedByUser(User $user): bool
+    {
+        if (isset($this->attributes['current_user_saved'])) {
+            return (bool) $this->attributes['current_user_saved'];
+        }
+
+        if ($this->relationLoaded('savedBy')) {
+            return $this->savedBy->contains('id', $user->id);
+        }
+        return $this->savedBy()->where('user_id', $user->id)->exists();
+    }
+
+    /**
+     * Accessor for current_user_saved (from controller subquery)
+     */
+    public function getCurrentUserSavedAttribute(): bool
+    {
+        return (bool) ($this->attributes['current_user_saved'] ?? false);
+    }
+
+    /**
+     * Accessor for saves_count
+     */
+    public function getSavesCountAttribute()
+    {
+        return (int) ($this->attributes['saves_count'] ?? 0);
+    }
+    public function scopeWithSavesCount($query)
+    {
+        return $query->withCount('savedBy as saves_count');
     }
 
     /**

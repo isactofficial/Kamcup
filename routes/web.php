@@ -130,6 +130,8 @@ Route::middleware(['auth'])->group(function () {
     // Feeds interactions
     Route::get('/feeds/{feed}/comments', [App\Http\Controllers\FeedController::class, 'comments'])->name('feeds.comments');
     Route::post('/feeds/{feed}/like', [App\Http\Controllers\FeedController::class, 'like'])->name('feeds.like');
+    Route::post('/feeds/{feed}/save', [App\Http\Controllers\FeedController::class, 'save'])->name('feeds.save');
+    Route::get('/user/saved', [App\Http\Controllers\FeedController::class, 'saved'])->name('user2026.saved');
     Route::post('/feeds/{feed}/comments', [App\Http\Controllers\FeedController::class, 'commentStore'])->name('feeds.comment.store');
     Route::delete('/feeds/{comment}/comment', [App\Http\Controllers\FeedController::class, 'commentDelete'])->name('feeds.comment.delete');
     
@@ -189,8 +191,9 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware('user.pages')->group(function () {
         Route::get('/user/komunitas', [FrontController::class, 'komunitas'])->name('user2026.komunitas');
         Route::get('/user/teman', [App\Http\Controllers\FriendshipController::class, 'index'])->name('user2026.teman');
-        Route::get('/user/feeds', [App\Http\Controllers\FeedController::class, 'index'])->name('user2026.feeds');
-    });
+    Route::get('/user/feeds', [App\Http\Controllers\FeedController::class, 'index'])->name('user2026.feeds');
+    Route::get('/user/saved-feeds', [App\Http\Controllers\FeedController::class, 'saved'])->name('user2026.saved');
+});
     Route::get('/user/komunitas/buat', [App\Http\Controllers\CommunityController::class, 'create'])->name('user2026.komunitas.create');
     Route::get('/user/komunitas/{community:slug}', [App\Http\Controllers\CommunityController::class, 'show'])->name('user2026.komunitas.show');
     Route::get('/user/komunitas/{community:slug}/messages', [App\Http\Controllers\CommunityController::class, 'getMessages'])->name('user2026.komunitas.messages');

@@ -31,16 +31,18 @@ class FeedController extends Controller
         // Pre-load counts and user flags in ONE selectRaw to avoid nesting
         $extraSelect = ', 
             (SELECT COUNT(DISTINCT fl.user_id) FROM feed_likes fl WHERE fl.feed_id = feeds.id) as likes_count,
+            (SELECT COUNT(DISTINCT fs.user_id) FROM feed_saved_users fs WHERE fs.feed_id = feeds.id) as saves_count,
             (SELECT COUNT(*) FROM feed_comments fc WHERE fc.feed_id = feeds.id) as comments_count,
             (SELECT COUNT(DISTINCT fuj.user_id) FROM feed_user_joins fuj WHERE fuj.feed_id = feeds.id) as joins_count';
 
         $bindings = [];
         if ($userId) {
             $extraSelect .= ', EXISTS(SELECT 1 FROM feed_likes WHERE feed_id = feeds.id AND user_id = ?) as current_user_liked,
+            EXISTS(SELECT 1 FROM feed_saved_users WHERE feed_id = feeds.id AND user_id = ?) as current_user_saved,
             EXISTS(SELECT 1 FROM feed_user_joins WHERE feed_id = feeds.id AND user_id = ?) as current_user_joined';
-            $bindings = [$userId, $userId];
+            $bindings = [$userId, $userId, $userId];
         } else {
-            $extraSelect .= ', 0 as current_user_liked, 0 as current_user_joined';
+            $extraSelect .= ', 0 as current_user_liked, 0 as current_user_saved, 0 as current_user_joined';
         }
 
         $query->selectRaw('feeds.*' . $extraSelect, $bindings);
@@ -56,6 +58,41 @@ class FeedController extends Controller
         $feedCount = $feeds->total();
 
         return view('User2026.feeds', compact('feeds', 'filter', 'title', 'feedCount'));
+    }
+
+    /**
+     * Show user's saved feeds
+     */
+    public function saved(Request $request)
+    {
+        $userId = auth()->id();
+
+        $query = Feed::query()
+            ->with(['user.profile'])
+            ->whereHas('savedBy', function ($q) use ($userId) {
+                $q->where('user_id', $userId);
+            })
+            ->whereNull('community_id');
+
+        $extraSelect = ', 
+            (SELECT COUNT(DISTINCT fl.user_id) FROM feed_likes fl WHERE fl.feed_id = feeds.id) as likes_count,
+            (SELECT COUNT(DISTINCT fs.user_id) FROM feed_saved_users fs WHERE fs.feed_id = feeds.id) as saves_count,
+            (SELECT COUNT(*) FROM feed_comments fc WHERE fc.feed_id = feeds.id) as comments_count,
+            (SELECT COUNT(DISTINCT fuj.user_id) FROM feed_user_joins fuj WHERE fuj.feed_id = feeds.id) as joins_count';
+
+        $extraSelect .= ', 1 as current_user_saved'; // Always true for saved page
+
+        $bindings = [$userId];
+        $extraSelect .= ', EXISTS(SELECT 1 FROM feed_likes WHERE feed_id = feeds.id AND user_id = ?) as current_user_liked,
+            EXISTS(SELECT 1 FROM feed_user_joins WHERE feed_id = feeds.id AND user_id = ?) as current_user_joined';
+        $bindings = [$userId, $userId];
+
+        $query->selectRaw('feeds.*' . $extraSelect, $bindings);
+
+        $feeds = $query->latest()->paginate(10);
+        $savedCount = $feeds->total();
+
+        return view('User2026.saved', compact('feeds', 'savedCount'));
     }
 
     public function like(Request $request, Feed $feed)
@@ -185,5 +222,42 @@ class FeedController extends Controller
             'message' => 'Kamu ikut meets!'
         ]);
     }
+
+    /**
+     * Toggle user save feed
+     */
+    public function save(Request $request, Feed $feed)
+    {
+        $userId = auth()->id();
+
+        $save = \App\Models\FeedSave::where('feed_id', $feed->id)
+                           ->where('user_id', $userId)
+                           ->first();
+
+        if ($save) {
+            // Unsave
+            $save->delete();
+            $count = $feed->saves_count - 1;
+            return response()->json([
+                'saved' => false,
+                'count' => $count,
+                'message' => 'Feed dihapus dari simpanan'
+            ]);
+        }
+
+        // Save
+        \App\Models\FeedSave::create([
+            'feed_id' => $feed->id,
+            'user_id' => $userId
+        ]);
+
+        $count = $feed->saves_count + 1;
+        return response()->json([
+            'saved' => true,
+            'count' => $count,
+            'message' => 'Feed disimpan!'
+        ]);
+    }
 }
+
 

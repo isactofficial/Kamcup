@@ -94,6 +94,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Feeds saved by user
+     */
+    public function feedSaves()
+    {
+        return $this->hasMany(FeedSave::class);
+    }
+
+    /**
      * Friends relationship.
      */
     public function friends()
