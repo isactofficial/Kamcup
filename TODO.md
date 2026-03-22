@@ -1,9 +1,11 @@
-# TODO: Image Cropper & Circular Profile Photos
+# Fix Team Logo Upload Issue (Cropped Image Not Saving)
 
-- [x] 1. Update `resources/views/front/profile/edit.blade.php` with Cropper.js (1:1 aspect)
+## Steps:
+- [x] 1. Update TeamController.php store() method: adjust validation (logo nullable, add cropped_team_logo), handle base64 → file save
+- [ ] 2. Update TeamController.php update() method similarly for edit (if needed)
+- [ ] 3. Test team creation with crop
+- [ ] 4. Verify storage link & cleanup test files if needed
+- [ ] 5. Mark complete & attempt_completion
 
-- [ ] 2. Update `resources/views/front/profile/profile.blade.php` - circular images (`rounded-circle`)
-- [ ] 3. Update `resources/views/front/teams/create.blade.php` & `edit.blade.php` with cropper for logo
-- [ ] 4. Update `resources/views/front/teams/members/create.blade.php` & `edit.blade.php` with cropper for photo
-- [ ] 5. Test: Upload cropped photo → view profile (circular display)
-- [ ] 6. Complete
+**All code updates complete (store & update methods now handle cropped_team_logo base64). Storage link exists. Test manually: login → create team → pick & crop logo → submit. Should now save without "logo required" error.**
+

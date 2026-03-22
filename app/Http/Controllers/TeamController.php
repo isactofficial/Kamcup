@@ -37,7 +37,8 @@ class TeamController extends Controller
         }
 
         $request->validate([
-            'logo' => ['required', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
+            'logo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
+            'cropped_team_logo' => ['nullable', 'string'],
             'name' => ['required', 'string', 'max:255', 'unique:teams,name'],
             'manager_name' => ['required', 'string', 'max:255'],
             'contact' => ['required', 'string', 'max:255'],
@@ -46,7 +47,6 @@ class TeamController extends Controller
             'member_count' => ['required', 'integer', 'min:1', 'max:10'],
             'description' => ['nullable', 'string'],
         ], [
-            'logo.required' => 'Logo tim wajib diunggah.',
             'logo.image' => 'File logo harus berupa gambar.',
             'logo.mimes' => 'Format logo yang diizinkan adalah jpeg, png, jpg, atau gif.',
             'logo.max' => 'Ukuran logo tidak boleh melebihi 2MB.',
@@ -64,7 +64,22 @@ class TeamController extends Controller
         ]);
 
         $logoPath = null;
-        if ($request->hasFile('logo')) {
+
+        // Priority 1: Handle cropped base64 image (from Cropper.js)
+        if ($request->filled('cropped_team_logo')) {
+            $base64String = $request->input('cropped_team_logo');
+            if (str_contains($base64String, ';base64,')) {
+                [, $base64Data] = explode(';base64,', $base64String);
+                $imageData = base64_decode($base64Data);
+                if ($imageData !== false) {
+                    $filename = 'team_logos/cropped_team_' . time() . '_' . uniqid() . '.jpg';
+                    Storage::disk('public')->put($filename, $imageData);
+                    $logoPath = $filename;
+                }
+            }
+        }
+        // Priority 2: Fallback to regular file upload
+        elseif ($request->hasFile('logo')) {
             $logoPath = $request->file('logo')->store('team_logos', 'public');
         }
 
@@ -120,6 +135,7 @@ class TeamController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255', Rule::unique('teams')->ignore($team->id)],
             'logo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
+            'cropped_team_logo' => ['nullable', 'string'],
             'manager_name' => ['required', 'string', 'max:255'],
             'contact' => ['required', 'string', 'max:255'],
             'location' => ['required', 'string', 'max:255'],
@@ -144,7 +160,25 @@ class TeamController extends Controller
         ]);
 
         $logoPath = $team->logo;
-        if ($request->hasFile('logo')) {
+
+        // Priority 1: Handle cropped base64 image
+        if ($request->filled('cropped_team_logo')) {
+            if ($team->logo && Storage::disk('public')->exists($team->logo)) {
+                Storage::disk('public')->delete($team->logo);
+            }
+            $base64String = $request->input('cropped_team_logo');
+            if (str_contains($base64String, ';base64,')) {
+                [, $base64Data] = explode(';base64,', $base64String);
+                $imageData = base64_decode($base64Data);
+                if ($imageData !== false) {
+                    $filename = 'team_logos/cropped_team_' . $team->id . '_' . time() . '.jpg';
+                    Storage::disk('public')->put($filename, $imageData);
+                    $logoPath = $filename;
+                }
+            }
+        }
+        // Priority 2: Fallback to regular file upload
+        elseif ($request->hasFile('logo')) {
             if ($team->logo && Storage::disk('public')->exists($team->logo)) {
                 Storage::disk('public')->delete($team->logo);
             }

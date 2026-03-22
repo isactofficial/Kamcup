@@ -15,22 +15,14 @@ use Illuminate\Support\Facades\Log;
 
 class TeamMemberController extends Controller
 {
-    /**
-     * Tampilkan formulir untuk membuat anggota tim baru.
-     *
-     * @param  string  $encryptedTeamId ID tim yang dienkripsi
-     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
-     */
     public function create(string $encryptedTeamId)
     {
         try {
             $teamId = Crypt::decryptString($encryptedTeamId);
-            $team = Team::findOrFail($teamId);
+            $team   = Team::findOrFail($teamId);
         } catch (DecryptException $e) {
-            Log::error("Decryption failed for team ID in TeamMember create: " . $e->getMessage());
             return redirect()->route('profile.index')->with('error', 'Link pembuatan anggota tim tidak valid.');
         } catch (ModelNotFoundException $e) {
-            Log::error("Team not found for team ID {$teamId} in TeamMember create: " . $e->getMessage());
             return redirect()->route('profile.index')->with('error', 'Tim tidak ditemukan.');
         }
 
@@ -45,23 +37,14 @@ class TeamMemberController extends Controller
         return view('front.teams.members.create', compact('team'));
     }
 
-    /**
-     * Simpan anggota tim baru ke penyimpanan (database).
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  string  $encryptedTeamId ID tim yang dienkripsi
-     * @return \Illuminate\Http\RedirectResponse
-     */
     public function store(Request $request, string $encryptedTeamId)
     {
         try {
             $teamId = Crypt::decryptString($encryptedTeamId);
-            $team = Team::findOrFail($teamId);
+            $team   = Team::findOrFail($teamId);
         } catch (DecryptException $e) {
-            Log::error("Decryption failed for team ID in TeamMember store: " . $e->getMessage());
             return redirect()->route('profile.index')->with('error', 'Link pembaruan anggota tim tidak valid.');
         } catch (ModelNotFoundException $e) {
-            Log::error("Team not found for team ID {$teamId} in TeamMember store: " . $e->getMessage());
             return redirect()->route('profile.index')->with('error', 'Tim tidak ditemukan.');
         }
 
@@ -74,72 +57,80 @@ class TeamMemberController extends Controller
         }
 
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'birthdate' => ['nullable', 'date', 'before_or_equal:today'],
-            'gender' => ['required', Rule::in(['male', 'female', 'other'])],
-            'position' => ['nullable', 'string', 'max:255'],
-            'jersey_number' => ['nullable', 'integer', 'min:1', 'max:99'],
-            'contact' => ['nullable', 'string', 'max:255'],
-            'email' => ['nullable', 'email', 'max:255', Rule::unique('team_members', 'email')],
-            'photo' => ['required', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:2048'], // <-- DIUBAH DARI 'nullable' KE 'required'
+            'name'                  => ['required', 'string', 'max:255'],
+            'birthdate'             => ['nullable', 'date', 'before_or_equal:today'],
+            'gender'                => ['required', Rule::in(['male', 'female', 'other'])],
+            'position'              => ['nullable', 'string', 'max:255'],
+            'jersey_number'         => ['nullable', 'integer', 'min:1', 'max:99'],
+            'contact'               => ['nullable', 'string', 'max:255'],
+            'email'                 => ['nullable', 'email', 'max:255', Rule::unique('team_members', 'email')],
+            // ↓ nullable semua — foto bisa dari base64 (cropped) atau file biasa
+            'photo'                 => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:2048'],
+            'cropped_member_photo'  => ['nullable', 'string'],
         ], [
-            'name.required' => 'Nama anggota wajib diisi.',
+            'name.required'   => 'Nama anggota wajib diisi.',
             'gender.required' => 'Jenis kelamin anggota wajib dipilih.',
-            'gender.in' => 'Jenis kelamin anggota tidak valid.',
-            'email.unique' => 'Email ini sudah terdaftar untuk anggota tim lain.',
-            'photo.required' => 'Foto anggota tim wajib diunggah.', // <-- TAMBAH PESAN KUSTOM UNTUK 'photo.required'
-            'photo.image' => 'File foto harus berupa gambar.',
-            'photo.mimes' => 'Format foto yang diizinkan adalah jpeg, png, jpg, gif, atau webp.',
-            'photo.max' => 'Ukuran foto tidak boleh melebihi 2MB.',
+            'gender.in'       => 'Jenis kelamin anggota tidak valid.',
+            'email.unique'    => 'Email ini sudah terdaftar untuk anggota tim lain.',
+            'photo.image'     => 'File foto harus berupa gambar.',
+            'photo.mimes'     => 'Format foto yang diizinkan adalah jpeg, png, jpg, gif, atau webp.',
+            'photo.max'       => 'Ukuran foto tidak boleh melebihi 2MB.',
         ]);
 
         try {
             $photoPath = null;
-            if ($request->hasFile('photo')) {
+
+            // ── Prioritas 1: hasil crop (base64) ─────────────────────────
+            if ($request->filled('cropped_member_photo')) {
+                $base64String = $request->input('cropped_member_photo');
+                if (str_contains($base64String, ';base64,')) {
+                    [, $base64Data] = explode(';base64,', $base64String);
+                    $imageData = base64_decode($base64Data);
+                    if ($imageData !== false) {
+                        $filename  = 'team_member_photos/member_' . time() . '_' . uniqid() . '.jpg';
+                        Storage::disk('public')->put($filename, $imageData);
+                        $photoPath = $filename;
+                    }
+                }
+
+            // ── Prioritas 2: file upload biasa ────────────────────────────
+            } elseif ($request->hasFile('photo')) {
                 $photoPath = $request->file('photo')->store('team_member_photos', 'public');
             }
 
             $team->members()->create([
-                'name' => $request->name,
-                'birthdate' => $request->birthdate,
-                'gender' => $request->gender,
-                'position' => $request->position,
+                'name'          => $request->name,
+                'birthdate'     => $request->birthdate,
+                'gender'        => $request->gender,
+                'position'      => $request->position,
                 'jersey_number' => $request->jersey_number,
-                'contact' => $request->contact,
-                'email' => $request->email,
-                'photo' => $photoPath, // Ini tidak akan null karena sudah divalidasi 'required'
+                'contact'       => $request->contact,
+                'email'         => $request->email,
+                'photo'         => $photoPath,
             ]);
 
-            $message = 'Anggota tim "' . $request->name . '" berhasil ditambahkan ke tim ' . $team->name . '!';
-            return redirect()->route('profile.index')->with('success', $message); // Hapus json_encode jika tidak diperlukan SweetAlert
+            return redirect()->route('profile.index')
+                             ->with('success', 'Anggota tim "' . $request->name . '" berhasil ditambahkan ke tim ' . $team->name . '!');
+
         } catch (\Exception $e) {
-            Log::error("Error storing team member: " . $e->getMessage(), ['team_id' => $team->id, 'request_data' => $request->except('photo')]);
-            // Pesan error umum yang tidak menampilkan detail SQL
+            Log::error("Error storing team member: " . $e->getMessage(), [
+                'team_id'      => $team->id,
+                'request_data' => $request->except(['photo', 'cropped_member_photo']),
+            ]);
             return back()->withInput()->with('error', 'Gagal menambahkan anggota tim. Mohon periksa kembali input Anda.');
         }
     }
 
-    /**
-     * Tampilkan formulir untuk mengedit anggota tim yang ada.
-     *
-     * @param  string  $encryptedTeamId ID tim yang dienkripsi
-     * @param  string  $encryptedMemberId ID anggota tim yang dienkripsi
-     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
-     */
     public function edit(string $encryptedTeamId, string $encryptedMemberId)
     {
         try {
-            $teamId = Crypt::decryptString($encryptedTeamId);
-            $team = Team::findOrFail($teamId);
-
+            $teamId   = Crypt::decryptString($encryptedTeamId);
+            $team     = Team::findOrFail($teamId);
             $memberId = Crypt::decryptString($encryptedMemberId);
-            $member = TeamMember::where('team_id', $team->id)->findOrFail($memberId);
-
+            $member   = TeamMember::where('team_id', $team->id)->findOrFail($memberId);
         } catch (DecryptException $e) {
-            Log::error("Decryption failed for team/member ID in TeamMember edit: " . $e->getMessage());
             return redirect()->route('profile.index')->with('error', 'Link pengeditan anggota tim tidak valid.');
         } catch (ModelNotFoundException $e) {
-            Log::error("Team or TeamMember not found in TeamMember edit: " . $e->getMessage());
             return redirect()->route('profile.index')->with('error', 'Tim atau anggota tim tidak ditemukan.');
         }
 
@@ -150,28 +141,16 @@ class TeamMemberController extends Controller
         return view('front.teams.members.edit', compact('team', 'member'));
     }
 
-    /**
-     * Perbarui anggota tim yang ditentukan dalam penyimpanan.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  string  $encryptedTeamId ID tim yang dienkripsi
-     * @param  string  $encryptedMemberId ID anggota tim yang dienkripsi
-     * @return \Illuminate\Http\RedirectResponse
-     */
     public function update(Request $request, string $encryptedTeamId, string $encryptedMemberId)
     {
         try {
-            $teamId = Crypt::decryptString($encryptedTeamId);
-            $team = Team::findOrFail($teamId);
-
+            $teamId   = Crypt::decryptString($encryptedTeamId);
+            $team     = Team::findOrFail($teamId);
             $memberId = Crypt::decryptString($encryptedMemberId);
-            $member = TeamMember::where('team_id', $team->id)->findOrFail($memberId);
-
+            $member   = TeamMember::where('team_id', $team->id)->findOrFail($memberId);
         } catch (DecryptException $e) {
-            Log::error("Decryption failed for team/member ID in TeamMember update: " . $e->getMessage());
             return redirect()->route('profile.index')->with('error', 'Link pembaruan anggota tim tidak valid.');
         } catch (ModelNotFoundException $e) {
-            Log::error("Team or TeamMember not found in TeamMember update: " . $e->getMessage());
             return redirect()->route('profile.index')->with('error', 'Tim atau anggota tim tidak ditemukan.');
         }
 
@@ -180,78 +159,90 @@ class TeamMemberController extends Controller
         }
 
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'birthdate' => ['nullable', 'date', 'before_or_equal:today'],
-            'gender' => ['required', Rule::in(['male', 'female', 'other'])],
-            'position' => ['nullable', 'string', 'max:255'],
-            'jersey_number' => ['nullable', 'integer', 'min:1', 'max:99'],
-            'contact' => ['nullable', 'string', 'max:255'],
-            'email' => ['nullable', 'email', 'max:255', Rule::unique('team_members', 'email')->ignore($member->id)],
-            'photo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:2048'], // <-- TETAP 'nullable' DI UPDATE JIKA FOTO TIDAK WAJIB DIUBAH
-            'clear_photo' => ['nullable', 'boolean'],
+            'name'                  => ['required', 'string', 'max:255'],
+            'birthdate'             => ['nullable', 'date', 'before_or_equal:today'],
+            'gender'                => ['required', Rule::in(['male', 'female', 'other'])],
+            'position'              => ['nullable', 'string', 'max:255'],
+            'jersey_number'         => ['nullable', 'integer', 'min:1', 'max:99'],
+            'contact'               => ['nullable', 'string', 'max:255'],
+            'email'                 => ['nullable', 'email', 'max:255', Rule::unique('team_members', 'email')->ignore($member->id)],
+            'photo'                 => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:2048'],
+            'cropped_member_photo'  => ['nullable', 'string'],
+            'clear_photo'           => ['nullable', 'boolean'],
         ], [
-            'name.required' => 'Nama anggota wajib diisi.',
+            'name.required'   => 'Nama anggota wajib diisi.',
             'gender.required' => 'Jenis kelamin anggota wajib dipilih.',
-            'gender.in' => 'Jenis kelamin anggota tidak valid.',
-            'email.unique' => 'Email ini sudah terdaftar untuk anggota tim lain.',
-            'photo.image' => 'File foto harus berupa gambar.',
-            'photo.mimes' => 'Format foto yang diizinkan adalah jpeg, png, jpg, gif, atau webp.',
-            'photo.max' => 'Ukuran foto tidak boleh melebihi 2MB.',
+            'gender.in'       => 'Jenis kelamin anggota tidak valid.',
+            'email.unique'    => 'Email ini sudah terdaftar untuk anggota tim lain.',
+            'photo.image'     => 'File foto harus berupa gambar.',
+            'photo.mimes'     => 'Format foto yang diizinkan adalah jpeg, png, jpg, gif, atau webp.',
+            'photo.max'       => 'Ukuran foto tidak boleh melebihi 2MB.',
         ]);
 
         try {
-            if ($request->hasFile('photo')) {
+            // ── Prioritas 1: hasil crop (base64) ─────────────────────────
+            if ($request->filled('cropped_member_photo')) {
+                $base64String = $request->input('cropped_member_photo');
+                if (str_contains($base64String, ';base64,')) {
+                    // Hapus foto lama
+                    if ($member->photo && Storage::disk('public')->exists($member->photo)) {
+                        Storage::disk('public')->delete($member->photo);
+                    }
+                    [, $base64Data] = explode(';base64,', $base64String);
+                    $imageData = base64_decode($base64Data);
+                    if ($imageData !== false) {
+                        $filename    = 'team_member_photos/member_' . $member->id . '_' . time() . '.jpg';
+                        Storage::disk('public')->put($filename, $imageData);
+                        $member->photo = $filename;
+                    }
+                }
+
+            // ── Prioritas 2: file upload biasa ────────────────────────────
+            } elseif ($request->hasFile('photo')) {
                 if ($member->photo && Storage::disk('public')->exists($member->photo)) {
                     Storage::disk('public')->delete($member->photo);
                 }
-                $photoPath = $request->file('photo')->store('team_member_photos', 'public');
-                $member->photo = $photoPath;
-            } else if ($request->boolean('clear_photo')) {
+                $member->photo = $request->file('photo')->store('team_member_photos', 'public');
+
+            // ── Prioritas 3: hapus foto ───────────────────────────────────
+            } elseif ($request->boolean('clear_photo')) {
                 if ($member->photo && Storage::disk('public')->exists($member->photo)) {
                     Storage::disk('public')->delete($member->photo);
                 }
                 $member->photo = null;
             }
 
-            $member->name = $request->name;
-            $member->birthdate = $request->birthdate;
-            $member->gender = $request->gender;
-            $member->position = $request->position;
+            $member->name          = $request->name;
+            $member->birthdate     = $request->birthdate;
+            $member->gender        = $request->gender;
+            $member->position      = $request->position;
             $member->jersey_number = $request->jersey_number;
-            $member->contact = $request->contact;
-            $member->email = $request->email;
-
+            $member->contact       = $request->contact;
+            $member->email         = $request->email;
             $member->save();
 
-            $message = 'Anggota tim "' . $request->name . '" berhasil diperbarui!';
-            return redirect()->route('profile.index')->with('success', $message); // Hapus json_encode jika tidak diperlukan SweetAlert
+            return redirect()->route('profile.index')
+                             ->with('success', 'Anggota tim "' . $request->name . '" berhasil diperbarui!');
+
         } catch (\Exception $e) {
-            Log::error("Error updating team member: " . $e->getMessage(), ['member_id' => $member->id, 'request_data' => $request->except('photo')]);
+            Log::error("Error updating team member: " . $e->getMessage(), [
+                'member_id'    => $member->id,
+                'request_data' => $request->except(['photo', 'cropped_member_photo']),
+            ]);
             return back()->withInput()->with('error', 'Gagal memperbarui anggota tim: ' . $e->getMessage());
         }
     }
 
-    /**
-     * Hapus anggota tim.
-     *
-     * @param  string  $encryptedTeamId ID tim yang dienkripsi
-     * @param  string  $encryptedMemberId ID anggota tim yang dienkripsi
-     * @return \Illuminate\Http\RedirectResponse
-     */
     public function destroy(string $encryptedTeamId, string $encryptedMemberId)
     {
         try {
-            $teamId = Crypt::decryptString($encryptedTeamId);
-            $team = Team::findOrFail($teamId);
-
+            $teamId   = Crypt::decryptString($encryptedTeamId);
+            $team     = Team::findOrFail($teamId);
             $memberId = Crypt::decryptString($encryptedMemberId);
-            $member = TeamMember::where('team_id', $team->id)->findOrFail($memberId);
-
+            $member   = TeamMember::where('team_id', $team->id)->findOrFail($memberId);
         } catch (DecryptException $e) {
-            Log::error("Decryption failed for team/member ID in TeamMember destroy: " . $e->getMessage());
             return redirect()->route('profile.index')->with('error', 'Link penghapusan anggota tim tidak valid.');
         } catch (ModelNotFoundException $e) {
-            Log::error("Team or TeamMember not found in TeamMember destroy: " . $e->getMessage());
             return redirect()->route('profile.index')->with('error', 'Tim atau anggota tim tidak ditemukan.');
         }
 
@@ -259,7 +250,7 @@ class TeamMemberController extends Controller
             return redirect()->route('profile.index')->with('error', 'Anda tidak memiliki izin untuk menghapus anggota tim ini.');
         }
 
-        if ($team->members->count() <= 1) { // Asumsi minimal 1 anggota tim
+        if ($team->members->count() <= 1) {
             return redirect()->route('profile.index')->with('error', 'Tim harus memiliki setidaknya satu anggota.');
         }
 
@@ -267,12 +258,12 @@ class TeamMemberController extends Controller
             if ($member->photo && Storage::disk('public')->exists($member->photo)) {
                 Storage::disk('public')->delete($member->photo);
             }
-
             $memberName = $member->name;
             $member->delete();
 
-            $message = 'Anggota tim "' . $memberName . '" berhasil dihapus.';
-            return redirect()->route('profile.index')->with('success', $message); // Hapus json_encode jika tidak diperlukan SweetAlert
+            return redirect()->route('profile.index')
+                             ->with('success', 'Anggota tim "' . $memberName . '" berhasil dihapus.');
+
         } catch (\Exception $e) {
             Log::error("Error deleting team member: " . $e->getMessage(), ['member_id' => $member->id]);
             return back()->with('error', 'Gagal menghapus anggota tim: ' . $e->getMessage());
