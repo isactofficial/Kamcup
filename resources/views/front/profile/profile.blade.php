@@ -8,7 +8,7 @@
 
     <div class="text-center my-3 scroll-reveal">
         <img src="{{ Auth::user()->profile && Auth::user()->profile->profile_photo ? asset('storage/' . Auth::user()->profile->profile_photo) : asset('assets/img/profile-placeholder.png') }}"
-            alt="Profile Photo" class="img-fluid img-square-profile">
+            alt="Profile Photo" class="rounded-circle profile-img-circle" style="width: 120px; height: 120px; object-fit: cover;">
     </div>
 
     <h4 class="text-center mt-4 mb-3 profile-section-title scroll-reveal">Informasi Dasar</h4>
@@ -125,7 +125,8 @@
                         </a>
 
                         <div class="text-center mb-3">
-                            <img src="{{ $firstTeam->logo ? asset('storage/' . $firstTeam->logo) : asset('assets/img/profile-placeholder.png') }}" alt="Team Logo" class="img-fluid img-square-team">
+                            <img src="{{ $firstTeam->logo ? asset('storage/' . $firstTeam->logo) : asset('assets/img/profile-placeholder.png') }}" alt="Team Logo" class="rounded-circle profile-img-circle" style="width: 80px; height: 80px; object-fit: cover;">
+
                         </div>
                         <div class="row mb-2">
                             <div class="col-md-4 fw-bold">Nama Tim:</div>
@@ -188,9 +189,9 @@
                                         <a href="{{ route('team.members.edit', ['team' => Crypt::encryptString($firstTeam->id), 'member' => Crypt::encryptString($member->id)]) }}" class="member-card-link" style="padding: 1rem; width: 100%;">
                                             <div class="card-body">
                                                 @if ($member->photo)
-                                                    <img src="{{ asset('storage/' . $member->photo) }}" alt="{{ $member->name }}" class="img-fluid img-square-team-member mb-2">
+                                                    <img src="{{ asset('storage/' . $member->photo) }}" alt="{{ $member->name }}" class="rounded-circle profile-img-circle mb-2" style="width: 70px; height: 70px; object-fit: cover;">
                                                 @else
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="70" height="70" fill="currentColor" class="bi bi-person-circle text-muted mb-2" viewBox="0 0 16 16">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="70" height="70" fill="currentColor" class="bi bi-person-circle text-muted mb-2 rounded-circle" viewBox="0 0 16 16" style="border-radius: 50%;">
                                                         <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
                                                         <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z" />
                                                     </svg>

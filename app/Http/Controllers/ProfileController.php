@@ -33,14 +33,14 @@ class ProfileController extends Controller
         $user = Auth::user();
 
         // Jumlah item per halaman untuk masing-masing bagian
-        $perPageRegistered = 5; // Tetap 5 untuk Event Saya
-        $perPageHost = 3;       // Diubah menjadi 3 untuk Permohonan Tuan Rumah
-        $perPageDonations = 3;  // Tambahan untuk Donations
+        $perPageRegistered = 5;
+        $perPageHost       = 3;
+        $perPageDonations  = 3;
 
         // Dapatkan nomor halaman saat ini dari request query
         $pageRegistered = $request->query('page_registered', 1);
-        $pageHost = $request->query('page_host', 1);
-        $pageDonations = $request->query('page_donations', 1); // Tambahan untuk donations
+        $pageHost       = $request->query('page_host', 1);
+        $pageDonations  = $request->query('page_donations', 1);
 
         // Eager load semua relasi yang dibutuhkan
         $user->load([
@@ -48,17 +48,17 @@ class ProfileController extends Controller
             'team.members',
             'registeredTournaments.tournament',
             'hostApplications',
-            'donations' // Tambahkan relasi donations
+            'donations',
         ]);
 
         // Inisialisasi variabel untuk view
-        $hasTeam = false;
-        $firstTeam = null;
+        $hasTeam     = false;
+        $firstTeam   = null;
         $teamMembers = collect();
 
         if ($user->team) {
-            $hasTeam = true;
-            $firstTeam = $user->team;
+            $hasTeam     = true;
+            $firstTeam   = $user->team;
             $teamMembers = $user->team->members;
         }
 
@@ -69,7 +69,10 @@ class ProfileController extends Controller
             $allRegisteredTournaments->count(),
             $perPageRegistered,
             $pageRegistered,
-            ['path' => route('profile.index', ['page_host' => $pageHost, 'page_donations' => $pageDonations, 'active_tab' => 'event-saya']), 'pageName' => 'page_registered']
+            [
+                'path'     => route('profile.index', ['page_host' => $pageHost, 'page_donations' => $pageDonations, 'active_tab' => 'event-saya']),
+                'pageName' => 'page_registered',
+            ]
         );
 
         // --- Paginasi Manual untuk hostApplications ---
@@ -79,7 +82,10 @@ class ProfileController extends Controller
             $allHostApplications->count(),
             $perPageHost,
             $pageHost,
-            ['path' => route('profile.index', ['page_registered' => $pageRegistered, 'page_donations' => $pageDonations, 'active_tab' => 'permohonan']), 'pageName' => 'page_host']
+            [
+                'path'     => route('profile.index', ['page_registered' => $pageRegistered, 'page_donations' => $pageDonations, 'active_tab' => 'permohonan']),
+                'pageName' => 'page_host',
+            ]
         );
 
         // --- Paginasi Manual untuk userDonations ---
@@ -89,10 +95,13 @@ class ProfileController extends Controller
             $allUserDonations->count(),
             $perPageDonations,
             $pageDonations,
-            ['path' => route('profile.index', ['page_registered' => $pageRegistered, 'page_host' => $pageHost, 'active_tab' => 'donasi-saya']), 'pageName' => 'page_donations']
+            [
+                'path'     => route('profile.index', ['page_registered' => $pageRegistered, 'page_host' => $pageHost, 'active_tab' => 'donasi-saya']),
+                'pageName' => 'page_donations',
+            ]
         );
 
-        // jadwal pertandingan
+        // Jadwal pertandingan
         $upcomingMatches = collect();
         if ($hasTeam) {
             $userTeamId = $firstTeam->id;
@@ -105,7 +114,6 @@ class ProfileController extends Controller
                                 ->orderBy('match_datetime', 'desc')
                                 ->get();
         }
-
 
         return view('front.profile.profile', compact(
             'user',
@@ -135,7 +143,7 @@ class ProfileController extends Controller
     /**
      * Update the user's basic profile information.
      *
-     * @param   \Illuminate\Http\Request  $request
+     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\RedirectResponse
      */
     public function update(Request $request)
@@ -143,38 +151,72 @@ class ProfileController extends Controller
         $user = Auth::user();
 
         $request->validate([
-            'name' => 'required|string|max:255',
-            'birthdate' => 'nullable|date|before_or_equal:today',
-            'gender' => ['nullable', Rule::in(['male', 'female', 'other'])],
-            'phone_number' => 'nullable|string|max:255',
-            'social_media' => 'nullable|string|max:255',
-            'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'clear_profile_photo' => 'nullable|boolean',
+            'name'                  => 'required|string|max:255',
+            'birthdate'             => 'nullable|date|before_or_equal:today',
+            'gender'                => ['nullable', Rule::in(['male', 'female', 'other'])],
+            'phone_number'          => 'nullable|string|max:255',
+            'social_media'          => 'nullable|string|max:255',
+            'profile_photo'         => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'cropped_profile_photo' => 'nullable|string',   // base64 dari cropper
+            'clear_profile_photo'   => 'nullable|boolean',
         ]);
 
         try {
             DB::beginTransaction();
 
+            // Update nama di tabel users jika berubah
             if ($user->name !== $request->name) {
                 $user->name = $request->name;
                 $user->save();
             }
 
-            $profile = $user->profile ?? new Profile();
-            $profile->user_id = $user->id;
-
-            $profile->name = $request->name;
-            $profile->birthdate = $request->birthdate;
-            $profile->gender = $request->gender;
+            $profile           = $user->profile ?? new Profile();
+            $profile->user_id  = $user->id;
+            $profile->name         = $request->name;
+            $profile->birthdate    = $request->birthdate;
+            $profile->gender       = $request->gender;
             $profile->phone_number = $request->phone_number;
             $profile->social_media = $request->social_media;
 
-            if ($request->hasFile('profile_photo')) {
+            // ── Prioritas 1: hasil crop (base64) ─────────────────────────
+            if ($request->filled('cropped_profile_photo')) {
+
+                $base64String = $request->input('cropped_profile_photo');
+
+                // Pastikan formatnya "data:image/xxx;base64,<data>"
+                if (str_contains($base64String, ';base64,')) {
+
+                    // Hapus foto lama jika ada
+                    if ($profile->profile_photo && Storage::disk('public')->exists($profile->profile_photo)) {
+                        Storage::disk('public')->delete($profile->profile_photo);
+                    }
+
+                    // Pisahkan prefix dari data aktual
+                    [, $base64Data] = explode(';base64,', $base64String);
+                    $imageData = base64_decode($base64Data);
+
+                    if ($imageData === false) {
+                        throw new \Exception('Gagal mendekode gambar. Coba pilih foto lain.');
+                    }
+
+                    $filename = 'profile_photos/profile_' . $user->id . '_' . time() . '.jpg';
+                    Storage::disk('public')->put($filename, $imageData);
+
+                    $profile->profile_photo = $filename;
+                }
+
+            // ── Prioritas 2: upload file biasa (fallback) ─────────────────
+            } elseif ($request->hasFile('profile_photo')) {
+
                 if ($profile->profile_photo && Storage::disk('public')->exists($profile->profile_photo)) {
                     Storage::disk('public')->delete($profile->profile_photo);
                 }
-                $profile->profile_photo = $request->file('profile_photo')->store('profile_photos', 'public');
+                $profile->profile_photo = $request->file('profile_photo')
+                                                   ->store('profile_photos', 'public');
+
+            // ── Prioritas 3: hapus foto ───────────────────────────────────
             } elseif ($request->boolean('clear_profile_photo')) {
+
                 if ($profile->profile_photo && Storage::disk('public')->exists($profile->profile_photo)) {
                     Storage::disk('public')->delete($profile->profile_photo);
                 }
@@ -189,7 +231,10 @@ class ProfileController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error("Error updating profile: " . $e->getMessage(), ['user_id' => $user->id, 'request_data' => $request->except('profile_photo')]);
+            Log::error('Error updating profile: ' . $e->getMessage(), [
+                'user_id'      => $user->id,
+                'request_data' => $request->except(['profile_photo', 'cropped_profile_photo']),
+            ]);
             return back()->withInput()->with('error', 'Gagal memperbarui profil: ' . $e->getMessage());
         }
     }

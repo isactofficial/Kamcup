@@ -1,25 +1,9 @@
-# Add Save Feeds Feature Progress
+# TODO: Image Cropper & Circular Profile Photos
 
-## Plan Steps (Approved)
+- [x] 1. Update `resources/views/front/profile/edit.blade.php` with Cropper.js (1:1 aspect)
 
-### 1. ✅ Migration: database/migrations/2024_12_01_000000_create_feed_saved_users_table.php created
-### 2. ✅ Model: app/Models/FeedSave.php created
-### 3. ✅ Model: app/Models/Feed.php - added savedBy(), scopes, attributes
-
-### 4. ✅ Model: app/Models/User.php - added feedSaves()
-### 5. ✅ Controller: app/Http/Controllers/FeedController.php - added save() method + index query update
-
-### 6. ✅ Routes: routes/web.php - added feeds.save route
-
-### 7. ✅ Blade: resources/views/User2026/feeds.blade.php - added save button + JS handler + CSS
-
-### 8. ✅ Migration run: php artisan migrate executed
-
-**Current: Step 9**
-### 9. Test feature - Visit /user/feeds, toggle save buttons, check DB + UI updates
-### 6. Edit routes/web.php
-### 7. Edit resources/views/User2026/feeds.blade.php
-### 8. Run php artisan migrate
-### 9. Test feature
-
-**Current: Step 1**
+- [ ] 2. Update `resources/views/front/profile/profile.blade.php` - circular images (`rounded-circle`)
+- [ ] 3. Update `resources/views/front/teams/create.blade.php` & `edit.blade.php` with cropper for logo
+- [ ] 4. Update `resources/views/front/teams/members/create.blade.php` & `edit.blade.php` with cropper for photo
+- [ ] 5. Test: Upload cropped photo → view profile (circular display)
+- [ ] 6. Complete
