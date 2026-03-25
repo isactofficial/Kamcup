@@ -48,6 +48,13 @@ $feeds = Feed::selectRaw('feeds.*,
             Storage::disk('public')->delete($feed->image);
         }
 
+        // Hapus child comments (replies) dulu
+        $feed->comments()->each(function ($comment) {
+            $comment->children()->delete();
+        });
+        // Baru hapus parent comments
+        $feed->comments()->delete();
+
         $feed->delete();
 
         return redirect()->route('admin.feeds.index')->with('success', 'Feed berhasil dihapus!');

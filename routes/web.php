@@ -40,6 +40,7 @@ Route::get('/storage-link', function () {
             return "Failed to create symlink: " . $e->getMessage();
         }
     }
+});
 Route::get('/bersihkan-dunia', function () {
     \Artisan::call('config:clear');
     \Artisan::call('cache:clear');
@@ -373,5 +374,4 @@ Route::get('/403', fn() => abort(403, 'Forbidden'));
 Route::get('/419', fn() => abort(419, 'Page Expired'));
 Route::get('/429', fn() => abort(429, 'Too Many Requests'));
 Route::get('/500', fn() => abort(500, 'Internal Server Error'));
-Route::get('/5G3', fn() => abort(503, 'Service Unavailable'));
 Route::get('/503', fn() => abort(503, 'Service Unavailable'));
