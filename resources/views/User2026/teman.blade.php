@@ -34,12 +34,12 @@
                 @endif
 
                 <div class="mt-4 px-3 mb-2 text-uppercase x-small fw-bold text-muted d-flex justify-content-between">
-                    PESAN LANGSUNG 
+                    PESAN LANGSUNG
                 </div>
 
                 <div id="friends-list" class="d-flex flex-column gap-1 px-1">
                     @foreach($friends as $friend)
-                    <div class="friend-item-sidebar d-flex align-items-center p-2 rounded-3 cursor-pointer" 
+                    <div class="friend-item-sidebar d-flex align-items-center p-2 rounded-3 cursor-pointer"
                         onclick="openChat({{ $friend->id }}, '{{ $friend->name }}', '{{ $friend->profile->profile_photo ? asset('storage/' . $friend->profile->profile_photo) : '' }}', '{{ str_replace(["\r", "\n"], ' ', $friend->profile->description ?? 'Pemain KAMCUP yang siap bertanding!') }}', '{{ $friend->member_since }}', {{ $friend->mutual_communities_count }}, {{ json_encode($friend->mutual_communities) }})">
                         <div class="avatar-sm me-3 position-relative">
                             @if($friend->profile && $friend->profile->profile_photo)
@@ -97,7 +97,7 @@
                     <!-- All Friends View -->
                     <div id="all-friends-view">
                         @forelse($friends as $friend)
-                        <div class="d-flex align-items-center p-3 border rounded-4 hover-light mb-2 transition-all cursor-pointer" 
+                        <div class="d-flex align-items-center p-3 border rounded-4 hover-light mb-2 transition-all cursor-pointer"
                             onclick="openChat({{ $friend->id }}, '{{ $friend->name }}', '{{ $friend->profile->profile_photo ? asset('storage/' . $friend->profile->profile_photo) : '' }}', '{{ str_replace(["\r", "\n"], ' ', $friend->profile->description ?? 'Pemain KAMCUP yang siap bertanding!') }}', '{{ $friend->member_since }}', {{ $friend->mutual_communities_count }}, {{ json_encode($friend->mutual_communities) }})">
                             <div class="me-3 position-relative">
                                 @if($friend->profile && $friend->profile->profile_photo)
@@ -176,7 +176,7 @@
                             <!-- Desktop header content (hidden on mobile) -->
                             <div class="d-none d-md-flex align-items-center justify-content-between p-3 border-bottom">
                                 <div class="d-flex align-items-center">
-                                    <div class="avatar-sm me-3">
+                                    <div class="avatar-sm me-3" id="chat-header-avatar">
                                         <div class="rounded-circle bg-accent-light text-accent d-flex align-items-center justify-content-center fw-bold" style="width: 40px; height: 40px; font-size: 1rem;">?</div>
                                     </div>
                                     <div>
@@ -190,13 +190,13 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="flex-grow-1 overflow-auto p-4 d-flex flex-column custom-scrollbar" id="chat-box">
                         <div id="chat-messages-inner" class="mt-auto d-flex flex-column">
                             <!-- Messages -->
                         </div>
                     </div>
-                    
+
                     <div class="chat-input-wrapper p-3 ">
                         <div class="bg-light rounded-4 p-2 d-flex align-items-center gap-2 border">
                             <button class="btn btn-sm btn-light rounded-circle text-accent" id="attach-image-btn">
@@ -213,7 +213,7 @@
                                 <button type="submit" form="chat-form" class="btn btn-accent btn-sm rounded-pill px-3 ms-2">Kirim</button>
                             </div>
                         </div>
-                        
+
                         <!-- Image Preview Area -->
                         <div id="image-preview-container" class="mt-2 d-none">
                             <div class="bg-white rounded-3 p-2 border position-relative">
@@ -223,7 +223,7 @@
                                 </button>
                             </div>
                         </div>
-                        
+
                         <!-- Emoji Picker Container -->
                         <div id="emoji-picker-container" class="position-absolute d-none" style="bottom: 80px; left: 20px; z-index: 1000;">
                             <div class="bg-white rounded-3 border shadow-lg p-3">
@@ -243,7 +243,7 @@
              <div class="profile-banner-top w-100" style="height: 100px; background-color: var(--teman-accent); position: relative; overflow: hidden;">
                 <div style="position: absolute; inset: 0; background: linear-gradient(rgba(0,0,0,0.1), transparent);"></div>
              </div>
-             
+
              <div class="px-3" style="margin-top: -45px;">
                 <div class="avatar-container-outer mb-3 position-relative" style="width: 90px;">
                     <div id="member-avatar-container" class="rounded-circle p-1" style="width: 92px; height: 92px; background-color: #ffffff;">
@@ -323,9 +323,9 @@
     .bg-pink-light { background-color: var(--teman-pink-light); }
     .btn-accent { background-color: var(--teman-accent); color: white; }
     .btn-accent:hover { background-color: #004d61; color: white; }
-    
+
     .x-small { font-size: 0.75rem; }
-    
+
     .nav-item-friends {
         padding: 10px 16px;
         border-radius: 8px;
@@ -340,7 +340,7 @@
     .nav-item-friends.active { background: white; box-shadow: 0 4px 6px -2px rgba(0,0,0,0.05); color: var(--teman-accent); }
 
     .friend-item-sidebar:hover { background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-    
+
     .status-dot {
         position: absolute; bottom: 0; right: 0;
         width: 12px; height: 12px; border-radius: 50%;
@@ -379,7 +379,7 @@
 
     .custom-scrollbar::-webkit-scrollbar { width: 6px; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 10px; }
-    
+
     .hover-accent:hover { color: var(--teman-accent); }
     .cursor-pointer { cursor: pointer; }
     .transition-all { transition: all 0.2s; }
@@ -394,17 +394,27 @@
             grid-template-columns: 350px 1fr;
         }
     }
-    
+
     @media (max-width: 992px) {
         .friends-app-container {
             grid-template-columns: 300px 1fr;
         }
-        
+
         .dm-list-bar {
             width: 300px !important;
         }
     }
-    
+
+    /* Hide desktop header completely */
+    .chat-header .chat-header-content {
+        display: none !important;
+    }
+
+    /* Keep mobile header hidden by default */
+    .mobile-chat-header {
+        display: none !important;
+    }
+
     @media (max-width: 768px) {
         .friends-app-container {
             grid-template-columns: 1fr !important;
@@ -435,19 +445,20 @@
         #chat-view {
             margin-left: 0 !important;
         }
-        
+
         /* Mobile chat adjustments */
         .chat-header {
             padding: 0 !important;
             background: white !important;
             border-bottom: 1px solid #e9ecef !important;
         }
-        
+
         /* Hide desktop header on mobile */
         .chat-header .chat-header-content {
             display: none !important;
         }
-        
+
+        /* Show mobile header only on mobile */
         .mobile-chat-header {
             padding: 12px 16px !important;
             background: white !important;
@@ -456,178 +467,178 @@
             z-index: 100 !important;
             display: flex !important;
         }
-        
+
         .mobile-profile-info .fw-bold {
             font-size: 1rem !important;
             margin: 0 !important;
         }
-        
+
         .mobile-profile-info .small {
             font-size: 0.8rem !important;
             margin: 0 !important;
         }
-        
+
         /* Mobile search box */
         .search-box input {
             font-size: 0.9rem !important;
             padding: 10px 16px 10px 40px !important;
             height: auto !important;
         }
-        
+
         /* Mobile friend items */
         .friend-item-sidebar {
             padding: 12px !important;
         }
-        
+
         .friend-item-sidebar .avatar-sm {
             width: 40px !important;
             height: 40px !important;
             font-size: 0.9rem !important;
         }
-        
+
         /* Mobile chat messages */
         .chat-msg-text {
             font-size: 0.9rem !important;
             line-height: 1.4 !important;
         }
-        
+
         /* Mobile chat input */
         .chat-input-container {
             padding: 12px 16px !important;
         }
-        
+
         .chat-input-container input {
             font-size: 0.9rem !important;
             padding: 10px 16px !important;
         }
-        
+
         /* Mobile navigation items */
         .nav-item-friends {
             padding: 12px 16px !important;
             font-size: 0.9rem !important;
         }
-        
+
         /* Mobile status indicators */
         .status-dot {
             width: 12px !important;
             height: 12px !important;
         }
-        
+
         /* Mobile badges */
         .badge {
             font-size: 0.75rem !important;
             padding: 4px 8px !important;
         }
-        
+
         /* Mobile mutual communities */
         .mutual-communities {
             font-size: 0.8rem !important;
         }
-        
+
         .mutual-communities .badge {
             padding: 2px 6px !important;
         }
-        
+
         /* Mobile empty states */
         .empty-state {
             padding: 40px 20px !important;
         }
-        
+
         .empty-state h5 {
             font-size: 1.1rem !important;
         }
-        
+
         .empty-state p {
             font-size: 0.9rem !important;
         }
-        
+
         /* Mobile friend request items */
         .request-item {
             padding: 12px !important;
         }
-        
+
         .request-item .avatar-sm {
             width: 40px !important;
             height: 40px !important;
             font-size: 0.9rem !important;
         }
-        
+
         .request-item .btn {
             padding: 6px 12px !important;
             font-size: 0.8rem !important;
         }
-        
+
         /* Mobile profile info in chat */
         .profile-info {
             padding: 16px !important;
         }
-        
+
         .profile-info .avatar-sm {
             width: 50px !important;
             height: 50px !important;
             font-size: 1rem !important;
         }
-        
+
         .profile-info h6 {
             font-size: 0.9rem !important;
         }
-        
+
         .profile-info small {
             font-size: 0.8rem !important;
         }
-        
+
         /* Mobile scrollbars */
         .custom-scrollbar::-webkit-scrollbar {
             width: 4px !important;
         }
-        
+
         /* Mobile safe area handling */
         @supports (padding: max(0px)) {
             .dm-list-bar {
                 padding-top: max(8px, env(safe-area-inset-top)) !important;
             }
-            
+
             .chat-header {
                 padding-top: max(12px, env(safe-area-inset-top)) !important;
             }
         }
     }
-    
+
     /* Small mobile devices */
     @media (max-width: 480px) {
         .dm-list-bar .btn {
             font-size: 0.85rem !important;
             padding: 6px 10px !important;
         }
-        
+
         .search-box input {
             font-size: 0.85rem !important;
             padding: 8px 14px 8px 36px !important;
         }
-        
+
         .friend-item-sidebar {
             padding: 10px !important;
         }
-        
+
         .friend-item-sidebar .avatar-sm {
             width: 36px !important;
             height: 36px !important;
             font-size: 0.8rem !important;
         }
-        
+
         .chat-header {
             padding: 10px 12px !important;
             font-size: 0.9rem !important;
         }
-        
+
         .chat-msg-text {
             font-size: 0.85rem !important;
         }
-        
+
         .chat-input-container {
             padding: 10px 12px !important;
         }
-        
+
         .chat-input-container input {
             font-size: 0.85rem !important;
             padding: 8px 12px !important;
@@ -645,16 +656,31 @@
         const welcomeView = document.getElementById('welcome-view');
         const chatView = document.getElementById('chat-view');
         const dmListBar = document.querySelector('.dm-list-bar');
-        
+
         // Responsive functionality
-        const isMobile = window.innerWidth <= 768;
+        let isMobile = window.innerWidth <= 768;
         const isTablet = window.innerWidth <= 992;
-        
+
+        // Update mobile status on resize
+        function updateMobileStatus() {
+            const newIsMobile = window.innerWidth <= 768;
+            if (newIsMobile !== isMobile) {
+                isMobile = newIsMobile;
+                // Re-render chat header if chat is active
+                if (currentFriendId && currentFriendName) {
+                    updateMobileChatHeader(currentFriendName, currentFriendAvatar);
+                }
+            }
+        }
+
+        // Add resize listener
+        window.addEventListener('resize', updateMobileStatus);
+
         // Responsive sidebar functionality
         function showSidebar() {
             const dmListBar = document.querySelector('.dm-list-bar');
             const chatView = document.getElementById('chat-view');
-            
+
             if (isMobile && dmListBar) {
                 dmListBar.classList.remove('mobile-hidden');
                 dmListBar.classList.add('mobile-visible');
@@ -662,11 +688,11 @@
                 chatView.classList.remove('chat-view-visible');
             }
         }
-        
+
         function hideSidebar() {
             const dmListBar = document.querySelector('.dm-list-bar');
             const chatView = document.getElementById('chat-view');
-            
+
             if (isMobile && dmListBar) {
                 dmListBar.classList.remove('mobile-visible');
                 dmListBar.classList.add('mobile-hidden');
@@ -674,42 +700,42 @@
                 chatView.classList.add('chat-view-visible');
             }
         }
-        
+
         // Make functions globally accessible
         window.showSidebar = showSidebar;
         window.hideSidebar = hideSidebar;
-        
+
         // Add responsive back button to chat header (mobile only)
         if (isMobile) {
             // Initially show sidebar on mobile
             showSidebar();
         }
-        
+
         // Update mobile chat header when chat is opened
         function updateMobileChatHeader(name, avatar = '', bio = '', joinDate = 'Jan 01, 2026', mutualCount = 0, mutuals = []) {
             const chatHeader = document.querySelector('.chat-header');
             if (!chatHeader) return;
-            
+
             // Clear any existing headers
             const existingMobileHeader = chatHeader.querySelector('.mobile-chat-header');
             if (existingMobileHeader) {
                 existingMobileHeader.remove();
             }
-            
+
             if (isMobile) {
                 // Mobile: Create and show mobile header
                 const desktopContent = chatHeader.querySelector('.chat-header-content');
                 if (desktopContent) {
                     desktopContent.style.display = 'none';
                 }
-                
+
                 const mobileHeader = document.createElement('div');
                 mobileHeader.className = 'mobile-chat-header d-flex align-items-center w-100';
-                
-                const avatarHtml = avatar 
+
+                const avatarHtml = avatar
                     ? `<img src="${avatar}" alt="${name}" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">`
                     : `<div class="rounded-circle bg-accent-light text-accent d-flex align-items-center justify-content-center fw-bold" style="width: 40px; height: 40px; font-size: 1rem;">${name[0]?.toUpperCase() || 'U'}</div>`;
-                
+
                 mobileHeader.innerHTML = `
                     <button class="mobile-back-btn btn btn-sm btn-outline-secondary me-3" onclick="window.showSidebar()">
                         <i class="fas fa-arrow-left"></i>
@@ -722,22 +748,32 @@
                         </div>
                     </div>
                 `;
-                
+
                 chatHeader.appendChild(mobileHeader);
             } else {
-                // Desktop: Show desktop header and update name
+                // Desktop: Show desktop header and update name & avatar
                 const desktopContent = chatHeader.querySelector('.chat-header-content');
                 if (desktopContent) {
                     desktopContent.style.display = 'block';
                 }
-                
+
                 const headerName = document.getElementById('chat-header-name');
                 if (headerName) {
                     headerName.textContent = name;
                 }
+
+                const headerAvatar = document.getElementById('chat-header-avatar');
+                if (headerAvatar) {
+                    if (avatar) {
+                        const avatarSrc = avatar.startsWith('http') ? avatar : `/storage/${avatar}`;
+                        headerAvatar.innerHTML = `<img src="${avatarSrc}" alt="${name}" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">`;
+                    } else {
+                        headerAvatar.innerHTML = `<div class="rounded-circle bg-accent-light text-accent d-flex align-items-center justify-content-center fw-bold" style="width: 40px; height: 40px; font-size: 1rem;">${name[0].toUpperCase()}</div>`;
+                    }
+                }
             }
         }
-        
+
         window.toggleMutualList = function() {
             const container = document.getElementById('mutual-list-container');
             const chevron = document.getElementById('mutual-chevron');
@@ -752,9 +788,10 @@
 
         const chatBox = document.getElementById('chat-box');
         const chatInput = document.getElementById('chat-input');
-        
+
         let currentFriendId = null;
         let currentFriendName = '';
+        let currentFriendAvatar = '';
         let addFriendTimeout = null;
 
         // --- SIDEBAR SEARCH: filter friends list only (client-side) ---
@@ -852,11 +889,11 @@
             searchResults.innerHTML = users.map(u => {
                 const photo = (u.profile && u.profile.profile_photo) ? `/storage/${u.profile.profile_photo}` : null;
                 const bio = (u.profile && u.profile.description) ? u.profile.description.replace(/[\r\n]/g, ' ') : 'Pemain KAMCUP yang siap bertanding!';
-                
+
                 return `
                 <div class="col-md-4">
                     <div class="p-3 bg-light rounded-4 text-center border h-100 transition-all">
-                        ${photo ? 
+                        ${photo ?
                             `<img src="${photo}" class="rounded-circle mb-2 object-fit-contain bg-white" style="width:50px;height:50px;" alt="">` :
                             `<div class="mx-auto mb-2" style="width:50px;height:50px;background:var(--teman-accent);border-radius:12px;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;"> ${u.name[0].toUpperCase()} </div>`
                         }
@@ -904,18 +941,19 @@
         window.openChat = async function(id, name, avatar = '', bio = '', joinDate = 'Jan 01, 2026', mutualCount = 0, mutuals = []) {
             currentFriendId = id;
             currentFriendName = name;
+            currentFriendAvatar = avatar;
             welcomeView.classList.add('d-none');
             showChatViewFn();
             chatInput.placeholder = `Kirim pesan ke @${name}`;
-            
+
             // Update mobile chat header with profile info
             updateMobileChatHeader(name, avatar, bio, joinDate, mutualCount, mutuals);
-            
+
             // On mobile, hide sidebar when opening chat
             if (isMobile) {
                 hideSidebar();
             }
-            
+
             // Highlight active friend in sidebar
             document.querySelectorAll('.friend-item-sidebar').forEach(el => el.classList.remove('bg-white', 'shadow-sm', 'text-dark'));
             const items = document.querySelectorAll('.friend-item-sidebar');
@@ -930,15 +968,15 @@
             document.getElementById('member-bio-sidebar').innerText = bio || 'Pemain KAMCUP yang siap bertanding!';
             document.getElementById('member-since-sidebar').innerText = joinDate;
             document.getElementById('mutual-count').innerText = mutualCount;
-            
+
             // Populate mutual list
             const container = document.getElementById('mutual-list-container');
             if (mutuals && mutuals.length > 0) {
                 container.innerHTML = mutuals.map(c => `
                     <div class="d-flex align-items-center mb-2 animate-fade-in">
                         <div class="bg-accent-light rounded-2 me-2 d-flex align-items-center justify-content-center" style="width:28px;height:28px;">
-                            ${c.image ? 
-                                `<img src="${c.image}" class="rounded-2" style="width:28px;height:28px;object-fit:cover;">` : 
+                            ${c.image ?
+                                `<img src="${c.image}" class="rounded-2" style="width:28px;height:28px;object-fit:cover;">` :
                                 `<i class="fas fa-users text-accent small"></i>`
                             }
                         </div>
@@ -961,7 +999,7 @@
             } else {
                 avatarContainer.innerHTML = `<div class="rounded-circle bg-accent d-flex align-items-center justify-content-center text-white fw-bold fs-2 h-100 w-100 shadow-sm border border-4 border-white">${name[0].toUpperCase()}</div>`;
             }
-            
+
             document.getElementById('chat-actions-dropdown').innerHTML = `
                 <form action="/user/teman/${id}/remove" method="POST" onsubmit="return confirm('Hapus teman?')">
                     <input type="hidden" name="_token" value="{{ csrf_token() }}">
@@ -972,7 +1010,7 @@
 
             const msgContainer = document.getElementById('chat-messages-inner');
             msgContainer.innerHTML = '<div class="text-center p-5"><div class="spinner-border text-accent"></div></div>';
-            
+
             try {
                 const res = await fetch(`/user/teman/${id}/messages`);
                 const msgs = await res.json();
@@ -987,9 +1025,9 @@
             e.preventDefault();
             const text = chatInput.value.trim();
             if (!text && !selectedImage) return;
-            
+
             chatInput.value = '';
-            
+
             // Optimistic update for own messages
             const now = new Date();
             let messageData = {
@@ -998,12 +1036,12 @@
                 created_at: now.toISOString(),
                 image_path: null
             };
-            
+
             // If there's an image, handle it differently
             if (selectedImage) {
                 // Show optimistic update with image
                 messageData.image_path = selectedImage; // Use base64 for optimistic update
-                
+
                 // Send real image
                 try {
                     const formData = new FormData();
@@ -1011,26 +1049,26 @@
                     if (text) {
                         formData.append('message', text);
                     }
-                    
+
                     const res = await fetch(`/user/teman/${currentFriendId}/send-image`, {
                         method: 'POST',
                         headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                         body: formData
                     });
-                    
+
                     if (!res.ok) {
                         console.error('Failed to send image:', res.status);
                         // Try to get error details
                         const errorText = await res.text();
                         console.error('Error response:', errorText);
-                        
+
                         // Remove optimistic message if failed
                         const lastMessage = document.querySelector('#chat-messages-inner .chat-msg-container:last-child');
                         if (lastMessage) {
                             lastMessage.remove();
                         }
                         chatInput.value = text;
-                        
+
                         // Show specific error based on status code
                         let errorMessage = 'Gagal mengirim gambar. Silakan coba lagi.';
                         if (res.status === 413) {
@@ -1044,31 +1082,31 @@
                         } else {
                             errorMessage = `Gagal mengirim gambar (${res.status}). Silakan coba lagi.`;
                         }
-                        
+
                         showErrorNotification(errorMessage);
                         return;
                     }
-                    
+
                     // Check if response is JSON
                     const contentType = res.headers.get('content-type');
                     if (!contentType || !contentType.includes('application/json')) {
                         const errorText = await res.text();
                         console.error('Non-JSON response:', errorText);
-                        
+
                         // Remove optimistic message if failed
                         const lastMessage = document.querySelector('#chat-messages-inner .chat-msg-container:last-child');
                         if (lastMessage) {
                             lastMessage.remove();
                         }
                         chatInput.value = text;
-                        
+
                         // Show user-friendly error
                         showErrorNotification('Server mengembalikan response tidak valid. Silakan coba lagi.');
                         return;
                     }
-                    
+
                     const result = await res.json();
-                    
+
                     // Check if upload was successful
                     if (result.success && result.message) {
                         // Update optimistic message with real image path
@@ -1076,24 +1114,24 @@
                         if (lastMessage && result.message.image_path) {
                             lastMessage.src = `/storage/${result.message.image_path}`;
                         }
-                        
+
                         // Show success notification
                         showSuccessNotification('Gambar berhasil dikirim!');
                     } else {
                         console.error('Upload failed:', result.message);
-                        
+
                         // Remove optimistic message if failed
                         const lastMessage = document.querySelector('#chat-messages-inner .chat-msg-container:last-child');
                         if (lastMessage) {
                             lastMessage.remove();
                         }
                         chatInput.value = text;
-                        
+
                         // Show specific error message
                         let errorMessage = 'Gagal mengirim gambar. Silakan coba lagi.';
                         if (result.errors && result.errors.image) {
                             const errorText = result.errors.image[0];
-                            
+
                             // Translate technical errors to user-friendly messages
                             if (errorText.includes('may not be greater than')) {
                                 errorMessage = 'Ukuran file terlalu besar. Maksimal 2MB.';
@@ -1107,11 +1145,11 @@
                         } else if (result.message) {
                             errorMessage = result.message;
                         }
-                        
+
                         showErrorNotification(errorMessage);
                         return;
                     }
-                    
+
                 } catch(e) {
                     console.error('Error sending image:', e);
                     // Remove optimistic message if failed
@@ -1120,12 +1158,12 @@
                         lastMessage.remove();
                     }
                     chatInput.value = text;
-                    
+
                     // Show user-friendly error
                     showErrorNotification('Gagal mengirim gambar. Periksa koneksi internet Anda.');
                     return;
                 }
-                
+
                 // Clear image preview
                 selectedImage = null;
                 imagePreview.src = '';
@@ -1139,7 +1177,7 @@
                         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                         body: JSON.stringify({ message: text })
                     });
-                    
+
                     if (!res.ok) {
                         console.error('Failed to send message:', res.status);
                         // Remove optimistic message if failed
@@ -1161,7 +1199,7 @@
                     return;
                 }
             }
-            
+
             // Show optimistic update
             appendMsg(messageData);
             chatBox.scrollTop = chatBox.scrollHeight;
@@ -1191,7 +1229,7 @@
                     imageUpload.value = '';
                     return;
                 }
-                
+
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     selectedImage = e.target.result;
@@ -1268,7 +1306,7 @@
         // Helper function to show error notification
         function showErrorNotification(message) {
             const notification = $(`
-                <div class="alert alert-danger alert-dismissible fade show position-fixed" 
+                <div class="alert alert-danger alert-dismissible fade show position-fixed"
                      style="top: 20px; right: 20px; z-index: 9999; min-width: 250px;">
                     <i class="fas fa-exclamation-triangle me-2"></i>${message}
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -1281,7 +1319,7 @@
         // Helper function to show success notification
         function showSuccessNotification(message) {
             const notification = $(`
-                <div class="alert alert-success alert-dismissible fade show position-fixed" 
+                <div class="alert alert-success alert-dismissible fade show position-fixed"
                      style="top: 20px; right: 20px; z-index: 9999; min-width: 250px;">
                     <i class="fas fa-check-circle me-2"></i>${message}
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -1310,19 +1348,19 @@
             const container = document.getElementById('chat-messages-inner');
             const item = document.createElement('div');
             item.className = 'chat-msg-container animate-fade-in mb-2';
-            
+
             const time = new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             const senderName = m.sender_id == userId ? '{{ Auth::user()->name }}' : currentFriendName;
             const senderInitial = senderName[0].toUpperCase();
-            
+
             // Handle message content with images
             let messageContent = '';
-            
+
             if (m.image_path) {
                 // Real image from backend
                 const imageSrc = m.image_path.startsWith('data:') ? m.image_path : `/storage/${m.image_path}`;
                 messageContent = `<img src="${imageSrc}" alt="Image" class="rounded-2" style="max-width: 200px; max-height: 200px; object-fit: cover;">`;
-                
+
                 if (m.message) {
                     messageContent = `<div>${m.message}</div><div class="mt-2">${messageContent}</div>`;
                 }
@@ -1330,10 +1368,30 @@
                 // Text only message
                 messageContent = m.message;
             }
-            
+
+            // Determine avatar source
+            let avatarHtml = '';
+            if (isMe) {
+                // Current user - use their own avatar or initial
+                const userAvatar = '{{ Auth::user()->profile->profile_photo ?? "" }}';
+                if (userAvatar) {
+                    avatarHtml = `<img src="/storage/${userAvatar}" alt="${senderName}" class="rounded-circle" style="width: 38px; height: 38px; object-fit: cover;">`;
+                } else {
+                    avatarHtml = `<div class="rounded-circle bg-pink-light text-pink d-flex align-items-center justify-content-center fw-bold" style="width: 38px; height: 38px; font-size: 0.8rem;">${senderInitial}</div>`;
+                }
+            } else {
+                // Other user - use current friend's avatar or initial
+                if (currentFriendAvatar) {
+                    const avatarSrc = currentFriendAvatar.startsWith('http') ? currentFriendAvatar : `/storage/${currentFriendAvatar}`;
+                    avatarHtml = `<img src="${avatarSrc}" alt="${senderName}" class="rounded-circle" style="width: 38px; height: 38px; object-fit: cover;">`;
+                } else {
+                    avatarHtml = `<div class="rounded-circle bg-accent-light text-accent d-flex align-items-center justify-content-center fw-bold" style="width: 38px; height: 38px; font-size: 0.8rem;">${senderInitial}</div>`;
+                }
+            }
+
             item.innerHTML = `
                 <div class="avatar-sm">
-                    <div class="rounded-circle ${isMe ? 'bg-pink-light text-pink' : 'bg-accent-light text-accent'} d-flex align-items-center justify-content-center fw-bold" style="width: 38px; height: 38px; font-size: 0.8rem;"> ${senderInitial} </div>
+                    ${avatarHtml}
                 </div>
                 <div class="flex-grow-1">
                     <div class="d-flex align-items-center mb-1">
@@ -1354,7 +1412,7 @@
                         if (parseInt(e.user.id) === userId) {
                             return;
                         }
-                        
+
                         // Only show other person's messages
                         appendMsg({
                             sender_id: e.user.id,
