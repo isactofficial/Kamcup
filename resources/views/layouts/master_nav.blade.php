@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="{{ asset('css/navbar.css') }}">
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
     @stack('styles')
+    
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
@@ -49,7 +50,6 @@
                     </li>
                     <li class="nav-item"><a class="nav-link fw-medium" href="{{ route('front.contact') }}">HUBUNGI
                             KAMI</a></li>
-                    </li>
 
                     <li class="nav-item search-container">
                         <a href="#" class="nav-link search-icon" id="search-icon">
@@ -118,7 +118,6 @@
         </div>
 
         {{-- Content Section --}}
-        {{-- MODIFICATION: Added conditional style to push content down on all pages except the homepage --}}
         <div class="content flex-grow-1" @if(!Request::is('/')) style="padding-top: 140px;" @endif>
             @yield('content')
         </div>
@@ -129,6 +128,30 @@
     <script src="{{ asset('js/scripts.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+
+    @if(Auth::check())
+    <!-- REAL-TIME CHAT ENGINE (STANDALONE) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pusher/8.3.0/pusher.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.15.3/dist/echo.iife.js"></script>
+    <script>
+        {{-- Set debug ONLY if explicitly enabled --}}
+        Pusher.logToConsole = true; 
+
+        window.Pusher = Pusher;
+        window.Echo = new Echo({
+            broadcaster: 'pusher',
+            key: 'dfc41dc68aae9c92b8bf',
+            cluster: 'ap1',
+            forceTLS: true,
+            authEndpoint: '/broadcasting/auth',
+            auth: {
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            }
+        });
+    </script>
+    @endif
 
     @stack('scripts')
 </body>

@@ -643,9 +643,14 @@
 
         if (typeof Echo !== 'undefined') {
             Echo.private(`user.${userId}`)
-                .listen('PrivateMessageSent', (e) => {
-                    if (currentFriendId && e.message.sender_id === currentFriendId) {
-                        appendMsg(e.message);
+                .listen('.PrivateMessageSent', (e) => {
+                    // console.log('Message received:', e);
+                    if (currentFriendId && parseInt(e.user.id) === parseInt(currentFriendId)) {
+                        appendMsg({
+                            sender_id: e.user.id,
+                            message: e.message,
+                            created_at: e.created_at
+                        });
                         chatBox.scrollTop = chatBox.scrollHeight;
                     }
                 });

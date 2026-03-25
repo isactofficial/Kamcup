@@ -40,8 +40,14 @@ Route::get('/storage-link', function () {
             return "Failed to create symlink: " . $e->getMessage();
         }
     }
-    return "Symlink already exists.";
+Route::get('/bersihkan-dunia', function () {
+    \Artisan::call('config:clear');
+    \Artisan::call('cache:clear');
+    \Artisan::call('route:clear');
+    \Artisan::call('view:clear');
+    return "Fix SELESAI! Silakan buka chat dan tes kirim pesan.";
 });
+
 
 /*
 |--------------------------------------------------------------------------

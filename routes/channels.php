@@ -18,7 +18,7 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
 });
 
 Broadcast::channel('community.{communityId}', function ($user, $communityId) {
-    return $user->communities()->where('community_id', $communityId)->where('status', 'approved')->exists();
+    return $user->joinedCommunities()->where('community_id', $communityId)->where('community_user.status', 'approved')->exists();
 });
 Broadcast::channel('user.{id}', function ($user, $id) {
     return (int) $user->id === (int) $id;
