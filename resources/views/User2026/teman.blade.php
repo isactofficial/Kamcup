@@ -449,10 +449,10 @@
             const query = this.value.trim();
             clearTimeout(addFriendTimeout);
             if (query.length < 3) { searchResults.innerHTML = ''; return; }
-            addFriendTimeout = setTimeout(async () => {
-                searchResults.innerHTML = '<div class="col-12 text-center p-5"><div class="spinner-border text-accent"></div></div>';
-                try {
-                    const response = await fetch(`/user2026/teman/search?query=${encodeURIComponent(query)}`);
+        addFriendTimeout = setTimeout(async () => {
+            searchResults.innerHTML = '<div class="col-12 text-center p-5"><div class="spinner-border text-accent"></div></div>';
+            try {
+                const response = await fetch(`/user/teman/search?query=${encodeURIComponent(query)}`);
                     const users = await response.json();
                     renderResults(users);
                 } catch (e) { console.error(e); }
@@ -494,9 +494,9 @@
                 const res = await fetch(`/user2026/teman/${id}/add`, { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } });
                 if (res.ok) {
                     // Refresh search results
-                    const query = document.getElementById('add-friend-input').value.trim();
-                    const response = await fetch(`/user2026/teman/search?query=${encodeURIComponent(query)}`);
-                    renderResults(await response.json());
+                const query = document.getElementById('add-friend-input').value.trim();
+                const response = await fetch(`/user/teman/search?query=${encodeURIComponent(query)}`);
+                renderResults(await response.json());
                 }
             } catch(e) {}
         };
@@ -565,7 +565,7 @@
             msgContainer.innerHTML = '<div class="text-center p-5"><div class="spinner-border text-accent"></div></div>';
             
             try {
-                const res = await fetch(`/user2026/teman/${id}/messages`);
+                const res = await fetch(`/user/teman/${id}/messages`);
                 const msgs = await res.json();
                 msgContainer.innerHTML = '';
                 msgs.forEach(m => appendMsg(m));
