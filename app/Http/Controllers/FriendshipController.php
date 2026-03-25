@@ -175,4 +175,43 @@ class FriendshipController extends Controller
 
         return response()->json($msg);
     }
+
+    public function sendImageMessage(Request $request, User $friend)
+    {
+        try {
+            $request->validate([
+                'image' => 'required|image|max:2048', // Removed mimes restriction
+                'message' => 'nullable|string'
+            ]);
+
+            // Upload image
+            $imagePath = $request->file('image')->store('chat-images', 'public');
+
+            $msg = PrivateMessage::create([
+                'sender_id' => Auth::id(),
+                'receiver_id' => $friend->id,
+                'message' => $request->message ?? '',
+                'image_path' => $imagePath
+            ]);
+
+            broadcast(new PrivateMessageSent($msg))->toOthers();
+
+            return response()->json([
+                'success' => true,
+                'message' => $msg
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Upload failed: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

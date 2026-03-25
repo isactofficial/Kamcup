@@ -223,6 +223,7 @@ Route::middleware(['auth'])->group(function () {
     // Private Messaging
     Route::get('/user/teman/{friend}/messages', [App\Http\Controllers\FriendshipController::class, 'getMessages'])->name('user2026.teman.messages');
     Route::post('/user/teman/{friend}/messages', [App\Http\Controllers\FriendshipController::class, 'sendMessage'])->name('user2026.teman.messages.store');
+    Route::post('/user/teman/{friend}/send-image', [App\Http\Controllers\FriendshipController::class, 'sendImageMessage'])->name('user2026.teman.messages.image');
     
     Route::get('/user/feeds', [App\Http\Controllers\FeedController::class, 'index'])->name('user2026.feeds');
 });
