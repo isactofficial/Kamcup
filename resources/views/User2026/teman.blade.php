@@ -955,7 +955,9 @@
 
             const avatarContainer = document.getElementById('member-avatar-container');
             if (avatar) {
-                avatarContainer.innerHTML = `<img src="/storage/${avatar}" class="rounded-circle object-fit-contain shadow-sm h-100 w-100 border border-4 border-white bg-light" style="background:#f8f9fa;" alt="">`;
+                // Check if avatar is already a full URL or just a path
+                const avatarSrc = avatar.startsWith('http') ? avatar : `/storage/${avatar}`;
+                avatarContainer.innerHTML = `<img src="${avatarSrc}" class="rounded-circle object-fit-contain shadow-sm h-100 w-100 border border-4 border-white bg-light" style="background:#f8f9fa;" alt="">`;
             } else {
                 avatarContainer.innerHTML = `<div class="rounded-circle bg-accent d-flex align-items-center justify-content-center text-white fw-bold fs-2 h-100 w-100 shadow-sm border border-4 border-white">${name[0].toUpperCase()}</div>`;
             }
