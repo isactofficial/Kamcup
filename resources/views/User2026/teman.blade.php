@@ -342,6 +342,224 @@
     /* Chat view toggle */
     #chat-view.chat-view-hidden { display: none !important; pointer-events: none; }
     #chat-view.chat-view-visible { display: flex !important; }
+
+    /* Mobile Responsive Design */
+    @media (max-width: 768px) {
+        .friends-app-container {
+            height: 100vh !important;
+            height: 100dvh !important; /* Use dynamic viewport height for mobile */
+        }
+
+        .dm-list-bar {
+            width: 100% !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            z-index: 1000 !important;
+            background-color: var(--teman-bg) !important;
+            transform: translateX(0);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .dm-list-bar.mobile-hidden {
+            transform: translateX(-100%);
+        }
+
+        #chat-view {
+            width: 100% !important;
+            margin-left: 0 !important;
+        }
+
+        /* Mobile back button styling */
+        .dm-list-bar .btn {
+            font-size: 0.9rem !important;
+            padding: 8px 12px !important;
+        }
+
+        /* Mobile search box */
+        .search-box input {
+            font-size: 0.9rem !important;
+            padding: 10px 16px 10px 40px !important;
+            height: auto !important;
+        }
+
+        /* Mobile friend items */
+        .friend-item-sidebar {
+            padding: 12px !important;
+        }
+
+        .friend-item-sidebar .avatar-sm {
+            width: 40px !important;
+            height: 40px !important;
+        }
+
+        .friend-item-sidebar .friend-info {
+            font-size: 0.9rem !important;
+        }
+
+        /* Mobile chat area */
+        .chat-header {
+            padding: 12px 16px !important;
+            font-size: 1rem !important;
+        }
+
+        .chat-header .avatar-sm {
+            width: 36px !important;
+            height: 36px !important;
+        }
+
+        .chat-messages {
+            padding: 12px !important;
+        }
+
+        .chat-msg-container {
+            padding: 8px 0 !important;
+            gap: 8px !important;
+        }
+
+        .chat-msg-text {
+            font-size: 0.9rem !important;
+            line-height: 1.4 !important;
+        }
+
+        /* Mobile chat input */
+        .chat-input-container {
+            padding: 12px 16px !important;
+        }
+
+        .chat-input-container input {
+            font-size: 0.9rem !important;
+            padding: 10px 16px !important;
+        }
+
+        .chat-input-container button {
+            padding: 10px 16px !important;
+            font-size: 0.9rem !important;
+        }
+
+        /* Mobile navigation items */
+        .nav-item-friends {
+            padding: 12px 16px !important;
+            font-size: 0.9rem !important;
+        }
+
+        /* Mobile status indicators */
+        .status-dot {
+            width: 12px !important;
+            height: 12px !important;
+        }
+
+        /* Mobile badges */
+        .badge {
+            font-size: 0.75rem !important;
+            padding: 4px 8px !important;
+        }
+
+        /* Mobile mutual communities */
+        .mutual-communities {
+            font-size: 0.8rem !important;
+        }
+
+        .mutual-communities .community-badge {
+            font-size: 0.7rem !important;
+            padding: 2px 6px !important;
+        }
+
+        /* Mobile empty states */
+        .empty-state {
+            padding: 40px 20px !important;
+        }
+
+        .empty-state h6 {
+            font-size: 1rem !important;
+        }
+
+        .empty-state p {
+            font-size: 0.9rem !important;
+        }
+
+        /* Mobile friend request items */
+        .request-item {
+            padding: 12px !important;
+        }
+
+        .request-item .avatar-sm {
+            width: 40px !important;
+            height: 40px !important;
+        }
+
+        .request-item .request-info {
+            font-size: 0.9rem !important;
+        }
+
+        .request-item .request-actions .btn {
+            font-size: 0.8rem !important;
+            padding: 6px 12px !important;
+        }
+
+        /* Mobile profile info in chat */
+        .profile-info {
+            padding: 16px !important;
+        }
+
+        .profile-info h5 {
+            font-size: 1.1rem !important;
+        }
+
+        .profile-info p {
+            font-size: 0.9rem !important;
+        }
+
+        /* Mobile scrollbars */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px !important;
+        }
+
+        /* Mobile safe area handling */
+        @supports (padding: max(0px)) {
+            .dm-list-bar {
+                padding-top: max(8px, env(safe-area-inset-top)) !important;
+            }
+
+            .chat-input-container {
+                padding-bottom: max(12px, env(safe-area-inset-bottom)) !important;
+            }
+        }
+    }
+
+    /* Small mobile devices */
+    @media (max-width: 480px) {
+        .dm-list-bar .btn {
+            font-size: 0.85rem !important;
+            padding: 6px 10px !important;
+        }
+
+        .friend-item-sidebar {
+            padding: 10px !important;
+        }
+
+        .friend-item-sidebar .avatar-sm {
+            width: 36px !important;
+            height: 36px !important;
+        }
+
+        .chat-header {
+            padding: 10px 12px !important;
+        }
+
+        .chat-messages {
+            padding: 8px 12px !important;
+        }
+
+        .chat-input-container {
+            padding: 8px 12px !important;
+        }
+
+        .nav-item-friends {
+            padding: 10px 12px !important;
+            font-size: 0.85rem !important;
+        }
+    }
 </style>
 @endpush
 
@@ -353,6 +571,43 @@
         const searchResults = document.getElementById('search-results-container');
         const welcomeView = document.getElementById('welcome-view');
         const chatView = document.getElementById('chat-view');
+        const dmListBar = document.querySelector('.dm-list-bar');
+        
+        // Mobile functionality
+        const isMobile = window.innerWidth <= 768;
+        
+        // Mobile back button functionality
+        function showSidebar() {
+            if (isMobile && dmListBar) {
+                dmListBar.classList.remove('mobile-hidden');
+                chatView.classList.add('chat-view-hidden');
+                chatView.classList.remove('chat-view-visible');
+            }
+        }
+        
+        function hideSidebar() {
+            if (isMobile && dmListBar) {
+                dmListBar.classList.add('mobile-hidden');
+                chatView.classList.remove('chat-view-hidden');
+                chatView.classList.add('chat-view-visible');
+            }
+        }
+        
+        // Add mobile back button to chat header
+        if (isMobile) {
+            const chatHeader = document.querySelector('.chat-header');
+            if (chatHeader) {
+                const backButton = document.createElement('button');
+                backButton.className = 'btn btn-sm text-accent me-3';
+                backButton.innerHTML = '<i class="fas fa-arrow-left"></i>';
+                backButton.onclick = showSidebar;
+                chatHeader.insertBefore(backButton, chatHeader.firstChild);
+            }
+            
+            // Initially hide sidebar on mobile
+            hideSidebar();
+        }
+        
         window.toggleMutualList = function() {
             const container = document.getElementById('mutual-list-container');
             const chevron = document.getElementById('mutual-chevron');
@@ -522,6 +777,11 @@
             welcomeView.classList.add('d-none');
             showChatViewFn();
             chatInput.placeholder = `Kirim pesan ke @${name}`;
+            
+            // On mobile, hide sidebar when opening chat
+            if (isMobile) {
+                hideSidebar();
+            }
             
             // Highlight active friend in sidebar
             document.querySelectorAll('.friend-item-sidebar').forEach(el => el.classList.remove('bg-white', 'shadow-sm', 'text-dark'));

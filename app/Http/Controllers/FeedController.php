@@ -139,7 +139,8 @@ class FeedController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        $comment->delete();
+        // Soft delete the comment
+        $comment->delete(); // This will set deleted_at timestamp due to SoftDeletes trait
 
         return response()->json(['success' => true]);
     }
@@ -193,7 +194,7 @@ class FeedController extends Controller
         if ($join) {
             // Unjoin
             $join->delete();
-            $count = $feed->joins_count - 1;
+            $count = $feed->joinedBy()->count(); // Get real-time count
             return response()->json([
                 'joined' => false,
                 'count' => $count,
@@ -202,7 +203,7 @@ class FeedController extends Controller
         }
 
         // Check if meet is full
-        if ($feed->meet_max_people && $feed->joins_count >= $feed->meet_max_people) {
+        if ($feed->meet_max_people && $feed->joinedBy()->count() >= $feed->meet_max_people) {
             return response()->json([
                 'error' => true,
                 'message' => 'Meets sudah penuh!'
@@ -215,7 +216,7 @@ class FeedController extends Controller
             'user_id' => $userId
         ]);
 
-        $count = $feed->joins_count + 1;
+        $count = $feed->joinedBy()->count(); // Get real-time count
         return response()->json([
             'joined' => true,
             'count' => $count,

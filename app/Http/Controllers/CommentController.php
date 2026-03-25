@@ -73,6 +73,14 @@ class CommentController extends Controller
 
     public function destroy(Comment $comment)
     {
+        // Debug logging
+        \Log::info('Attempting to delete comment', [
+            'comment_id' => $comment->id,
+            'comment_user_id' => $comment->user_id,
+            'current_user_id' => auth()->id(),
+            'is_owner' => (int) auth()->id() === (int) $comment->user_id
+        ]);
+
         $this->authorize('delete', $comment);
 
         $comment->delete();

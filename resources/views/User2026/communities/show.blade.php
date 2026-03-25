@@ -148,8 +148,27 @@
                                     </div>
                                     <div class="card-footer bg-white border-top-0 px-4 pb-4">
                                         <div class="d-flex gap-4">
-                                            <button class="btn btn-link text-decoration-none p-0 text-muted small"><i class="far fa-heart me-1"></i> 0 Likes</button>
-                                            <button class="btn btn-link text-decoration-none p-0 text-muted small"><i class="far fa-comment me-1"></i> 0 Comments</button>
+                                            <button class="action-btn like-btn {{ $post->current_user_liked ? 'liked' : '' }}" 
+                                                    data-feed-id="{{ $post->id }}" title="Suka">
+                                                <i class="{{ $post->current_user_liked ? 'fas' : 'far' }} fa-heart"></i>
+                                                <span class="like-count">{{ $post->likes_count }}</span>
+                                            </button>
+                                            <button class="action-btn comment-toggle" 
+                                                    data-feed-id="{{ $post->id }}" 
+                                                    data-feed-title="{{ $post->title ?? '' }}"
+                                                    data-feed-image="{{ $post->image ?? '' }}"
+                                                    data-feed-author="{{ $post->user->name ?? 'Admin' }}"
+                                                    data-feed-author-photo=""
+                                                    data-feed-caption="{{ $post->content }}"
+                                                    data-feed-likes="{{ $post->likes_count }}"
+                                                    data-feed-liked="{{ $post->current_user_liked ? 'true' : 'false' }}"
+                                                    data-feed-meet-date="{{ $post->meet_date ? \Carbon\Carbon::parse($post->meet_date)->format('d M Y, H:i') : '' }}"
+                                                    data-feed-meet-location="{{ $post->meet_location ?? '' }}"
+                                                    data-feed-meet-max="{{ $post->meet_max_people ?? '' }}"
+                                                    title="Komentar">
+                                                <i class="far fa-comment"></i>
+                                                <span class="comment-count">{{ $post->comments_count ?? 0 }}</span>
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -437,6 +456,520 @@
     background-color: rgba(0,0,0,0.1);
     border-radius: 10px;
 }
+
+/* Action button styles for community posts */
+.action-btn { 
+    display: inline-flex; 
+    align-items: center; 
+    gap: 0.4rem; 
+    background: none; 
+    border: none; 
+    padding: 0.5rem 0.85rem; 
+    border-radius: 50px; 
+    cursor: pointer; 
+    transition: background 0.2s, color 0.2s; 
+    font-size: 0.85rem; 
+    font-weight: 500; 
+    color: #6b7280; 
+    font-family: 'DM Sans', sans-serif; 
+}
+
+.action-btn i { font-size: 1rem; }
+
+.action-btn:hover { background-color: #fdf2f8; color: #cb2786; }
+
+.action-btn.liked { color: #cb2786; background-color: #fdf2f8; }
+
+.action-btn.saved { color: #f59e0b; background-color: #fef3c7; }
+
+/* ═══════════════════════════════════════════════════════════
+   INSTAGRAM-STYLE COMMENT MODAL
+   ═══════════════════════════════════════════════════════════ */
+#feedCommentModal .modal-dialog {
+    max-width: 960px;
+    margin: 1.5rem auto;
+    height: calc(100vh - 3rem);
+}
+
+#feedCommentModal .modal-content {
+    border: none;
+    border-radius: 16px;
+    overflow: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+}
+
+/* Left: image / post preview */
+.ig-modal-left {
+    width: 55%;
+    background: #fafafa;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    flex-shrink: 0;
+    position: relative;
+    border-right: 1px solid #efefef;
+    overflow-y: auto;
+}
+
+.ig-modal-left img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #000;
+}
+
+/* No-image state: show post content card instead */
+.ig-modal-no-img {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    padding: 32px 28px;
+    background: #fafafa;
+}
+
+.ig-modal-no-img-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.ig-modal-no-img-title {
+    font-family: 'Sora', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #00617a;
+    line-height: 1.35;
+    margin: 0 0 10px;
+}
+
+.ig-modal-no-img-text {
+    font-size: 0.92rem;
+    color: #374151;
+    line-height: 1.7;
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.ig-modal-no-img-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #cb278615, #00617a15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: #cb2786;
+    margin-bottom: 20px;
+}
+
+.ig-modal-meets-info {
+    background: linear-gradient(135deg, rgba(16,185,129,0.07), rgba(5,150,105,0.07));
+    border: 1px solid rgba(16,185,129,0.2);
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-top: 14px;
+}
+
+.ig-modal-meets-date {
+    font-weight: 600;
+    color: #059669;
+    font-size: 0.875rem;
+    margin-bottom: 4px;
+}
+
+.ig-modal-meets-detail {
+    font-size: 0.82rem;
+    color: #6b7280;
+}
+
+/* Right: comment panel */
+.ig-modal-right {
+    width: 45%;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: #fff;
+}
+
+.ig-panel-header {
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    border-bottom: 1px solid #efefef;
+    flex-shrink: 0;
+}
+
+#ig-panel-author-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #cb2786, #00617a);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    margin-right: 12px;
+    font-size: 0.8rem;
+}
+
+.ig-panel-username {
+    font-weight: 600;
+    margin: 0;
+    font-size: 0.9rem;
+    color: #262626;
+}
+
+.ig-panel-title {
+    color: #8e8e8e;
+    margin: 0;
+    font-size: 0.8rem;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: #8e8e8e;
+    cursor: pointer;
+    padding: 4px;
+    margin-left: auto;
+}
+
+.ig-caption-row {
+    display: flex;
+    align-items: flex-start;
+    padding: 12px 16px;
+    border-bottom: 1px solid #efefef;
+}
+
+#ig-caption-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #cb2786, #00617a);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    margin-right: 8px;
+    font-size: 0.7rem;
+    flex-shrink: 0;
+}
+
+.ig-caption-text {
+    margin: 0;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: #374151;
+}
+
+.ig-action-row {
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    gap: 16px;
+}
+
+.ig-action-icon {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: #262626;
+    cursor: pointer;
+    padding: 4px;
+    transition: opacity 0.2s;
+}
+
+.ig-action-icon:hover {
+    opacity: 0.6;
+}
+
+.ig-action-icon.liked {
+    color: #ed4956;
+}
+
+.ig-action-icon-share {
+    margin-left: auto;
+}
+
+.ig-likes-row {
+    padding: 8px 16px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #262626;
+}
+
+.ig-comments-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 0;
+}
+
+.ig-comments-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 20px;
+    color: #8e8e8e;
+    font-size: 0.85rem;
+}
+
+.ig-comment-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 8px 16px;
+}
+
+.ig-comment-reply {
+    margin-left: 48px;
+    padding: 4px 16px 4px 0;
+}
+
+.ig-comment-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #cb2786, #00617a);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    margin-right: 12px;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+}
+
+.ig-comment-body {
+    flex: 1;
+}
+
+.ig-comment-bubble {
+    background: #f0f2f5;
+    border-radius: 18px;
+    padding: 8px 12px;
+    margin-bottom: 4px;
+}
+
+.ig-comment-bubble.ig-comment-deleted {
+    background: #f8f9fa;
+    opacity: 0.7;
+}
+
+.ig-comment-bubble.ig-comment-deleted .ig-comment-text {
+    color: #6c757d;
+    font-style: italic;
+}
+
+.ig-comment-username {
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin: 0 0 2px 0;
+    color: #262626;
+}
+
+.ig-comment-text {
+    font-size: 0.85rem;
+    line-height: 1.4;
+    margin: 0;
+    white-space: pre-wrap;
+    color: #374151;
+}
+
+.ig-comment-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.8rem;
+    color: #8e8e8e;
+    padding: 0 4px;
+}
+
+.ig-comment-time {
+    color: #8e8e8e;
+    font-size: 0.73rem;
+}
+
+.ig-comment-like-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.8rem;
+    color: #8e8e8e;
+    padding: 4px 0;
+    transition: color 0.15s;
+}
+
+.ig-comment-like-btn:hover { color: #ed4956; }
+.ig-comment-like-btn.liked { color: #ed4956; }
+
+.ig-reply-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.8rem;
+    color: #8e8e8e;
+    padding: 4px;
+    transition: color 0.15s;
+}
+
+.ig-reply-btn:hover { color: #262626; }
+
+.ig-delete-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #8e8e8e;
+    padding: 4px;
+    font-size: 0.75rem;
+    transition: color 0.15s;
+}
+
+.ig-delete-btn:hover { color: #ed4956; }
+
+.ig-replies-list {
+    margin-top: 4px;
+    border-left: 2px solid #efefef;
+    padding-left: 8px;
+}
+
+.ig-view-replies-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 0;
+    font-size: 0.8rem;
+    color: #8e8e8e;
+    transition: color 0.15s;
+}
+
+.ig-view-replies-btn:hover {
+    color: #262626;
+}
+
+.ig-view-replies-btn .line {
+    flex: 1;
+    height: 1px;
+    background: #efefef;
+}
+
+.ig-view-replies-btn .label {
+    padding: 0 8px;
+    font-weight: 500;
+}
+
+.ig-reply-indicator {
+    display: none;
+    align-items: center;
+    padding: 8px 16px;
+    background: #f0f2f5;
+    font-size: 0.8rem;
+    color: #8e8e8e;
+    gap: 8px;
+}
+
+.ig-reply-indicator.active {
+    display: flex;
+}
+
+.ig-reply-indicator strong {
+    color: #262626;
+}
+
+.cancel-reply {
+    background: none;
+    border: none;
+    color: #8e8e8e;
+    cursor: pointer;
+    padding: 2px;
+    margin-left: auto;
+}
+
+.ig-input-area {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border-top: 1px solid #efefef;
+    gap: 12px;
+}
+
+#ig-my-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #cb2786, #00617a);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+}
+
+.ig-input-wrap {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    background: #f0f2f5;
+    border-radius: 20px;
+    padding: 8px 12px;
+}
+
+.ig-comment-input {
+    flex: 1;
+    border: none;
+    background: none;
+    outline: none;
+    resize: none;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    max-height: 80px;
+}
+
+.ig-send-btn {
+    background: none;
+    border: none;
+    color: #0095f6;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 4px 8px;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+}
+
+.ig-send-btn.active {
+    opacity: 1;
+}
+
+.ig-send-btn.active:hover {
+    opacity: 0.8;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .category-item { white-space: nowrap; flex-shrink: 0; }
+    .feeds-main { padding: 16px; }
+
+    #feedCommentModal .modal-dialog { max-width: 100%; margin: 0; height: 100vh; border-radius: 0; }
+    #feedCommentModal .modal-content { flex-direction: column; border-radius: 0; }
+    .ig-modal-left { width: 100%; height: 45vh; }
+    .ig-modal-right { width: 100%; height: 55vh; }
+}
 </style>
 @if($isCommunityAdmin)
 {{-- Create Post Modal --}}
@@ -522,8 +1055,96 @@
 </div>
 @endif
 
+{{-- ═══════════════════════════════════════════════════════════
+     INSTAGRAM-STYLE COMMENT MODAL
+     ═══════════════════════════════════════════════════════════ --}}
+<div class="modal fade" id="feedCommentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <!-- LEFT: Post Image / Content -->
+            <div class="ig-modal-left" id="ig-modal-img-wrap">
+                <div class="ig-modal-no-img">
+                    <div class="ig-modal-no-img-icon"><i class="fas fa-newspaper"></i></div>
+                    <p class="ig-modal-no-img-text" style="color:#9ca3af;text-align:center;">Pilih postingan untuk dilihat</p>
+                </div>
+            </div>
+
+            <!-- RIGHT: Comment Panel -->
+            <div class="ig-modal-right">
+
+                <!-- Header: author info -->
+                <div class="ig-panel-header">
+                    <div id="ig-panel-author-avatar"></div>
+                    <div>
+                        <p class="ig-panel-username" id="ig-panel-author-name">—</p>
+                        <p class="ig-panel-title" id="ig-panel-post-title">—</p>
+                    </div>
+                    <button class="close-btn" data-bs-dismiss="modal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <!-- Caption row -->
+                <div class="ig-caption-row" id="ig-caption-row" style="display:none;">
+                    <div id="ig-caption-avatar"></div>
+                    <p class="ig-caption-text" id="ig-caption-text"></p>
+                </div>
+
+                <!-- Action icons -->
+                <div class="ig-action-row">
+                    <button class="ig-action-icon" id="ig-modal-like-btn" title="Suka">
+                        <i class="far fa-heart"></i>
+                    </button>
+                    <button class="ig-action-icon" id="ig-modal-comment-focus-btn" title="Komentar">
+                        <i class="far fa-comment"></i>
+                    </button>
+                    <button class="ig-action-icon ig-action-icon-share" id="ig-modal-share-btn" title="Bagikan">
+                        <i class="fas fa-share-nodes"></i>
+                    </button>
+                </div>
+
+                <!-- Likes count -->
+                <div class="ig-likes-row">
+                    <span id="ig-modal-likes-count">0</span> suka
+                </div>
+
+                <!-- Comments list -->
+                <div class="ig-comments-list" id="ig-comments-list">
+                    <div class="ig-comments-loading">
+                        <div class="spinner-border spinner-border-sm" role="status"></div>
+                        <span>Memuat komentar...</span>
+                    </div>
+                </div>
+
+                <!-- Reply indicator -->
+                <div class="ig-reply-indicator" id="ig-reply-indicator">
+                    <i class="fas fa-reply"></i>
+                    <span id="ig-reply-label">Membalas <strong></strong></span>
+                    <button class="cancel-reply" id="ig-cancel-reply"><i class="fas fa-times"></i></button>
+                </div>
+
+                <!-- Input area -->
+                <div class="ig-input-area">
+                    <div id="ig-my-avatar"></div>
+                    <div class="ig-input-wrap">
+                        <textarea class="ig-comment-input"
+                                  id="ig-comment-input"
+                                  placeholder="Tambah komentar..."
+                                  rows="1"></textarea>
+                        <button class="ig-send-btn" id="ig-send-btn">Kirim</button>
+                    </div>
+                </div>
+
+            </div><!-- /.ig-modal-right -->
+        </div><!-- /.modal-content -->
+    </div>
+</div>
+
 @push('scripts')
 <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/id.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const chatTab = document.querySelector('button[data-bs-target="#chat"]');
@@ -673,7 +1294,10 @@
                 
                 // Optional: Update joins_count on the card
                 const countContainer = btn.closest('.card-body').querySelector('.fa-users').parentElement;
-                countContainer.innerHTML = `<i class="fas fa-users me-2 text-primary"></i> ${data.count} / ${countContainer.innerText.split(' / ')[1]}`;
+                if (countContainer) {
+                    const maxPeople = countContainer.innerText.split(' / ')[1];
+                    countContainer.innerHTML = `<i class="fas fa-users me-2 text-primary"></i> ${data.count} / ${maxPeople}`;
+                }
                 
                 // Show success toast/alert if needed
                 alert(data.message);
@@ -689,6 +1313,575 @@
             btn.disabled = false;
         }
     }
+
+    // --- LIKE FUNCTIONALITY FOR COMMUNITY POSTS ---
+    document.addEventListener('click', function(e) {
+        // Handle like button clicks
+        if (e.target.closest('.like-btn')) {
+            e.preventDefault();
+            const btn = e.target.closest('.like-btn');
+            const feedId = btn.dataset.feedId;
+            
+            if (!feedId) {
+                console.error('No feed ID found on like button');
+                return;
+            }
+            
+            console.log('Like button clicked for feed:', feedId);
+            
+            // Show loading state
+            const originalHtml = btn.innerHTML;
+            btn.style.opacity = '0.5';
+            btn.style.pointerEvents = 'none';
+            
+            fetch(`/feeds/${feedId}/like`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                console.log('Like response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Like response data:', data);
+                
+                // Update button state
+                btn.classList.toggle('liked', data.liked);
+                const icon = btn.querySelector('i');
+                if (icon) {
+                    icon.classList.toggle('far', !data.liked);
+                    icon.classList.toggle('fas', data.liked);
+                }
+                
+                const countElement = btn.querySelector('.like-count');
+                if (countElement) {
+                    countElement.textContent = data.count;
+                }
+                
+                // Update data attributes for comment toggle
+                btn.dataset.feedLiked = data.liked ? 'true' : 'false';
+                btn.dataset.feedLikes = data.count;
+                
+                console.log('Like button updated successfully');
+            })
+            .catch(error => {
+                console.error('Error toggling like:', error);
+                // Show error message to user
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'alert alert-danger alert-sm position-fixed top-0 start-50 translate-middle-x mt-3';
+                errorDiv.style.zIndex = '9999';
+                errorDiv.textContent = 'Gagal memperbarui like. Silakan coba lagi.';
+                document.body.appendChild(errorDiv);
+                
+                setTimeout(() => {
+                    errorDiv.remove();
+                }, 3000);
+            })
+            .finally(() => {
+                btn.style.opacity = '1';
+                btn.style.pointerEvents = 'auto';
+            });
+        }
+        
+        // Handle comment button clicks
+        if (e.target.closest('.comment-toggle')) {
+            const btn = e.target.closest('.comment-toggle');
+            const feedId = btn.dataset.feedId;
+            
+            if (!feedId) return;
+            
+            // Open comment modal
+            openCommentModal(btn);
+        }
+    });
+
+    // ═══════════════════════════════════════════════════════════
+    // INSTAGRAM-STYLE COMMENT MODAL FUNCTIONALITY
+    // ═══════════════════════════════════════════════════════════
+    let currentFeedId = null;
+    let replyToId = null;
+    let replyToName = null;
+
+    function avatarHtml(photo, name, size = 36, cls = '') {
+        const initial = (name || '?').charAt(0).toUpperCase();
+        if (photo) {
+            return `<img src="/storage/${photo}" alt="${name}"
+                         style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;flex-shrink:0;"
+                         onerror="this.onerror=null;this.src='/assets/img/profile-placeholder.png';" class="${cls}">`;
+        }
+        return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:linear-gradient(135deg,#cb2786,#00617a);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:${Math.round(size*0.38)}px;flex-shrink:0;" class="${cls}">${initial}</div>`;
+    }
+
+    function buildNoImgContent(title, caption, meetDate, meetLoc, meetMax) {
+        const isMeets = !!meetDate;
+        const icon    = isMeets ? 'fas fa-calendar-plus' : 'fas fa-newspaper';
+
+        let meetsBlock = '';
+        if (isMeets) {
+            meetsBlock = `<div class="ig-modal-meets-info">
+                <div class="ig-modal-meets-date"><i class="fas fa-calendar me-1"></i>${meetDate}${meetLoc ? ' • ' + escapeHtml(meetLoc) : ''}</div>
+                ${meetMax ? `<div class="ig-modal-meets-detail"><i class="fas fa-users me-1"></i>Maks ${meetMax} orang</div>` : ''}
+            </div>`;
+        }
+
+        return `<div class="ig-modal-no-img">
+            <div class="ig-modal-no-img-icon"><i class="${icon}"></i></div>
+            ${title ? `<h2 class="ig-modal-no-img-title">${escapeHtml(title)}</h2>` : ''}
+            ${caption ? `<p class="ig-modal-no-img-text">${escapeHtml(caption)}</p>` : ''}
+            ${meetsBlock}
+        </div>`;
+    }
+
+    function escapeHtml(str) {
+        return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function openCommentModal(btn) {
+        const feedId = btn.dataset.feedId;
+        const title = btn.dataset.feedTitle || '';
+        const image = btn.dataset.feedImage || '';
+        const author = btn.dataset.feedAuthor || 'KAMCUP';
+        const photo = btn.dataset.feedAuthorPhoto || '';
+        const caption = btn.dataset.feedCaption || '';
+        const likes = +btn.dataset.feedLikes || 0;
+        const liked = btn.dataset.feedLiked === 'true';
+        const meetDate = btn.dataset.feedMeetDate || '';
+        const meetLoc = btn.dataset.feedMeetLocation || '';
+        const meetMax = btn.dataset.feedMeetMax || '';
+
+        // Store feed id on modal for sync
+        $('#feedCommentModal').data('feed-id', feedId);
+        currentFeedId = feedId;
+
+        // Image atau konten post
+        const $imgWrap = $('#ig-modal-img-wrap');
+        if (image) {
+            $imgWrap.html(`<img src="/storage/${image}" alt="${escapeHtml(title)}"
+                                style="width:100%;height:100%;object-fit:contain;background:#000;"
+                                onerror="this.onerror=null; $(this).closest('#ig-modal-img-wrap').html(buildNoImgContent('${escapeHtml(title).replace(/'/g,"\\'")}','${escapeHtml(caption).replace(/'/g,"\\'")}','${meetDate}','${escapeHtml(meetLoc)}','${meetMax}'));">`);
+        } else {
+            $imgWrap.html(buildNoImgContent(title, caption, meetDate, meetLoc, meetMax));
+        }
+
+        // Author header
+        $('#ig-panel-author-avatar').html(avatarHtml(photo, author, 36));
+        $('#ig-panel-author-name').text(author);
+        $('#ig-panel-post-title').text(title || 'Postingan Komunitas');
+
+        // Caption
+        if (caption) {
+            $('#ig-caption-avatar').html(avatarHtml(photo, author, 32));
+            $('#ig-caption-text').html(`<strong>${escapeHtml(author)}</strong> ${escapeHtml(caption)}`);
+            $('#ig-caption-row').show();
+        } else {
+            $('#ig-caption-row').hide();
+        }
+
+        // Like state
+        const $likeBtnModal = $('#ig-modal-like-btn');
+        $likeBtnModal.toggleClass('liked', liked)
+            .find('i').toggleClass('far', !liked).toggleClass('fas', liked);
+        $('#ig-modal-likes-count').text(likes);
+
+        // My avatar in input
+        $('#ig-my-avatar').html(avatarHtml('', '{{ Auth::user()->name }}', 32));
+
+        // Reset reply state & input
+        resetReply();
+        $('#ig-comment-input').val('').css('height', '42px');
+        $('#ig-send-btn').removeClass('active');
+
+        // Show modal then load comments
+        $('#feedCommentModal').modal('show');
+        loadComments(feedId);
+    }
+
+    function loadComments(feedId) {
+        const $commentsList = $('#ig-comments-list');
+        $commentsList.html(`
+            <div class="ig-comments-loading">
+                <div class="spinner-border spinner-border-sm" role="status"></div>
+                <span>Memuat komentar...</span>
+            </div>
+        `);
+
+        fetch(`/feeds/${feedId}/comments`)
+            .then(response => response.json())
+            .then(comments => {
+                if (comments.length === 0) {
+                    $commentsList.html(`
+                        <div class="text-center py-4 text-muted">
+                            <i class="far fa-comment mb-2 d-block"></i>
+                            <span>Belum ada komentar</span>
+                        </div>
+                    `);
+                } else {
+                    renderComments(comments);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading comments:', error);
+                $commentsList.html(`
+                    <div class="text-center py-4 text-danger">
+                        <span>Gagal memuat komentar</span>
+                    </div>
+                `);
+            });
+    }
+
+    function renderComments(comments) {
+        const $commentsList = $('#ig-comments-list');
+        if (!comments || comments.length === 0) {
+            $commentsList.html(`
+                <div class="text-center py-4 text-muted">
+                    <i class="far fa-comment mb-2 d-block"></i>
+                    <span>Belum ada komentar</span>
+                </div>
+            `);
+            return;
+        }
+        $commentsList.empty();
+        comments.forEach(c => $commentsList.append(buildCommentEl(c, false)));
+        $commentsList.scrollTop(0);
+    }
+
+    function buildCommentEl(c, isReply) {
+        const photo   = c.user?.profile?.profile_photo || '';
+        const name    = c.user?.name || 'User';
+        const timeAgo = moment(c.created_at).fromNow();
+        const isOwn   = c.user_id === {{ Auth::id() }};
+        const replies = c.children || [];
+        const isDeleted = !!c.deleted_at;
+
+        // Replies always start COLLAPSED — harus klik "Lihat N balasan" dulu
+        const repliesHtml = !isReply
+            ? `<div class="ig-replies-list" id="replies-${c.id}" style="display:none;">
+                ${replies.map(r => buildCommentEl(r, true)).join('')}
+               </div>`
+            : '';
+
+        // Toggle button — tampil hanya kalau ada balasan dan ini bukan reply
+        const viewRepliesBtn = (!isReply && replies.length > 0)
+            ? `<button class="ig-view-replies-btn" data-comment-id="${c.id}" data-count="${replies.length}" data-open="0">
+                <span class="line"></span>
+                <span class="label">Lihat ${replies.length} balasan</span>
+                <span class="line"></span>
+               </button>`
+            : '';
+
+        // If comment is deleted, show deleted message
+        if (isDeleted) {
+            return `
+            <div class="ig-comment-item ${isReply ? 'ig-comment-reply' : ''}" id="comment-${c.id}" data-comment-id="${c.id}" data-user-id="${c.user_id}">
+                ${avatarHtml(photo, name, 32, 'ig-comment-avatar')}
+                <div class="ig-comment-body">
+                    <div class="ig-comment-bubble ig-comment-deleted">
+                        <p class="ig-comment-username">${name}</p>
+                        <p class="ig-comment-text"><em>Komentar ini telah dihapus</em></p>
+                    </div>
+                    <div class="ig-comment-meta">
+                        <span class="ig-comment-time">${timeAgo}</span>
+                    </div>
+                    ${repliesHtml}
+                    ${viewRepliesBtn}
+                </div>
+            </div>`;
+        }
+
+        return `
+        <div class="ig-comment-item ${isReply ? 'ig-comment-reply' : ''}" id="comment-${c.id}" data-comment-id="${c.id}" data-user-id="${c.user_id}">
+            ${avatarHtml(photo, name, 32, 'ig-comment-avatar')}
+            <div class="ig-comment-body">
+                <div class="ig-comment-bubble">
+                    <p class="ig-comment-username">${name}</p>
+                    <p class="ig-comment-text">${escapeHtml(c.content)}</p>
+                </div>
+                <div class="ig-comment-meta">
+                    <span class="ig-comment-time">${timeAgo}</span>
+                    ${!isReply ? `<button class="ig-reply-btn" data-comment-id="${c.id}" data-comment-name="${name}">Balas</button>` : ''}
+                    ${isOwn ? `<button class="ig-delete-btn" data-comment-id="${c.id}" title="Hapus"><i class="fas fa-trash-alt"></i></button>` : ''}
+                </div>
+                ${repliesHtml}
+                ${viewRepliesBtn}
+            </div>
+        </div>`;
+    }
+
+    function resetReply() {
+        replyToId = null;
+        replyToName = null;
+        $('#ig-reply-indicator').removeClass('active');
+        $('#ig-comment-input').attr('placeholder', 'Tambah komentar...');
+    }
+
+    // Modal like button
+    $('#ig-modal-like-btn').on('click', function() {
+        if (!currentFeedId) return;
+        // Delegate to the card's like button to keep in sync
+        $(`.like-btn[data-feed-id="${currentFeedId}"]`).trigger('click');
+    });
+
+    // Comment input handling
+    $('#ig-comment-input').on('input', function() {
+        const hasText = $(this).val().trim().length > 0;
+        $('#ig-send-btn').toggleClass('active', hasText);
+        
+        // Auto resize
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 80) + 'px';
+    });
+
+    // Send comment
+    $('#ig-send-btn').on('click', function() {
+        if (!$(this).hasClass('active') || !currentFeedId) return;
+        
+        const content = $('#ig-comment-input').val().trim();
+        if (!content) return;
+
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        
+        fetch(`/feeds/${currentFeedId}/comments`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ 
+                content: content,
+                parent_id: replyToId || null
+            })
+        })
+        .then(response => response.json())
+        .then(newComment => {
+            // Add new comment to list
+            const $commentsList = $('#ig-comments-list');
+            const commentHtml = createCommentHtml(newComment);
+            
+            // Remove empty state if exists
+            $commentsList.find('.text-center').remove();
+            
+            // Add new comment
+            $commentsList.append(commentHtml);
+            
+            // Update comment count on button
+            const $commentBtn = $(`.comment-toggle[data-feed-id="${currentFeedId}"]`);
+            const currentCount = parseInt($commentBtn.find('.comment-count').text()) || 0;
+            $commentBtn.find('.comment-count').text(currentCount + 1);
+            
+            // Reset input
+            $('#ig-comment-input').val('').css('height', 'auto');
+            $('#ig-send-btn').removeClass('active');
+            resetReply();
+        })
+        .catch(error => {
+            console.error('Error posting comment:', error);
+            alert('Gagal mengirim komentar. Silakan coba lagi.');
+        });
+    });
+
+    // Reply functionality
+    $(document).on('click', '.ig-reply-btn', function() {
+        const commentId = $(this).data('comment-id');
+        const commentName = $(this).data('comment-name');
+        
+        replyToId = commentId;
+        replyToName = commentName;
+
+        const $ind = $('#ig-reply-indicator');
+        $ind.find('strong').text(replyToName);
+        $ind.addClass('active');
+
+        $('#ig-comment-input').focus().val(`@${replyToName} `).trigger('input');
+    });
+
+    // View replies toggle
+    $(document).on('click', '.ig-view-replies-btn', function() {
+        const $btn = $(this);
+        const cId = $btn.data('comment-id');
+        const $rList = $(`#replies-${cId}`);
+        const isOpen = $btn.data('open') === 1 || $btn.data('open') === '1';
+
+        if (isOpen) {
+            $rList.slideUp(200);
+            $btn.find('.label').text(`Lihat ${$btn.data('count')} balasan`);
+            $btn.data('open', 0);
+        } else {
+            $rList.slideDown(200);
+            $btn.find('.label').text(`Sembunyikan ${$btn.data('count')} balasan`);
+            $btn.data('open', 1);
+        }
+    });
+
+    // Send comment
+    $('#ig-send-btn').on('click', function() {
+        if (!$(this).hasClass('active') || !currentFeedId) return;
+        
+        let content = $('#ig-comment-input').val().trim();
+        if (!content) return;
+
+        // Remove @username prefix if it's a reply
+        if (replyToName && content.startsWith(`@${replyToName} `)) {
+            content = content.substring(`@${replyToName} `.length);
+        }
+
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        
+        const payload = { content };
+        if (replyToId) payload.parent_id = replyToId;
+
+        fetch(`/feeds/${currentFeedId}/comments`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(response => response.json())
+        .then(newComment => {
+            if (replyToId) {
+                // It's a reply - add to parent's replies list
+                const $repliesList = $(`#replies-${replyToId}`);
+                if ($repliesList.length === 0) {
+                    // Create replies list if it doesn't exist
+                    $(`#comment-${replyToId} .ig-comment-body`).append(`
+                        <div class="ig-replies-list" id="replies-${replyToId}"></div>
+                    `);
+                }
+                $(`#replies-${replyToId}`).append(buildCommentEl(newComment, true)).show();
+                
+                // Update view replies button or create it
+                const $viewBtn = $(`#comment-${replyToId} .ig-view-replies-btn`);
+                if ($viewBtn.length > 0) {
+                    const currentCount = $viewBtn.data('count');
+                    $viewBtn.data('count', currentCount + 1);
+                    if ($viewBtn.data('open') === 1) {
+                        $viewBtn.find('.label').text(`Sembunyikan ${currentCount + 1} balasan`);
+                    } else {
+                        $viewBtn.find('.label').text(`Lihat ${currentCount + 1} balasan`);
+                    }
+                } else {
+                    // Create view replies button
+                    $(`#comment-${replyToId} .ig-comment-body`).append(`
+                        <button class="ig-view-replies-btn" data-comment-id="${replyToId}" data-count="1" data-open="1">
+                            <span class="line"></span>
+                            <span class="label">Sembunyikan 1 balasan</span>
+                            <span class="line"></span>
+                        </button>
+                    `);
+                }
+            } else {
+                // It's a new parent comment - add to main list
+                const $commentsList = $('#ig-comments-list');
+                
+                // Remove empty state if exists
+                $commentsList.find('.text-center').remove();
+                
+                // Add new comment
+                $commentsList.append(buildCommentEl(newComment, false));
+            }
+            
+            // Update comment count on button
+            const $commentBtn = $(`.comment-toggle[data-feed-id="${currentFeedId}"]`);
+            const currentCount = parseInt($commentBtn.find('.comment-count').text()) || 0;
+            $commentBtn.find('.comment-count').text(currentCount + 1);
+            
+            // Reset input
+            $('#ig-comment-input').val('').css('height', '42px');
+            $('#ig-send-btn').removeClass('active');
+            resetReply();
+        })
+        .catch(error => {
+            console.error('Error posting comment:', error);
+            alert('Gagal mengirim komentar. Silakan coba lagi.');
+        });
+    });
+
+    // Delete comment functionality
+    $(document).on('click', '.ig-delete-btn', function() {
+        const $btn = $(this);
+        const commentId = $btn.data('comment-id');
+        
+        if (!confirm('Apakah Anda yakin ingin menghapus komentar ini?')) {
+            return;
+        }
+        
+        console.log('Attempting to delete comment:', commentId);
+        
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        
+        // Use the correct route for feed comments
+        fetch(`/feeds/${commentId}/comment`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => {
+            console.log('Delete response status:', response.status);
+            console.log('Delete response headers:', response.headers);
+            
+            if (!response.ok) {
+                // Try to get error details
+                return response.text().then(text => {
+                    console.log('Error response body:', text);
+                    throw new Error(`HTTP ${response.status}: ${text}`);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Delete response data:', data);
+            
+            if (data.success) {
+                // Soft delete: update comment to show deleted message instead of removing
+                const $comment = $(`#comment-${commentId}`);
+                
+                // Update the comment bubble to show deleted message
+                const $bubble = $comment.find('.ig-comment-bubble');
+                const $text = $bubble.find('.ig-comment-text');
+                const $meta = $comment.find('.ig-comment-meta');
+                
+                // Add deleted styling and message
+                $bubble.addClass('ig-comment-deleted');
+                $text.html('<em>Komentar ini telah dihapus</em>');
+                
+                // Remove action buttons (reply and delete)
+                $meta.find('.ig-reply-btn, .ig-delete-btn').remove();
+                
+                // Update comment count on button
+                const $commentBtn = $(`.comment-toggle[data-feed-id="${currentFeedId}"]`);
+                const currentCount = parseInt($commentBtn.find('.comment-count').text()) || 0;
+                $commentBtn.find('.comment-count').text(Math.max(0, currentCount - 1));
+            } else {
+                console.log('Delete failed, data:', data);
+                // Show specific error message from server
+                alert(data.message || 'Gagal menghapus komentar. Silakan coba lagi.');
+            }
+        })
+        .catch(error => {
+            console.error('Error deleting comment:', error);
+            alert('Gagal menghapus komentar. Silakan coba lagi. Error: ' + error.message);
+        });
+    });
+
+    // Reset state on modal close
+    $('#feedCommentModal').on('hidden.bs.modal', function() {
+        currentFeedId = null;
+        replyToId = null;
+        resetReply();
+    });
 </script>
 @endpush
 
