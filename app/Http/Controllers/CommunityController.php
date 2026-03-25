@@ -27,7 +27,8 @@ class CommunityController extends Controller
         $community->load(['creator', 'members', 'feeds' => function($q) use ($userId) {
             $q->with(['user.profile'])
               ->selectRaw('feeds.*, 
-                EXISTS(SELECT 1 FROM feed_user_joins WHERE feed_id = feeds.id AND user_id = ?) as current_user_joined', [$userId])
+                EXISTS(SELECT 1 FROM feed_user_joins WHERE feed_id = feeds.id AND user_id = ?) as current_user_joined,
+                EXISTS(SELECT 1 FROM feed_likes WHERE feed_id = feeds.id AND user_id = ?) as current_user_liked', [$userId, $userId])
               ->withCount(['likes as likes_count', 'comments as comments_count', 'joinedBy as joins_count'])
               ->latest();
         }]);

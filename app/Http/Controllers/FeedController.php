@@ -135,13 +135,22 @@ class FeedController extends Controller
     public function commentDelete(FeedComment $comment)  // ← FIX #1 berlaku di sini
     {
         // FIX #2: pastikan hanya pemilik komentar yang bisa hapus
-        if ($comment->user_id !== Auth::id()) {
+        if ((int)$comment->user_id !== (int)Auth::id()) {
             abort(403, 'Unauthorized');
         }
 
+        // Get reply count for response
+        $replyCount = $comment->children()->count();
+
+        // Hard delete - cascade delete will remove parent and all replies
         $comment->delete();
 
-        return response()->json(['success' => true]);
+        return response()->json([
+            'success' => true,
+            'message' => $replyCount > 0 
+                ? 'Komentar dan ' . $replyCount . ' balasan berhasil dihapus'
+                : 'Komentar berhasil dihapus'
+        ]);
     }
 
     public function comments(Feed $feed)
@@ -193,7 +202,7 @@ class FeedController extends Controller
         if ($join) {
             // Unjoin
             $join->delete();
-            $count = $feed->joins_count - 1;
+            $count = $feed->joinedBy()->count(); // Get real-time count
             return response()->json([
                 'joined' => false,
                 'count' => $count,
@@ -202,7 +211,7 @@ class FeedController extends Controller
         }
 
         // Check if meet is full
-        if ($feed->meet_max_people && $feed->joins_count >= $feed->meet_max_people) {
+        if ($feed->meet_max_people && $feed->joinedBy()->count() >= $feed->meet_max_people) {
             return response()->json([
                 'error' => true,
                 'message' => 'Meets sudah penuh!'
@@ -215,7 +224,7 @@ class FeedController extends Controller
             'user_id' => $userId
         ]);
 
-        $count = $feed->joins_count + 1;
+        $count = $feed->joinedBy()->count(); // Get real-time count
         return response()->json([
             'joined' => true,
             'count' => $count,
