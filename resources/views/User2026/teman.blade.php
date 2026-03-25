@@ -323,9 +323,9 @@
     .bg-pink-light { background-color: var(--teman-pink-light); }
     .btn-accent { background-color: var(--teman-accent); color: white; }
     .btn-accent:hover { background-color: #004d61; color: white; }
-    
+
     .x-small { font-size: 0.75rem; }
-    
+
     .nav-item-friends {
         padding: 10px 16px;
         border-radius: 8px;
@@ -340,7 +340,7 @@
     .nav-item-friends.active { background: white; box-shadow: 0 4px 6px -2px rgba(0,0,0,0.05); color: var(--teman-accent); }
 
     .friend-item-sidebar:hover { background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-    
+
     .status-dot {
         position: absolute; bottom: 0; right: 0;
         width: 12px; height: 12px; border-radius: 50%;
@@ -361,53 +361,144 @@
     }
     .btn-action:hover { transform: scale(1.1); }
 
-    /* Messages */
-    #chat-box {
+    /* ===================== CHAT LAYOUT FIX ===================== */
+    /* Main chat area harus full height dan flex column */
+    .main-chat-area {
         display: flex;
         flex-direction: column;
-        justify-content: flex-end;
-        overflow-y: auto;
-        min-height: 0;
+        height: 100vh;
+        overflow: hidden;
     }
 
+    /* Chat view harus flex column dan mengisi sisa ruang */
+    #chat-view {
+        display: none;
+        flex-direction: column;
+        height: 100%;
+        overflow: hidden;
+    }
+    #chat-view.chat-view-visible {
+        display: flex !important;
+    }
+    #chat-view.chat-view-hidden {
+        display: none !important;
+    }
+
+    /* Chat box — area pesan yang bisa di-scroll */
+    #chat-box {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        overflow-x: hidden;
+        display: flex;
+        flex-direction: column;
+        padding: 16px;
+        min-height: 0; /* PENTING: tanpa ini flex child tidak bisa scroll */
+    }
+
+    #chat-messages-inner {
+        margin-top: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    /* Chat input wrapper — selalu di bawah */
+    .chat-input-wrapper {
+        flex-shrink: 0;
+        position: relative;
+    }
+    /* =========================================================== */
+
     .chat-msg-container {
-        display: flex; gap: 12px; padding: 8px 0;
+        display: flex; gap: 12px; padding: 6px 0;
     }
     .chat-msg-author { font-weight: 700; color: #333; margin-right: 8px; }
     .chat-msg-time { font-size: 0.7rem; color: #999; }
-    .chat-msg-text { color: #444; font-size: 0.95rem; }
+    .chat-msg-text { color: #444; font-size: 0.95rem; line-height: 1.5; }
+
+    /* Reply thread style (Discord-like) */
+    .reply-thread {
+        background: #f0f4f8;
+        border-left: 3px solid var(--teman-accent);
+        border-radius: 6px;
+        padding: 6px 10px;
+        margin-bottom: 6px;
+        font-size: 0.8rem;
+        color: #666;
+        cursor: pointer;
+        max-width: 100%;
+        overflow: hidden;
+    }
+    .reply-thread:hover { background: #e8eef3; }
+    .reply-thread .reply-author { font-weight: 700; color: var(--teman-accent); margin-right: 6px; }
+    .reply-thread .reply-text { color: #555; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Context menu untuk reply */
+    .chat-context-menu {
+        position: fixed;
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 10px;
+        padding: 6px 0;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        z-index: 9999;
+        min-width: 160px;
+    }
+    .chat-context-menu-item {
+        padding: 8px 16px;
+        cursor: pointer;
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: background 0.15s;
+    }
+    .chat-context-menu-item:hover { background: #f8f9fa; }
+
+    /* Reply preview bar (di atas input) */
+    .reply-preview-bar {
+        background: #f0f4f8;
+        border-left: 3px solid var(--teman-accent);
+        border-radius: 6px;
+        padding: 8px 12px;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 0.82rem;
+    }
+    .reply-preview-bar .reply-preview-text {
+        color: #555;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        flex: 1;
+    }
+    .reply-preview-bar .btn-cancel-reply {
+        background: none;
+        border: none;
+        color: #999;
+        cursor: pointer;
+        padding: 0 4px;
+        font-size: 1rem;
+        line-height: 1;
+    }
+    .reply-preview-bar .btn-cancel-reply:hover { color: #333; }
 
     .custom-scrollbar::-webkit-scrollbar { width: 6px; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 10px; }
-    
+
     .hover-accent:hover { color: var(--teman-accent); }
     .cursor-pointer { cursor: pointer; }
     .transition-all { transition: all 0.2s; }
 
-    /* Chat view toggle */
-    #chat-view.chat-view-hidden { display: none !important; pointer-events: none; }
-    #chat-view.chat-view-visible { display: flex !important; }
+    /* Animate */
+    .animate-fade-in { animation: fadeIn 0.2s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
     /* Responsive Design */
-    @media (max-width: 1200px) {
-        .friends-app-container {
-            grid-template-columns: 350px 1fr;
-        }
-    }
-    
-    @media (max-width: 992px) {
-        .friends-app-container {
-            grid-template-columns: 300px 1fr;
-        }
-        
-        .dm-list-bar {
-            width: 300px !important;
-        }
-    }
-    
     @media (max-width: 768px) {
         .friends-app-container {
-            grid-template-columns: 1fr !important;
             height: 100vh !important;
             height: 100dvh !important;
         }
@@ -424,30 +515,11 @@
             transform: translateX(-100%);
         }
 
-        .dm-list-bar.mobile-visible {
-            transform: translateX(0);
-        }
+        .dm-list-bar.mobile-visible { transform: translateX(0); }
+        .dm-list-bar.mobile-hidden { transform: translateX(-100%); }
 
-        .dm-list-bar.mobile-hidden {
-            transform: translateX(-100%);
-        }
+        .chat-header .chat-header-content { display: none !important; }
 
-        #chat-view {
-            margin-left: 0 !important;
-        }
-        
-        /* Mobile chat adjustments */
-        .chat-header {
-            padding: 0 !important;
-            background: white !important;
-            border-bottom: 1px solid #e9ecef !important;
-        }
-        
-        /* Hide desktop header on mobile */
-        .chat-header .chat-header-content {
-            display: none !important;
-        }
-        
         .mobile-chat-header {
             padding: 12px 16px !important;
             background: white !important;
@@ -455,914 +527,751 @@
             top: 0 !important;
             z-index: 100 !important;
             display: flex !important;
+            border-bottom: 1px solid #e9ecef;
         }
-        
-        .mobile-profile-info .fw-bold {
-            font-size: 1rem !important;
-            margin: 0 !important;
-        }
-        
-        .mobile-profile-info .small {
-            font-size: 0.8rem !important;
-            margin: 0 !important;
-        }
-        
-        /* Mobile search box */
-        .search-box input {
-            font-size: 0.9rem !important;
-            padding: 10px 16px 10px 40px !important;
-            height: auto !important;
-        }
-        
-        /* Mobile friend items */
-        .friend-item-sidebar {
-            padding: 12px !important;
-        }
-        
-        .friend-item-sidebar .avatar-sm {
-            width: 40px !important;
-            height: 40px !important;
-            font-size: 0.9rem !important;
-        }
-        
-        /* Mobile chat messages */
-        .chat-msg-text {
-            font-size: 0.9rem !important;
-            line-height: 1.4 !important;
-        }
-        
-        /* Mobile chat input */
-        .chat-input-container {
-            padding: 12px 16px !important;
-        }
-        
-        .chat-input-container input {
-            font-size: 0.9rem !important;
-            padding: 10px 16px !important;
-        }
-        
-        /* Mobile navigation items */
-        .nav-item-friends {
-            padding: 12px 16px !important;
-            font-size: 0.9rem !important;
-        }
-        
-        /* Mobile status indicators */
-        .status-dot {
-            width: 12px !important;
-            height: 12px !important;
-        }
-        
-        /* Mobile badges */
-        .badge {
-            font-size: 0.75rem !important;
-            padding: 4px 8px !important;
-        }
-        
-        /* Mobile mutual communities */
-        .mutual-communities {
-            font-size: 0.8rem !important;
-        }
-        
-        .mutual-communities .badge {
-            padding: 2px 6px !important;
-        }
-        
-        /* Mobile empty states */
-        .empty-state {
-            padding: 40px 20px !important;
-        }
-        
-        .empty-state h5 {
-            font-size: 1.1rem !important;
-        }
-        
-        .empty-state p {
-            font-size: 0.9rem !important;
-        }
-        
-        /* Mobile friend request items */
-        .request-item {
-            padding: 12px !important;
-        }
-        
-        .request-item .avatar-sm {
-            width: 40px !important;
-            height: 40px !important;
-            font-size: 0.9rem !important;
-        }
-        
-        .request-item .btn {
-            padding: 6px 12px !important;
-            font-size: 0.8rem !important;
-        }
-        
-        /* Mobile profile info in chat */
-        .profile-info {
-            padding: 16px !important;
-        }
-        
-        .profile-info .avatar-sm {
-            width: 50px !important;
-            height: 50px !important;
-            font-size: 1rem !important;
-        }
-        
-        .profile-info h6 {
-            font-size: 0.9rem !important;
-        }
-        
-        .profile-info small {
-            font-size: 0.8rem !important;
-        }
-        
-        /* Mobile scrollbars */
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 4px !important;
-        }
-        
-        /* Mobile safe area handling */
-        @supports (padding: max(0px)) {
-            .dm-list-bar {
-                padding-top: max(8px, env(safe-area-inset-top)) !important;
-            }
-            
-            .chat-header {
-                padding-top: max(12px, env(safe-area-inset-top)) !important;
-            }
-        }
+
+        .x-small { font-size: 0.75rem; }
     }
-    
-    /* Small mobile devices */
+
     @media (max-width: 480px) {
-        .dm-list-bar .btn {
-            font-size: 0.85rem !important;
-            padding: 6px 10px !important;
-        }
-        
-        .search-box input {
-            font-size: 0.85rem !important;
-            padding: 8px 14px 8px 36px !important;
-        }
-        
-        .friend-item-sidebar {
-            padding: 10px !important;
-        }
-        
-        .friend-item-sidebar .avatar-sm {
-            width: 36px !important;
-            height: 36px !important;
-            font-size: 0.8rem !important;
-        }
-        
-        .chat-header {
-            padding: 10px 12px !important;
-            font-size: 0.9rem !important;
-        }
-        
-        .chat-msg-text {
-            font-size: 0.85rem !important;
-        }
-        
-        .chat-input-container {
-            padding: 10px 12px !important;
-        }
-        
-        .chat-input-container input {
-            font-size: 0.85rem !important;
-            padding: 8px 12px !important;
-        }
+        .chat-msg-text { font-size: 0.85rem !important; }
+        .dm-list-bar .btn { font-size: 0.85rem !important; }
     }
 </style>
 @endpush
 
 @push('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const userId = {{ Auth::id() }};
-        const sidebarSearchInput = document.getElementById('user-search-input');
-        const searchResults = document.getElementById('search-results-container');
-        const welcomeView = document.getElementById('welcome-view');
-        const chatView = document.getElementById('chat-view');
-        const dmListBar = document.querySelector('.dm-list-bar');
-        
-        // Responsive functionality
-        const isMobile = window.innerWidth <= 768;
-        const isTablet = window.innerWidth <= 992;
-        
-        // Responsive sidebar functionality
-        function showSidebar() {
-            const dmListBar = document.querySelector('.dm-list-bar');
-            const chatView = document.getElementById('chat-view');
-            
-            if (isMobile && dmListBar) {
-                dmListBar.classList.remove('mobile-hidden');
-                dmListBar.classList.add('mobile-visible');
-                chatView.classList.add('chat-view-hidden');
-                chatView.classList.remove('chat-view-visible');
-            }
-        }
-        
-        function hideSidebar() {
-            const dmListBar = document.querySelector('.dm-list-bar');
-            const chatView = document.getElementById('chat-view');
-            
-            if (isMobile && dmListBar) {
-                dmListBar.classList.remove('mobile-visible');
-                dmListBar.classList.add('mobile-hidden');
-                chatView.classList.remove('chat-view-hidden');
-                chatView.classList.add('chat-view-visible');
-            }
-        }
-        
-        // Make functions globally accessible
-        window.showSidebar = showSidebar;
-        window.hideSidebar = hideSidebar;
-        
-        // Add responsive back button to chat header (mobile only)
-        if (isMobile) {
-            // Initially show sidebar on mobile
-            showSidebar();
-        }
-        
-        // Update mobile chat header when chat is opened
-        function updateMobileChatHeader(name, avatar = '', bio = '', joinDate = 'Jan 01, 2026', mutualCount = 0, mutuals = []) {
-            const chatHeader = document.querySelector('.chat-header');
-            if (!chatHeader) return;
-            
-            // Clear any existing headers
-            const existingMobileHeader = chatHeader.querySelector('.mobile-chat-header');
-            if (existingMobileHeader) {
-                existingMobileHeader.remove();
-            }
-            
-            if (isMobile) {
-                // Mobile: Create and show mobile header
-                const desktopContent = chatHeader.querySelector('.chat-header-content');
-                if (desktopContent) {
-                    desktopContent.style.display = 'none';
-                }
-                
-                const mobileHeader = document.createElement('div');
-                mobileHeader.className = 'mobile-chat-header d-flex align-items-center w-100';
-                
-                const avatarHtml = avatar 
-                    ? `<img src="${avatar}" alt="${name}" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">`
-                    : `<div class="rounded-circle bg-accent-light text-accent d-flex align-items-center justify-content-center fw-bold" style="width: 40px; height: 40px; font-size: 1rem;">${name[0]?.toUpperCase() || 'U'}</div>`;
-                
-                mobileHeader.innerHTML = `
-                    <button class="mobile-back-btn btn btn-sm btn-outline-secondary me-3" onclick="window.showSidebar()">
-                        <i class="fas fa-arrow-left"></i>
-                    </button>
-                    <div class="mobile-profile-info d-flex align-items-center flex-grow-1">
-                        ${avatarHtml}
-                        <div class="ms-3">
-                            <div class="fw-bold text-dark">${name}</div>
-                            <div class="small text-muted">Online</div>
-                        </div>
-                    </div>
-                `;
-                
-                chatHeader.appendChild(mobileHeader);
-            } else {
-                // Desktop: Show desktop header and update name
-                const desktopContent = chatHeader.querySelector('.chat-header-content');
-                if (desktopContent) {
-                    desktopContent.style.display = 'block';
-                }
-                
-                const headerName = document.getElementById('chat-header-name');
-                if (headerName) {
-                    headerName.textContent = name;
-                }
-            }
-        }
-        
-        window.toggleMutualList = function() {
-            const container = document.getElementById('mutual-list-container');
-            const chevron = document.getElementById('mutual-chevron');
-            if (container.classList.contains('d-none')) {
-                container.classList.remove('d-none');
-                chevron.style.transform = 'rotate(180deg)';
-            } else {
-                container.classList.add('d-none');
-                chevron.style.transform = 'rotate(0deg)';
-            }
-        };
+document.addEventListener('DOMContentLoaded', function () {
 
-        const chatBox = document.getElementById('chat-box');
-        const chatInput = document.getElementById('chat-input');
-        
-        let currentFriendId = null;
-        let currentFriendName = '';
-        let addFriendTimeout = null;
+    const userId = {{ Auth::id() }};
+    const authUserName = @json(Auth::user()->name);
+    const authUserPhoto = @json(Auth::user()->profile?->profile_photo);
 
-        // --- SIDEBAR SEARCH: filter friends list only (client-side) ---
-        sidebarSearchInput.addEventListener('input', function() {
-            const query = this.value.trim().toLowerCase();
-            document.querySelectorAll('.friend-item-sidebar').forEach(el => {
-                const name = el.querySelector('.fw-bold').innerText.toLowerCase();
-                el.style.display = name.includes(query) ? '' : 'none';
-            });
-        });
+    const sidebarSearchInput = document.getElementById('user-search-input');
+    const searchResults = document.getElementById('search-results-container');
+    const welcomeView = document.getElementById('welcome-view');
+    const chatView = document.getElementById('chat-view');
 
-        // --- NAVIGATION ---
-        function setActiveTab(tabId) {
-            ['tab-semua', 'tab-tertunda', 'tab-tambah'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.classList.remove('active');
-            });
-            const active = document.getElementById(tabId);
-            if (active) active.classList.add('active');
-        }
+    const isMobile = () => window.innerWidth <= 768;
 
-        function hideChatView() {
-            chatView.classList.remove('chat-view-visible');
+    // ===================== SIDEBAR (MOBILE) =====================
+    function showSidebar() {
+        const bar = document.querySelector('.dm-list-bar');
+        if (isMobile() && bar) {
+            bar.classList.remove('mobile-hidden');
+            bar.classList.add('mobile-visible');
             chatView.classList.add('chat-view-hidden');
+            chatView.classList.remove('chat-view-visible');
         }
-        function showChatViewFn() {
+    }
+    function hideSidebar() {
+        const bar = document.querySelector('.dm-list-bar');
+        if (isMobile() && bar) {
+            bar.classList.remove('mobile-visible');
+            bar.classList.add('mobile-hidden');
             chatView.classList.remove('chat-view-hidden');
             chatView.classList.add('chat-view-visible');
         }
+    }
+    window.showSidebar = showSidebar;
+    window.hideSidebar = hideSidebar;
 
-        window.showAllFriends = function() {
-            setActiveTab('tab-semua');
-            welcomeView.classList.remove('d-none');
-            hideChatView();
-            document.getElementById('main-view-title').innerText = 'Teman';
-            document.getElementById('all-friends-view').classList.remove('d-none');
-            document.getElementById('requests-view').classList.add('d-none');
-            document.getElementById('search-view').classList.add('d-none');
-        };
+    if (isMobile()) showSidebar();
 
-        window.closeChat = function() {
-            currentFriendId = null;
-            hideChatView();
-            welcomeView.classList.remove('d-none');
-            showAllFriends();
-            document.getElementById('member-sidebar').style.opacity = '0.5';
-        };
-
-        window.showRequests = function() {
-            setActiveTab('tab-tertunda');
-            welcomeView.classList.remove('d-none');
-            hideChatView();
-            document.getElementById('main-view-title').innerText = 'Permintaan Pertemanan';
-            document.getElementById('requests-view').classList.remove('d-none');
-            document.getElementById('all-friends-view').classList.add('d-none');
-            document.getElementById('search-view').classList.add('d-none');
-        };
-
-        window.showAddFriend = function() {
-            setActiveTab('tab-tambah');
-            welcomeView.classList.remove('d-none');
-            hideChatView();
-            document.getElementById('main-view-title').innerText = 'Tambah Teman';
-            document.getElementById('search-view').classList.remove('d-none');
-            document.getElementById('all-friends-view').classList.add('d-none');
-            document.getElementById('requests-view').classList.add('d-none');
-            document.getElementById('search-results-container').innerHTML = '';
-            setTimeout(() => document.getElementById('add-friend-input').focus(), 100);
-        };
-
-        window.closeAddFriend = function() {
-            showAllFriends();
-        };
-
-        // --- ADD FRIEND SEARCH (global search API) ---
-        document.getElementById('add-friend-input').addEventListener('input', function() {
-            const query = this.value.trim();
-            clearTimeout(addFriendTimeout);
-            if (query.length < 3) { searchResults.innerHTML = ''; return; }
-            addFriendTimeout = setTimeout(async () => {
-                searchResults.innerHTML = '<div class="col-12 text-center p-5"><div class="spinner-border text-accent"></div></div>';
-                try {
-                    const response = await fetch(`/user/teman/search?query=${encodeURIComponent(query)}`);
-                    const users = await response.json();
-                    renderResults(users);
-                } catch (e) { console.error(e); }
-            }, 500);
+    // ===================== NAVIGATION =====================
+    function setActiveTab(tabId) {
+        ['tab-semua', 'tab-tertunda', 'tab-tambah'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.classList.remove('active');
         });
+        const active = document.getElementById(tabId);
+        if (active) active.classList.add('active');
+    }
 
-        function renderResults(users) {
-            if (users.length === 0) {
-                searchResults.innerHTML = '<div class="col-12 text-center p-5 text-muted">Tidak ada user ditemukan.</div>';
-                return;
-            }
-            searchResults.innerHTML = users.map(u => {
-                const photo = (u.profile && u.profile.profile_photo) ? `/storage/${u.profile.profile_photo}` : null;
-                const bio = (u.profile && u.profile.description) ? u.profile.description.replace(/[\r\n]/g, ' ') : 'Pemain KAMCUP yang siap bertanding!';
-                
-                return `
+    function hideChatView() {
+        chatView.classList.remove('chat-view-visible');
+        chatView.classList.add('chat-view-hidden');
+    }
+    function showChatViewFn() {
+        chatView.classList.remove('chat-view-hidden');
+        chatView.classList.add('chat-view-visible');
+    }
+
+    window.showAllFriends = function () {
+        setActiveTab('tab-semua');
+        welcomeView.classList.remove('d-none');
+        hideChatView();
+        document.getElementById('main-view-title').innerText = 'Teman';
+        document.getElementById('all-friends-view').classList.remove('d-none');
+        document.getElementById('requests-view').classList.add('d-none');
+        document.getElementById('search-view').classList.add('d-none');
+    };
+
+    window.showRequests = function () {
+        setActiveTab('tab-tertunda');
+        welcomeView.classList.remove('d-none');
+        hideChatView();
+        document.getElementById('main-view-title').innerText = 'Permintaan Pertemanan';
+        document.getElementById('requests-view').classList.remove('d-none');
+        document.getElementById('all-friends-view').classList.add('d-none');
+        document.getElementById('search-view').classList.add('d-none');
+    };
+
+    window.showAddFriend = function () {
+        setActiveTab('tab-tambah');
+        welcomeView.classList.remove('d-none');
+        hideChatView();
+        document.getElementById('main-view-title').innerText = 'Tambah Teman';
+        document.getElementById('search-view').classList.remove('d-none');
+        document.getElementById('all-friends-view').classList.add('d-none');
+        document.getElementById('requests-view').classList.add('d-none');
+        document.getElementById('search-results-container').innerHTML = '';
+        setTimeout(() => document.getElementById('add-friend-input').focus(), 100);
+    };
+
+    window.closeAddFriend = function () { window.showAllFriends(); };
+
+    window.closeChat = function () {
+        currentFriendId = null;
+        hideChatView();
+        welcomeView.classList.remove('d-none');
+        window.showAllFriends();
+    };
+
+    window.toggleMutualList = function () {
+        const container = document.getElementById('mutual-list-container');
+        const chevron = document.getElementById('mutual-chevron');
+        if (container.classList.contains('d-none')) {
+            container.classList.remove('d-none');
+            chevron.style.transform = 'rotate(180deg)';
+        } else {
+            container.classList.add('d-none');
+            chevron.style.transform = 'rotate(0deg)';
+        }
+    };
+
+    // ===================== SIDEBAR SEARCH =====================
+    sidebarSearchInput.addEventListener('input', function () {
+        const query = this.value.trim().toLowerCase();
+        document.querySelectorAll('.friend-item-sidebar').forEach(el => {
+            const name = el.querySelector('.fw-bold').innerText.toLowerCase();
+            el.style.display = name.includes(query) ? '' : 'none';
+        });
+    });
+
+    // ===================== ADD FRIEND SEARCH =====================
+    let addFriendTimeout = null;
+
+    document.getElementById('add-friend-input').addEventListener('input', function () {
+        const query = this.value.trim();
+        clearTimeout(addFriendTimeout);
+        if (query.length < 3) { searchResults.innerHTML = ''; return; }
+        addFriendTimeout = setTimeout(async () => {
+            searchResults.innerHTML = '<div class="col-12 text-center p-5"><div class="spinner-border text-accent"></div></div>';
+            try {
+                const response = await fetch('/user/teman/search?query=' + encodeURIComponent(query));
+                const users = await response.json();
+                renderResults(users);
+            } catch (e) { console.error(e); }
+        }, 500);
+    });
+
+    function renderResults(users) {
+        if (users.length === 0) {
+            searchResults.innerHTML = '<div class="col-12 text-center p-5 text-muted">Tidak ada user ditemukan.</div>';
+            return;
+        }
+        searchResults.innerHTML = users.map(u => {
+            const photo = (u.profile && u.profile.profile_photo) ? '/storage/' + u.profile.profile_photo : null;
+            return `
                 <div class="col-md-4">
                     <div class="p-3 bg-light rounded-4 text-center border h-100 transition-all">
-                        ${photo ? 
-                            `<img src="${photo}" class="rounded-circle mb-2 object-fit-contain bg-white" style="width:50px;height:50px;" alt="">` :
-                            `<div class="mx-auto mb-2" style="width:50px;height:50px;background:var(--teman-accent);border-radius:12px;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;"> ${u.name[0].toUpperCase()} </div>`
+                        ${photo
+                            ? `<img src="${photo}" class="rounded-circle mb-2 object-fit-cover" style="width:50px;height:50px;" alt="">`
+                            : `<div class="mx-auto mb-2 rounded-circle bg-accent d-flex align-items-center justify-content-center text-white fw-bold" style="width:50px;height:50px;">${u.name[0].toUpperCase()}</div>`
                         }
                         <div class="fw-bold text-dark small text-truncate">${u.name}</div>
                         <div class="text-muted x-small mb-3">ID: #${u.id}</div>
                         ${getResButton(u)}
                     </div>
-                </div>
-            `}).join('');
-        }
+                </div>`;
+        }).join('');
+    }
 
-        function getResButton(u) {
-            if (u.friendship_status === 'none') return `
-                <form action="/user/teman/${u.id}/add" method="POST" onsubmit="return false;" class="add-friend-form">
-                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                    <button type="button" onclick="addFriend(this, ${u.id})" class="btn btn-sm btn-accent rounded-pill px-4 mt-2 mb-2">Tambah Teman</button>
-                </form>
-            `;
-            if (u.friendship_status === 'pending') return `<button class="btn btn-outline-secondary btn-sm w-100 rounded-pill x-small disabled">${u.is_sender ? 'Menunggu...' : 'Terima?'}</button>`;
-            return `<button class="btn btn-outline-success btn-sm w-100 rounded-pill x-small disabled"><i class="fas fa-check me-1"></i> Sudah Teman</button>`;
-        }
+    function getResButton(u) {
+        if (u.friendship_status === 'none') return `
+            <button type="button" onclick="addFriend(this, ${u.id})" class="btn btn-sm btn-accent rounded-pill px-4 mt-2 mb-2">Tambah Teman</button>`;
+        if (u.friendship_status === 'pending') return `<button class="btn btn-outline-secondary btn-sm w-100 rounded-pill x-small disabled">${u.is_sender ? 'Menunggu...' : 'Terima?'}</button>`;
+        return `<button class="btn btn-outline-success btn-sm w-100 rounded-pill x-small disabled"><i class="fas fa-check me-1"></i> Sudah Teman</button>`;
+    }
 
-        window.addFriend = async function(btn, userId) {
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Mengirim...';
-            try {
-                const res = await fetch(`/user/teman/${userId}/add`, {
-                    method: 'POST',
-                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
-                });
-                if (res.ok) {
-                    // Refresh search results
-                    const query = document.getElementById('add-friend-input').value.trim();
-                    const response = await fetch(`/user/teman/search?query=${encodeURIComponent(query)}`);
-                    renderResults(await response.json());
-                }
-            } catch(e) {
-                console.error(e);
-                btn.disabled = false;
-                btn.innerHTML = 'Tambah Teman'; // Revert button text on error
-            }
-        };
-
-        // --- CHAT ---
-        window.openChat = async function(id, name, avatar = '', bio = '', joinDate = 'Jan 01, 2026', mutualCount = 0, mutuals = []) {
-            currentFriendId = id;
-            currentFriendName = name;
-            welcomeView.classList.add('d-none');
-            showChatViewFn();
-            chatInput.placeholder = `Kirim pesan ke @${name}`;
-            
-            // Update mobile chat header with profile info
-            updateMobileChatHeader(name, avatar, bio, joinDate, mutualCount, mutuals);
-            
-            // On mobile, hide sidebar when opening chat
-            if (isMobile) {
-                hideSidebar();
-            }
-            
-            // Highlight active friend in sidebar
-            document.querySelectorAll('.friend-item-sidebar').forEach(el => el.classList.remove('bg-white', 'shadow-sm', 'text-dark'));
-            const items = document.querySelectorAll('.friend-item-sidebar');
-            items.forEach(item => {
-                const nameEl = item.querySelector('.fw-bold');
-                if(nameEl && nameEl.innerText === name) item.classList.add('bg-white', 'shadow-sm');
+    window.addFriend = async function (btn, userId) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Mengirim...';
+        try {
+            const res = await fetch('/user/teman/' + userId + '/add', {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
             });
+            if (res.ok) {
+                const query = document.getElementById('add-friend-input').value.trim();
+                const response = await fetch('/user/teman/search?query=' + encodeURIComponent(query));
+                renderResults(await response.json());
+            }
+        } catch (e) {
+            console.error(e);
+            btn.disabled = false;
+            btn.innerHTML = 'Tambah Teman';
+        }
+    };
 
-            // Side info update
-            document.getElementById('member-sidebar').style.display = 'flex';
-            document.getElementById('member-name-sidebar').innerText = name;
-            document.getElementById('member-bio-sidebar').innerText = bio || 'Pemain KAMCUP yang siap bertanding!';
-            document.getElementById('member-since-sidebar').innerText = joinDate;
-            document.getElementById('mutual-count').innerText = mutualCount;
-            
-            // Populate mutual list
-            const container = document.getElementById('mutual-list-container');
-            if (mutuals && mutuals.length > 0) {
-                container.innerHTML = mutuals.map(c => `
-                    <div class="d-flex align-items-center mb-2 animate-fade-in">
-                        <div class="bg-accent-light rounded-2 me-2 d-flex align-items-center justify-content-center" style="width:28px;height:28px;">
-                            ${c.image ? 
-                                `<img src="${c.image}" class="rounded-2" style="width:28px;height:28px;object-fit:cover;">` : 
-                                `<i class="fas fa-users text-accent small"></i>`
-                            }
-                        </div>
-                        <span class="small fw-bold text-dark text-truncate">${c.name}</span>
+    // ===================== CHAT STATE =====================
+    const chatBox = document.getElementById('chat-box');
+    const chatInput = document.getElementById('chat-input');
+    let currentFriendId = null;
+    let currentFriendName = '';
+    let currentFriendPhoto = '';
+    let currentReplyMessageId = null;
+    let currentReplyMessage = null;
+
+    // ===================== OPEN CHAT =====================
+    window.openChat = async function (id, name, avatar = '', bio = '', joinDate = 'Jan 01, 2026', mutualCount = 0, mutuals = []) {
+        currentFriendId = id;
+        currentFriendName = name;
+        currentFriendPhoto = avatar;
+
+        welcomeView.classList.add('d-none');
+        showChatViewFn();
+        chatInput.placeholder = 'Kirim pesan ke @' + name;
+
+        // Mobile: update header & hide sidebar
+        updateMobileChatHeader(name, avatar);
+        if (isMobile()) hideSidebar();
+
+        // Highlight active friend in sidebar
+        document.querySelectorAll('.friend-item-sidebar').forEach(el => {
+            el.classList.remove('bg-white', 'shadow-sm');
+            const nameEl = el.querySelector('.fw-bold');
+            if (nameEl && nameEl.innerText === name) el.classList.add('bg-white', 'shadow-sm');
+        });
+
+        // Update right sidebar info
+        document.getElementById('member-sidebar').style.display = 'flex';
+        document.getElementById('member-name-sidebar').innerText = name;
+        document.getElementById('member-bio-sidebar').innerText = bio || 'Pemain KAMCUP yang siap bertanding!';
+        document.getElementById('member-since-sidebar').innerText = joinDate;
+        document.getElementById('mutual-count').innerText = mutualCount;
+
+        // Avatar di right sidebar
+        const avatarContainer = document.getElementById('member-avatar-container');
+        if (avatar) {
+            avatarContainer.innerHTML = `<img src="${avatar}" class="rounded-circle object-fit-cover shadow-sm border border-4 border-white" style="width:92px;height:92px;" alt="">`;
+        } else {
+            avatarContainer.innerHTML = `<div class="rounded-circle bg-accent d-flex align-items-center justify-content-center text-white fw-bold fs-2 shadow-sm border border-4 border-white" style="width:92px;height:92px;">${name[0].toUpperCase()}</div>`;
+        }
+
+        // Mutual communities
+        const mutualContainer = document.getElementById('mutual-list-container');
+        if (mutuals && mutuals.length > 0) {
+            mutualContainer.innerHTML = mutuals.map(c => `
+                <div class="d-flex align-items-center mb-2">
+                    <div class="bg-accent-light rounded-2 me-2 d-flex align-items-center justify-content-center" style="width:28px;height:28px;">
+                        ${c.image
+                            ? `<img src="${c.image}" class="rounded-2" style="width:28px;height:28px;object-fit:cover;">`
+                            : `<i class="fas fa-users text-accent small"></i>`}
                     </div>
-                `).join('');
+                    <span class="small fw-bold text-dark text-truncate">${c.name}</span>
+                </div>`).join('');
+        } else {
+            mutualContainer.innerHTML = '<div class="text-muted x-small p-2 text-center">Tidak ada komunitas yang sama.</div>';
+        }
+        mutualContainer.classList.add('d-none');
+        document.getElementById('mutual-chevron').style.transform = 'rotate(0deg)';
+
+        // Actions (hapus teman) — pakai form POST + method DELETE yang valid
+        document.getElementById('chat-actions-dropdown').innerHTML = `
+            <form id="remove-friend-form-${id}" onsubmit="removeFriend(event, ${id})">
+                <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="_method" value="DELETE">
+                <button type="submit" class="btn btn-sm btn-outline-danger px-3 rounded-pill">Hapus Teman</button>
+            </form>`;
+
+        // Load messages
+        const msgContainer = document.getElementById('chat-messages-inner');
+        msgContainer.innerHTML = '<div class="text-center p-5"><div class="spinner-border text-accent"></div></div>';
+        try {
+            const res = await fetch('/user/teman/' + id + '/messages');
+            const msgs = await res.json();
+            msgContainer.innerHTML = '';
+            msgs.forEach(m => appendMsg(m));
+            scrollToBottom();
+        } catch (e) {
+            console.error('Error loading messages:', e);
+            msgContainer.innerHTML = '<div class="text-center p-5 text-muted">Gagal memuat pesan.</div>';
+        }
+    };
+
+    // ===================== HAPUS TEMAN (fix agar tidak error) =====================
+    window.removeFriend = async function (e, friendId) {
+        e.preventDefault();
+        if (!confirm('Hapus teman ini?')) return;
+        try {
+            const res = await fetch('/user/teman/' + friendId + '/remove', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ _method: 'DELETE' })
+            });
+            if (res.ok) {
+                // Redirect ke halaman teman setelah hapus
+                window.location.reload();
             } else {
-                container.innerHTML = '<div class="text-muted x-small p-2 text-center">Tidak ada komunitas yang sama.</div>';
+                showErrorNotification('Gagal menghapus teman. Silakan coba lagi.');
             }
+        } catch (e) {
+            console.error(e);
+            showErrorNotification('Terjadi kesalahan. Silakan coba lagi.');
+        }
+    };
 
-            // Reset dropdown state
-            container.classList.add('d-none');
-            document.getElementById('mutual-chevron').style.transform = 'rotate(0deg)';
+    // ===================== MOBILE CHAT HEADER =====================
+    function updateMobileChatHeader(name, avatar) {
+        const chatHeader = document.querySelector('.chat-header');
+        if (!chatHeader) return;
+        const existing = chatHeader.querySelector('.mobile-chat-header');
+        if (existing) existing.remove();
 
-            const avatarContainer = document.getElementById('member-avatar-container');
-            if (avatar) {
-                avatarContainer.innerHTML = `<img src="/storage/${avatar}" class="rounded-circle object-fit-contain shadow-sm h-100 w-100 border border-4 border-white bg-light" style="background:#f8f9fa;" alt="">`;
-            } else {
-                avatarContainer.innerHTML = `<div class="rounded-circle bg-accent d-flex align-items-center justify-content-center text-white fw-bold fs-2 h-100 w-100 shadow-sm border border-4 border-white">${name[0].toUpperCase()}</div>`;
-            }
-            
-            document.getElementById('chat-actions-dropdown').innerHTML = `
-                <form action="/user/teman/${id}/remove" method="POST" onsubmit="return confirm('Hapus teman?')">
-                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                    <input type="hidden" name="_method" value="DELETE">
-                    <button type="submit" class="btn btn-sm btn-outline-danger px-3 rounded-pill h6 mb-0">Hapus Teman</button>
-                </form>
-            `;
+        if (isMobile()) {
+            const desktopContent = chatHeader.querySelector('.chat-header-content');
+            if (desktopContent) desktopContent.style.display = 'none';
 
-            const msgContainer = document.getElementById('chat-messages-inner');
-            msgContainer.innerHTML = '<div class="text-center p-5"><div class="spinner-border text-accent"></div></div>';
-            
-            try {
-                const res = await fetch(`/user/teman/${id}/messages`);
-                const msgs = await res.json();
-                msgContainer.innerHTML = '';
-                msgs.forEach(m => appendMsg(m));
-                chatBox.scrollTop = chatBox.scrollHeight;
-            } catch(e) {}
+            const avatarHtml = avatar
+                ? `<img src="${avatar}" class="rounded-circle object-fit-cover" style="width:38px;height:38px;" alt="">`
+                : `<div class="rounded-circle bg-accent-light text-accent d-flex align-items-center justify-content-center fw-bold" style="width:38px;height:38px;">${name[0]?.toUpperCase() || 'U'}</div>`;
+
+            const mobileHeader = document.createElement('div');
+            mobileHeader.className = 'mobile-chat-header d-flex align-items-center w-100';
+            mobileHeader.innerHTML = `
+                <button class="btn btn-sm btn-outline-secondary me-3" onclick="window.showSidebar()">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <div class="d-flex align-items-center flex-grow-1">
+                    <div class="position-relative me-2">${avatarHtml}</div>
+                    <div>
+                        <div class="fw-bold text-dark" style="font-size:0.95rem;">${name}</div>
+                        <div class="small text-muted" style="font-size:0.78rem;">Online</div>
+                    </div>
+                </div>`;
+            chatHeader.appendChild(mobileHeader);
+        } else {
+            const desktopContent = chatHeader.querySelector('.chat-header-content');
+            if (desktopContent) desktopContent.style.display = 'block';
+            const headerName = document.getElementById('chat-header-name');
+            if (headerName) headerName.textContent = name;
+        }
+    }
+
+    // ===================== REPLY FEATURE =====================
+    // Context menu element (dibuat sekali, reused)
+    let contextMenuEl = null;
+
+    function getOrCreateContextMenu() {
+        if (!contextMenuEl) {
+            contextMenuEl = document.createElement('div');
+            contextMenuEl.className = 'chat-context-menu';
+            contextMenuEl.id = 'chat-context-menu';
+            document.body.appendChild(contextMenuEl);
+        }
+        return contextMenuEl;
+    }
+
+    function hideContextMenu() {
+        if (contextMenuEl) contextMenuEl.style.display = 'none';
+    }
+
+    document.addEventListener('click', function (e) {
+        if (contextMenuEl && !contextMenuEl.contains(e.target)) hideContextMenu();
+    });
+
+    window.showReplyContextMenu = function (e, m) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const menu = getOrCreateContextMenu();
+        menu.innerHTML = `
+            <div class="chat-context-menu-item" id="ctx-reply-btn">
+                <i class="fas fa-reply text-accent"></i> Balas Pesan
+            </div>`;
+        menu.style.display = 'block';
+
+        // Posisi menu — hindari keluar layar
+        const x = Math.min(e.clientX, window.innerWidth - 180);
+        const y = Math.min(e.clientY, window.innerHeight - 80);
+        menu.style.left = x + 'px';
+        menu.style.top = y + 'px';
+
+        document.getElementById('ctx-reply-btn').onclick = function () {
+            setReply(m);
+            hideContextMenu();
         };
+    };
 
-        // --- CHAT FORM SUBMISSION ---
-        document.getElementById('chat-form').onsubmit = async (e) => {
-            e.preventDefault();
-            const text = chatInput.value.trim();
-            if (!text && !selectedImage) return;
-            
-            chatInput.value = '';
-            
-            // Optimistic update for own messages
-            const now = new Date();
-            let messageData = {
+    function setReply(m) {
+        currentReplyMessageId = m.id;
+        const senderName = m.sender ? m.sender.name : (m.sender_id == userId ? authUserName : currentFriendName);
+        const previewText = (m.message || '[Gambar]').substring(0, 60) + ((m.message || '').length > 60 ? '...' : '');
+        currentReplyMessage = { senderName, previewText };
+
+        // Hapus reply bar lama jika ada
+        const oldBar = document.getElementById('reply-preview-bar');
+        if (oldBar) oldBar.remove();
+
+        // Buat reply bar baru di atas input
+        const inputWrapper = document.querySelector('.chat-input-wrapper');
+        const bar = document.createElement('div');
+        bar.id = 'reply-preview-bar';
+        bar.className = 'reply-preview-bar mx-3 mb-0 mt-2';
+        bar.innerHTML = `
+            <div style="flex:1;overflow:hidden;">
+                <span class="fw-bold text-accent" style="font-size:0.8rem;">Membalas ${senderName}</span>
+                <div class="reply-preview-text">${previewText}</div>
+            </div>
+            <button class="btn-cancel-reply" onclick="clearReplyState()" title="Batal balas">
+                <i class="fas fa-times"></i>
+            </button>`;
+        inputWrapper.insertBefore(bar, inputWrapper.firstChild);
+
+        chatInput.focus();
+    }
+
+    window.clearReplyState = function () {
+        currentReplyMessageId = null;
+        currentReplyMessage = null;
+        const bar = document.getElementById('reply-preview-bar');
+        if (bar) bar.remove();
+        chatInput.placeholder = 'Kirim pesan ke @' + currentFriendName;
+    };
+
+    // ===================== SCROLL HELPER =====================
+    function scrollToBottom() {
+        setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 50);
+    }
+
+    // ===================== APPEND MESSAGE =====================
+    function appendMsg(m) {
+        const isMe = parseInt(m.sender_id) === parseInt(userId);
+        const container = document.getElementById('chat-messages-inner');
+        const item = document.createElement('div');
+        item.className = 'chat-msg-container animate-fade-in';
+        if (m.id) item.dataset.messageId = m.id;
+
+        // Context menu (klik kanan / long press)
+        item.addEventListener('contextmenu', function (e) { window.showReplyContextMenu(e, m); });
+        let pressTimer;
+        item.addEventListener('touchstart', function (e) {
+            pressTimer = setTimeout(() => { window.showReplyContextMenu(e.touches[0] || e, m); }, 600);
+        }, { passive: true });
+        item.addEventListener('touchend', function () { clearTimeout(pressTimer); });
+        item.addEventListener('touchmove', function () { clearTimeout(pressTimer); });
+
+        const time = new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        // Tentukan nama & foto pengirim
+        let senderName, senderPhoto;
+        if (parseInt(m.sender_id) === parseInt(userId)) {
+            // Pesan dari saya (auth user)
+            senderName = authUserName;
+            senderPhoto = authUserPhoto;
+        } else {
+            // Pesan dari teman
+            senderName = (m.sender && m.sender.name) ? m.sender.name : currentFriendName;
+            senderPhoto = (m.sender && m.sender.profile && m.sender.profile.profile_photo)
+                ? m.sender.profile.profile_photo
+                : currentFriendPhoto;
+        }
+
+        // Buat avatar HTML (foto jika ada, fallback initial)
+        function makeAvatar(photo, name, isMe) {
+            const colorClass = isMe ? 'bg-pink-light text-pink' : 'bg-accent-light text-accent';
+            if (photo) {
+                // Jika photo sudah ada leading slash atau http, pakai langsung, else prepend /storage/
+                const src = photo.startsWith('http') || photo.startsWith('/')
+                    ? photo
+                    : '/storage/' + photo;
+                return `<img src="${src}" class="rounded-circle object-fit-cover border" style="width:38px;height:38px;flex-shrink:0;" alt="">`;
+            }
+            return `<div class="rounded-circle ${colorClass} d-flex align-items-center justify-content-center fw-bold" style="width:38px;height:38px;font-size:0.8rem;flex-shrink:0;">${(name[0] || 'U').toUpperCase()}</div>`;
+        }
+
+        // Reply thread HTML
+        let replyHtml = '';
+        if (m.reply_to) {
+            const replySender = m.reply_to.sender ? m.reply_to.sender.name : 'Unknown';
+            const replyText = m.reply_to.image_path && !m.reply_to.message
+                ? '[Gambar]'
+                : (m.reply_to.message || '').substring(0, 60) + ((m.reply_to.message || '').length > 60 ? '...' : '');
+            replyHtml = `
+                <div class="reply-thread">
+                    <span class="reply-author"><i class="fas fa-reply me-1" style="font-size:0.7rem;"></i>${replySender}</span>
+                    <span class="reply-text">${replyText}</span>
+                </div>`;
+        }
+
+        // Message content HTML
+        let messageContent = '';
+        if (m.image_path) {
+            const imageSrc = m.image_path.startsWith('data:') || m.image_path.startsWith('http') || m.image_path.startsWith('/')
+                ? m.image_path
+                : '/storage/' + m.image_path;
+            messageContent = `<img src="${imageSrc}" alt="Gambar" class="rounded-3 shadow-sm mt-1" style="max-width:240px;max-height:240px;object-fit:cover;cursor:pointer;" onclick="window.open('${imageSrc}','_blank')">`;
+            if (m.message) {
+                messageContent = `<div class="mb-1">${m.message}</div>` + messageContent;
+            }
+        } else {
+            messageContent = m.message || '';
+        }
+
+        item.innerHTML = `
+            <div class="avatar-sm flex-shrink-0">
+                ${makeAvatar(senderPhoto, senderName, isMe)}
+            </div>
+            <div class="flex-grow-1 overflow-hidden">
+                <div class="d-flex align-items-center mb-1 gap-2">
+                    <span class="chat-msg-author small ${isMe ? 'text-pink' : 'text-accent'}">${senderName}</span>
+                    <span class="chat-msg-time">${time}</span>
+                </div>
+                ${replyHtml}
+                <div class="chat-msg-text">${messageContent}</div>
+            </div>`;
+
+        container.appendChild(item);
+    }
+
+    // ===================== CHAT FORM SUBMIT =====================
+    const imageUpload = document.getElementById('image-upload');
+    const imagePreviewContainer = document.getElementById('image-preview-container');
+    const imagePreview = document.getElementById('image-preview');
+    const removeImageBtn = document.getElementById('remove-image-btn');
+    let selectedImage = null;
+
+    document.getElementById('attach-image-btn').addEventListener('click', () => imageUpload.click());
+
+    imageUpload.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+            showErrorNotification('File yang dipilih bukan gambar.');
+            imageUpload.value = '';
+            return;
+        }
+        if (file.size > 2 * 1024 * 1024) {
+            showErrorNotification('Ukuran file terlalu besar. Maksimal 2MB.');
+            imageUpload.value = '';
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            selectedImage = e.target.result;
+            imagePreview.src = selectedImage;
+            imagePreviewContainer.classList.remove('d-none');
+        };
+        reader.readAsDataURL(file);
+    });
+
+    removeImageBtn.addEventListener('click', () => {
+        selectedImage = null;
+        imagePreview.src = '';
+        imagePreviewContainer.classList.add('d-none');
+        imageUpload.value = '';
+    });
+
+    // Emoji picker
+    const emojiBtn = document.getElementById('emoji-btn');
+    const emojiPickerContainer = document.getElementById('emoji-picker-container');
+    const emojiGrid = document.querySelector('.emoji-grid');
+
+    const emojis = [
+        '😀','😃','😄','😁','😆','😅','😂','🤣','😊','😇','🙂','🙃','😉','😌','😍','🥰',
+        '😘','😗','😙','😚','😋','😛','😜','🤪','😝','🤑','🤗','🤭','🤫','🤔','🤐','🤨',
+        '😐','😑','😶','😏','😒','🙄','😬','🤥','😔','😪','🤤','😴','😷','🤒','🤕','🤢',
+        '🤮','🤧','🥵','🥶','🥴','😵','🤯','🤠','🥳','😎','🤓','🧐','😕','😟','🙁','☹️',
+        '😮','😯','😲','😳','🥺','😦','😧','😨','😰','😥','😢','😭','😱','😖','😣','😞',
+        '😓','😩','😫','🥱','😤','😡','😠','🤬','😈','👿','💀','☠️','💩','🤡','👻',
+        '❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❣️','💕','💞','💓','💗','💖',
+        '👍','👎','👌','✌️','🤞','🤟','🤘','🤙','👋','💪','🙏','👏','🤝'
+    ];
+
+    emojis.forEach(emoji => {
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-sm btn-light p-1';
+        btn.style.fontSize = '20px';
+        btn.textContent = emoji;
+        btn.addEventListener('click', () => {
+            chatInput.value += emoji;
+            chatInput.focus();
+            emojiPickerContainer.classList.add('d-none');
+        });
+        emojiGrid.appendChild(btn);
+    });
+
+    emojiBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        emojiPickerContainer.classList.toggle('d-none');
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!emojiPickerContainer.contains(e.target) && e.target !== emojiBtn) {
+            emojiPickerContainer.classList.add('d-none');
+        }
+    });
+
+    // Form submit
+    document.getElementById('chat-form').onsubmit = async function (e) {
+        e.preventDefault();
+        if (!currentFriendId) return;
+        const text = chatInput.value.trim();
+        if (!text && !selectedImage) return;
+
+        chatInput.value = '';
+
+        if (selectedImage) {
+            // Optimistic update dulu
+            const optimistic = {
                 sender_id: userId,
                 message: text,
-                created_at: now.toISOString(),
-                image_path: null
+                created_at: new Date().toISOString(),
+                image_path: selectedImage
             };
-            
-            // If there's an image, handle it differently
-            if (selectedImage) {
-                // Show optimistic update with image
-                messageData.image_path = selectedImage; // Use base64 for optimistic update
-                
-                // Send real image
-                try {
-                    const formData = new FormData();
-                    formData.append('image', dataURLtoFile(selectedImage, 'chat-image.png'));
-                    if (text) {
-                        formData.append('message', text);
-                    }
-                    
-                    const res = await fetch(`/user/teman/${currentFriendId}/send-image`, {
-                        method: 'POST',
-                        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-                        body: formData
-                    });
-                    
-                    if (!res.ok) {
-                        console.error('Failed to send image:', res.status);
-                        // Try to get error details
-                        const errorText = await res.text();
-                        console.error('Error response:', errorText);
-                        
-                        // Remove optimistic message if failed
-                        const lastMessage = document.querySelector('#chat-messages-inner .chat-msg-container:last-child');
-                        if (lastMessage) {
-                            lastMessage.remove();
-                        }
-                        chatInput.value = text;
-                        
-                        // Show specific error based on status code
-                        let errorMessage = 'Gagal mengirim gambar. Silakan coba lagi.';
-                        if (res.status === 413) {
-                            errorMessage = 'Ukuran file terlalu besar. Maksimal 2MB.';
-                        } else if (res.status === 422) {
-                            errorMessage = 'File tidak valid. Pastikan file adalah gambar dan ukuran tidak lebih dari 2MB.';
-                        } else if (res.status === 500) {
-                            errorMessage = 'Server sedang bermasalah. Silakan coba lagi nanti.';
-                        } else if (res.status === 403) {
-                            errorMessage = 'Tidak memiliki izin untuk mengirim gambar.';
-                        } else {
-                            errorMessage = `Gagal mengirim gambar (${res.status}). Silakan coba lagi.`;
-                        }
-                        
-                        showErrorNotification(errorMessage);
-                        return;
-                    }
-                    
-                    // Check if response is JSON
-                    const contentType = res.headers.get('content-type');
-                    if (!contentType || !contentType.includes('application/json')) {
-                        const errorText = await res.text();
-                        console.error('Non-JSON response:', errorText);
-                        
-                        // Remove optimistic message if failed
-                        const lastMessage = document.querySelector('#chat-messages-inner .chat-msg-container:last-child');
-                        if (lastMessage) {
-                            lastMessage.remove();
-                        }
-                        chatInput.value = text;
-                        
-                        // Show user-friendly error
-                        showErrorNotification('Server mengembalikan response tidak valid. Silakan coba lagi.');
-                        return;
-                    }
-                    
-                    const result = await res.json();
-                    
-                    // Check if upload was successful
-                    if (result.success && result.message) {
-                        // Update optimistic message with real image path
-                        const lastMessage = document.querySelector('#chat-messages-inner .chat-msg-container:last-child .chat-msg-text img');
-                        if (lastMessage && result.message.image_path) {
-                            lastMessage.src = `/storage/${result.message.image_path}`;
-                        }
-                        
-                        // Show success notification
-                        showSuccessNotification('Gambar berhasil dikirim!');
-                    } else {
-                        console.error('Upload failed:', result.message);
-                        
-                        // Remove optimistic message if failed
-                        const lastMessage = document.querySelector('#chat-messages-inner .chat-msg-container:last-child');
-                        if (lastMessage) {
-                            lastMessage.remove();
-                        }
-                        chatInput.value = text;
-                        
-                        // Show specific error message
-                        let errorMessage = 'Gagal mengirim gambar. Silakan coba lagi.';
-                        if (result.errors && result.errors.image) {
-                            const errorText = result.errors.image[0];
-                            
-                            // Translate technical errors to user-friendly messages
-                            if (errorText.includes('may not be greater than')) {
-                                errorMessage = 'Ukuran file terlalu besar. Maksimal 2MB.';
-                            } else if (errorText.includes('must be an image')) {
-                                errorMessage = 'File yang dipilih bukan gambar. Silakan pilih file gambar.';
-                            } else if (errorText.includes('required')) {
-                                errorMessage = 'File gambar wajib diisi.';
-                            } else {
-                                errorMessage = `Error: ${errorText}`;
-                            }
-                        } else if (result.message) {
-                            errorMessage = result.message;
-                        }
-                        
-                        showErrorNotification(errorMessage);
-                        return;
-                    }
-                    
-                } catch(e) {
-                    console.error('Error sending image:', e);
-                    // Remove optimistic message if failed
-                    const lastMessage = document.querySelector('#chat-messages-inner .chat-msg-container:last-child');
-                    if (lastMessage) {
-                        lastMessage.remove();
-                    }
+            appendMsg(optimistic);
+            scrollToBottom();
+
+            try {
+                const formData = new FormData();
+                formData.append('image', dataURLtoFile(selectedImage, 'chat-image.png'));
+                if (text) formData.append('message', text);
+
+                const res = await fetch('/user/teman/' + currentFriendId + '/send-image', {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                    body: formData
+                });
+
+                if (!res.ok) {
+                    document.querySelector('#chat-messages-inner .chat-msg-container:last-child')?.remove();
                     chatInput.value = text;
-                    
-                    // Show user-friendly error
-                    showErrorNotification('Gagal mengirim gambar. Periksa koneksi internet Anda.');
+                    showErrorNotification('Gagal mengirim gambar (' + res.status + ').');
                     return;
                 }
-                
-                // Clear image preview
-                selectedImage = null;
-                imagePreview.src = '';
-                imagePreviewContainer.classList.add('d-none');
-                imageUpload.value = '';
-            } else {
-                // Send text message
-                try {
-                    const res = await fetch(`/user/teman/${currentFriendId}/messages`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-                        body: JSON.stringify({ message: text })
-                    });
-                    
-                    if (!res.ok) {
-                        console.error('Failed to send message:', res.status);
-                        // Remove optimistic message if failed
-                        const lastMessage = document.querySelector('#chat-messages-inner .chat-msg-container:last-child');
-                        if (lastMessage) {
-                            lastMessage.remove();
-                        }
-                        chatInput.value = text;
-                        return;
-                    }
-                } catch(e) {
-                    console.error('Error sending message:', e);
-                    // Remove optimistic message if failed
-                    const lastMessage = document.querySelector('#chat-messages-inner .chat-msg-container:last-child');
-                    if (lastMessage) {
-                        lastMessage.remove();
-                    }
-                    chatInput.value = text;
-                    return;
-                }
+            } catch (err) {
+                console.error(err);
+                document.querySelector('#chat-messages-inner .chat-msg-container:last-child')?.remove();
+                chatInput.value = text;
+                showErrorNotification('Gagal mengirim gambar. Periksa koneksi.');
+                return;
             }
-            
-            // Show optimistic update
-            appendMsg(messageData);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        };
 
-        // --- IMAGE UPLOAD FUNCTIONALITY ---
-        const attachImageBtn = document.getElementById('attach-image-btn');
-        const imageUpload = document.getElementById('image-upload');
-        const imagePreviewContainer = document.getElementById('image-preview-container');
-        const imagePreview = document.getElementById('image-preview');
-        const removeImageBtn = document.getElementById('remove-image-btn');
-        let selectedImage = null;
-
-        // Open file picker when + button is clicked
-        attachImageBtn.addEventListener('click', () => {
-            imageUpload.click();
-        });
-
-        // Handle image selection
-        imageUpload.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file && file.type.startsWith('image/')) {
-                // Check file size (2MB = 2 * 1024 * 1024 bytes)
-                const maxSize = 2 * 1024 * 1024;
-                if (file.size > maxSize) {
-                    showErrorNotification('Ukuran file terlalu besar. Maksimal 2MB.');
-                    imageUpload.value = '';
-                    return;
-                }
-                
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    selectedImage = e.target.result;
-                    imagePreview.src = selectedImage;
-                    imagePreviewContainer.classList.remove('d-none');
-                };
-                reader.readAsDataURL(file);
-            } else if (file) {
-                // For non-image files, still show error but more gentle
-                showErrorNotification('File yang dipilih bukan gambar. Silakan pilih file gambar.');
-                imageUpload.value = '';
-            }
-        });
-
-        // Remove image preview
-        removeImageBtn.addEventListener('click', () => {
+            // Clear image
             selectedImage = null;
             imagePreview.src = '';
             imagePreviewContainer.classList.add('d-none');
             imageUpload.value = '';
-        });
 
-        // --- EMOJI PICKER FUNCTIONALITY ---
-        const emojiBtn = document.getElementById('emoji-btn');
-        const emojiPickerContainer = document.getElementById('emoji-picker-container');
-        const emojiGrid = document.querySelector('.emoji-grid');
-
-        // Common emojis
-        const emojis = [
-            '😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇',
-            '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚',
-            '😋', '😛', '😜', '🤪', '😝', '🤑', '🤗', '🤭', '🤫', '🤔',
-            '🤐', '🤨', '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥',
-            '😌', '😔', '😪', '🤤', '😴', '😷', '🤒', '🤕', '🤢', '🤮',
-            '🤧', '🥵', '🥶', '🥴', '😵', '🤯', '🤠', '🥳', '😎', '🤓',
-            '🧐', '😕', '😟', '🙁', '☹️', '😮', '😯', '😲', '😳', '🥺',
-            '😦', '😧', '😨', '😰', '😥', '😢', '😭', '😱', '😖', '😣',
-            '😞', '😓', '😩', '😫', '🥱', '😤', '😡', '😠', '🤬', '😈',
-            '👿', '💀', '☠️', '💩', '🤡', '👹', '👺', '👻', '👽', '👾',
-            '🤖', '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎',
-            '💔', '❣️', '💕', '💞', '💓', '💗', '💖', '💘', '💝', '👍',
-            '👎', '👌', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉', '👆',
-            '👇', '☝️', '✋', '🤚', '🖐️', '🖖', '👋', '🤙', '💪', '🙏'
-        ];
-
-        // Populate emoji grid
-        emojis.forEach(emoji => {
-            const emojiBtn = document.createElement('button');
-            emojiBtn.className = 'btn btn-sm btn-light p-2';
-            emojiBtn.style.fontSize = '20px';
-            emojiBtn.textContent = emoji;
-            emojiBtn.addEventListener('click', () => {
-                chatInput.value += emoji;
-                chatInput.focus();
-                emojiPickerContainer.classList.add('d-none');
-            });
-            emojiGrid.appendChild(emojiBtn);
-        });
-
-        // Toggle emoji picker
-        emojiBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            emojiPickerContainer.classList.toggle('d-none');
-        });
-
-        // Close emoji picker when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!emojiPickerContainer.contains(e.target) && e.target !== emojiBtn) {
-                emojiPickerContainer.classList.add('d-none');
+        } else {
+            // Optimistic update teks
+            const optimistic = {
+                sender_id: userId,
+                message: text,
+                created_at: new Date().toISOString()
+            };
+            // Jika ada reply, tambahkan info reply ke optimistic (untuk tampilan)
+            if (currentReplyMessageId && currentReplyMessage) {
+                optimistic.reply_to = {
+                    sender: { name: currentReplyMessage.senderName },
+                    message: currentReplyMessage.previewText
+                };
             }
-        });
+            appendMsg(optimistic);
+            scrollToBottom();
 
-        // Helper function to show error notification
-        function showErrorNotification(message) {
-            const notification = $(`
-                <div class="alert alert-danger alert-dismissible fade show position-fixed" 
-                     style="top: 20px; right: 20px; z-index: 9999; min-width: 250px;">
-                    <i class="fas fa-exclamation-triangle me-2"></i>${message}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            `);
-            $('body').append(notification);
-            setTimeout(() => notification.fadeOut(500, () => notification.remove()), 5000);
-        }
+            try {
+                const payload = { message: text };
+                if (currentReplyMessageId) payload.reply_message_id = currentReplyMessageId;
 
-        // Helper function to show success notification
-        function showSuccessNotification(message) {
-            const notification = $(`
-                <div class="alert alert-success alert-dismissible fade show position-fixed" 
-                     style="top: 20px; right: 20px; z-index: 9999; min-width: 250px;">
-                    <i class="fas fa-check-circle me-2"></i>${message}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            `);
-            $('body').append(notification);
-            setTimeout(() => notification.fadeOut(500, () => notification.remove()), 3000);
-        }
-
-        // Helper function to convert dataURL to File
-        function dataURLtoFile(dataurl, filename) {
-            const arr = dataurl.split(',');
-            const mime = arr[0].match(/:(.*?);/)[1];
-            const bstr = atob(arr[1]);
-            let n = bstr.length;
-            const u8arr = new Uint8Array(n);
-            while(n--){
-                u8arr[n] = bstr.charCodeAt(n);
-            }
-            return new File([u8arr], filename, {type:mime});
-        }
-
-        // Update appendMsg to handle real images
-        function appendMsg(m) {
-            const isMe = m.sender_id === userId;
-            const container = document.getElementById('chat-messages-inner');
-            const item = document.createElement('div');
-            item.className = 'chat-msg-container animate-fade-in mb-2';
-            
-            const time = new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            const senderName = m.sender_id == userId ? '{{ Auth::user()->name }}' : currentFriendName;
-            const senderInitial = senderName[0].toUpperCase();
-            
-            // Handle message content with images
-            let messageContent = '';
-            
-            if (m.image_path) {
-                // Real image from backend
-                const imageSrc = m.image_path.startsWith('data:') ? m.image_path : `/storage/${m.image_path}`;
-                messageContent = `<img src="${imageSrc}" alt="Image" class="rounded-2" style="max-width: 200px; max-height: 200px; object-fit: cover;">`;
-                
-                if (m.message) {
-                    messageContent = `<div>${m.message}</div><div class="mt-2">${messageContent}</div>`;
-                }
-            } else if (m.message) {
-                // Text only message
-                messageContent = m.message;
-            }
-            
-            item.innerHTML = `
-                <div class="avatar-sm">
-                    <div class="rounded-circle ${isMe ? 'bg-pink-light text-pink' : 'bg-accent-light text-accent'} d-flex align-items-center justify-content-center fw-bold" style="width: 38px; height: 38px; font-size: 0.8rem;"> ${senderInitial} </div>
-                </div>
-                <div class="flex-grow-1">
-                    <div class="d-flex align-items-center mb-1">
-                        <span class="chat-msg-author small ${isMe ? 'text-pink' : 'text-accent'}">${senderName}</span>
-                        <span class="chat-msg-time ms-2">${time}</span>
-                    </div>
-                    <div class="chat-msg-text">${messageContent}</div>
-                </div>
-            `;
-            container.appendChild(item);
-        }
-
-        if (typeof Echo !== 'undefined') {
-            Echo.private(`user.${userId}`)
-                .listen('.PrivateMessageSent', (e) => {
-                    if (currentFriendId && parseInt(e.user.id) === parseInt(currentFriendId)) {
-                        // Don't show own messages (already shown via optimistic update)
-                        if (parseInt(e.user.id) === userId) {
-                            return;
-                        }
-                        
-                        // Only show other person's messages
-                        appendMsg({
-                            sender_id: e.user.id,
-                            message: e.message,
-                            created_at: e.created_at
-                        });
-                        chatBox.scrollTop = chatBox.scrollHeight;
-                    }
+                const res = await fetch('/user/teman/' + currentFriendId + '/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify(payload)
                 });
+
+                if (!res.ok) {
+                    document.querySelector('#chat-messages-inner .chat-msg-container:last-child')?.remove();
+                    chatInput.value = text;
+                    return;
+                }
+            } catch (err) {
+                console.error(err);
+                document.querySelector('#chat-messages-inner .chat-msg-container:last-child')?.remove();
+                chatInput.value = text;
+                return;
+            }
+
+            window.clearReplyState();
         }
-    });
+    };
+
+    // ===================== LARAVEL ECHO (REALTIME) =====================
+    if (typeof Echo !== 'undefined') {
+        Echo.private('user.' + userId)
+            .listen('.PrivateMessageSent', (e) => {
+                if (currentFriendId && parseInt(e.user.id) === parseInt(currentFriendId)) {
+                    if (parseInt(e.user.id) === parseInt(userId)) return; // skip own messages
+                    appendMsg({
+                        sender_id: e.user.id,
+                        message: e.message,
+                        created_at: e.created_at,
+                        image_path: e.image_path || null
+                    });
+                    scrollToBottom();
+                }
+            });
+    }
+
+    // ===================== HELPERS =====================
+    function showErrorNotification(message) {
+        const el = document.createElement('div');
+        el.className = 'alert alert-danger alert-dismissible fade show position-fixed';
+        el.style.cssText = 'top:20px;right:20px;z-index:9999;min-width:280px;';
+        el.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i>${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 5000);
+    }
+
+    function showSuccessNotification(message) {
+        const el = document.createElement('div');
+        el.className = 'alert alert-success alert-dismissible fade show position-fixed';
+        el.style.cssText = 'top:20px;right:20px;z-index:9999;min-width:280px;';
+        el.innerHTML = `<i class="fas fa-check-circle me-2"></i>${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 3000);
+    }
+
+    function dataURLtoFile(dataurl, filename) {
+        const arr = dataurl.split(',');
+        const mime = arr[0].match(/:(.*?);/)[1];
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) u8arr[n] = bstr.charCodeAt(n);
+        return new File([u8arr], filename, { type: mime });
+    }
+
+});
 </script>
 @endpush
