@@ -452,7 +452,7 @@
             addFriendTimeout = setTimeout(async () => {
                 searchResults.innerHTML = '<div class="col-12 text-center p-5"><div class="spinner-border text-accent"></div></div>';
                 try {
-                    const response = await fetch(`/user2026/teman/search?query=${encodeURIComponent(query)}`);
+                    const response = await fetch(`/user/teman/search?query=${encodeURIComponent(query)}`);
                     const users = await response.json();
                     renderResults(users);
                 } catch (e) { console.error(e); }
@@ -484,21 +484,35 @@
         }
 
         function getResButton(u) {
-            if (u.friendship_status === 'none') return `<button onclick="addFriend(${u.id})" class="btn btn-accent btn-sm w-100 rounded-pill x-small">Tambah Teman</button>`;
+            if (u.friendship_status === 'none') return `
+                <form action="/user/teman/${u.id}/add" method="POST" onsubmit="return false;" class="add-friend-form">
+                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                    <button type="button" onclick="addFriend(this, ${u.id})" class="btn btn-sm btn-accent rounded-pill px-4 mt-2 mb-2">Tambah Teman</button>
+                </form>
+            `;
             if (u.friendship_status === 'pending') return `<button class="btn btn-outline-secondary btn-sm w-100 rounded-pill x-small disabled">${u.is_sender ? 'Menunggu...' : 'Terima?'}</button>`;
             return `<button class="btn btn-outline-success btn-sm w-100 rounded-pill x-small disabled"><i class="fas fa-check me-1"></i> Sudah Teman</button>`;
         }
 
-        window.addFriend = async function(id) {
+        window.addFriend = async function(btn, userId) {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Mengirim...';
             try {
-                const res = await fetch(`/user2026/teman/${id}/add`, { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } });
+                const res = await fetch(`/user/teman/${userId}/add`, {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+                });
                 if (res.ok) {
                     // Refresh search results
                     const query = document.getElementById('add-friend-input').value.trim();
-                    const response = await fetch(`/user2026/teman/search?query=${encodeURIComponent(query)}`);
+                    const response = await fetch(`/user/teman/search?query=${encodeURIComponent(query)}`);
                     renderResults(await response.json());
                 }
-            } catch(e) {}
+            } catch(e) {
+                console.error(e);
+                btn.disabled = false;
+                btn.innerHTML = 'Tambah Teman'; // Revert button text on error
+            }
         };
 
         // --- CHAT ---
@@ -554,7 +568,7 @@
             }
             
             document.getElementById('chat-actions-dropdown').innerHTML = `
-                <form action="/user2026/teman/${id}/remove" method="POST" onsubmit="return confirm('Hapus teman?')">
+                <form action="/user/teman/${id}/remove" method="POST" onsubmit="return confirm('Hapus teman?')">
                     <input type="hidden" name="_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="_method" value="DELETE">
                     <button type="submit" class="btn btn-sm btn-outline-danger px-3 rounded-pill h6 mb-0">Hapus Teman</button>
@@ -565,7 +579,7 @@
             msgContainer.innerHTML = '<div class="text-center p-5"><div class="spinner-border text-accent"></div></div>';
             
             try {
-                const res = await fetch(`/user2026/teman/${id}/messages`);
+                const res = await fetch(`/user/teman/${id}/messages`);
                 const msgs = await res.json();
                 msgContainer.innerHTML = '';
                 msgs.forEach(m => appendMsg(m));
@@ -614,7 +628,7 @@
             chatBox.scrollTop = chatBox.scrollHeight;
             
             try {
-                const res = await fetch(`/user2026/teman/${currentFriendId}/messages`, {
+                const res = await fetch(`/user/teman/${currentFriendId}/messages`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                     body: JSON.stringify({ message: text })

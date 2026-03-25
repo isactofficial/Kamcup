@@ -538,7 +538,7 @@
         // Function to load messages
         async function loadMessages() {
             try {
-                const response = await fetch(`/user2026/komunitas/${communitySlug}/messages`);
+                const response = await fetch(`/user/komunitas/${communitySlug}/messages`);
                 const messages = await response.json();
                 
                 chatStatus.remove();
@@ -601,7 +601,7 @@
                 chatInput.value = '';
                 
                 try {
-                    const response = await fetch(`/user2026/komunitas/${communitySlug}/messages`, {
+                    const response = await fetch(`/user/komunitas/${communitySlug}/messages`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
