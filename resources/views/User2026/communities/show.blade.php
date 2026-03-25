@@ -1558,7 +1558,6 @@
         const timeAgo = moment(c.created_at).fromNow();
         const isOwn   = c.user_id === {{ Auth::id() }};
         const replies = c.children || [];
-        const isDeleted = !!c.deleted_at;
 
         // Replies always start COLLAPSED — harus klik "Lihat N balasan" dulu
         const repliesHtml = !isReply
@@ -1575,25 +1574,6 @@
                 <span class="line"></span>
                </button>`
             : '';
-
-        // If comment is deleted, show deleted message
-        if (isDeleted) {
-            return `
-            <div class="ig-comment-item ${isReply ? 'ig-comment-reply' : ''}" id="comment-${c.id}" data-comment-id="${c.id}" data-user-id="${c.user_id}">
-                ${avatarHtml(photo, name, 32, 'ig-comment-avatar')}
-                <div class="ig-comment-body">
-                    <div class="ig-comment-bubble ig-comment-deleted">
-                        <p class="ig-comment-username">${name}</p>
-                        <p class="ig-comment-text"><em>Komentar ini telah dihapus</em></p>
-                    </div>
-                    <div class="ig-comment-meta">
-                        <span class="ig-comment-time">${timeAgo}</span>
-                    </div>
-                    ${repliesHtml}
-                    ${viewRepliesBtn}
-                </div>
-            </div>`;
-        }
 
         return `
         <div class="ig-comment-item ${isReply ? 'ig-comment-reply' : ''}" id="comment-${c.id}" data-comment-id="${c.id}" data-user-id="${c.user_id}">
@@ -1636,55 +1616,6 @@
         // Auto resize
         this.style.height = 'auto';
         this.style.height = Math.min(this.scrollHeight, 80) + 'px';
-    });
-
-    // Send comment
-    $('#ig-send-btn').on('click', function() {
-        if (!$(this).hasClass('active') || !currentFeedId) return;
-        
-        const content = $('#ig-comment-input').val().trim();
-        if (!content) return;
-
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-        
-        fetch(`/feeds/${currentFeedId}/comments`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken,
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({ 
-                content: content,
-                parent_id: replyToId || null
-            })
-        })
-        .then(response => response.json())
-        .then(newComment => {
-            // Add new comment to list
-            const $commentsList = $('#ig-comments-list');
-            const commentHtml = createCommentHtml(newComment);
-            
-            // Remove empty state if exists
-            $commentsList.find('.text-center').remove();
-            
-            // Add new comment
-            $commentsList.append(commentHtml);
-            
-            // Update comment count on button
-            const $commentBtn = $(`.comment-toggle[data-feed-id="${currentFeedId}"]`);
-            const currentCount = parseInt($commentBtn.find('.comment-count').text()) || 0;
-            $commentBtn.find('.comment-count').text(currentCount + 1);
-            
-            // Reset input
-            $('#ig-comment-input').val('').css('height', 'auto');
-            $('#ig-send-btn').removeClass('active');
-            resetReply();
-        })
-        .catch(error => {
-            console.error('Error posting comment:', error);
-            alert('Gagal mengirim komentar. Silakan coba lagi.');
-        });
     });
 
     // Reply functionality
@@ -1734,9 +1665,6 @@
 
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
         
-        const payload = { content };
-        if (replyToId) payload.parent_id = replyToId;
-
         fetch(`/feeds/${currentFeedId}/comments`, {
             method: 'POST',
             headers: {
@@ -1744,7 +1672,10 @@
                 'X-CSRF-TOKEN': csrfToken,
                 'Accept': 'application/json'
             },
-            body: JSON.stringify(payload)
+            body: JSON.stringify({ 
+                content: content,
+                parent_id: replyToId || null
+            })
         })
         .then(response => response.json())
         .then(newComment => {
@@ -1845,25 +1776,59 @@
             console.log('Delete response data:', data);
             
             if (data.success) {
-                // Soft delete: update comment to show deleted message instead of removing
+                // Hard delete: remove comment from DOM
                 const $comment = $(`#comment-${commentId}`);
+                const $parent = $comment.parent();
+                const isReply = $comment.hasClass('ig-comment-reply');
                 
-                // Update the comment bubble to show deleted message
-                const $bubble = $comment.find('.ig-comment-bubble');
-                const $text = $bubble.find('.ig-comment-text');
-                const $meta = $comment.find('.ig-comment-meta');
-                
-                // Add deleted styling and message
-                $bubble.addClass('ig-comment-deleted');
-                $text.html('<em>Komentar ini telah dihapus</em>');
-                
-                // Remove action buttons (reply and delete)
-                $meta.find('.ig-reply-btn, .ig-delete-btn').remove();
+                if (isReply) {
+                    // It's a reply - update parent's reply count and view button
+                    const $parentComment = $comment.closest('.ig-comment-body').parent();
+                    const parentId = $parentComment.data('comment-id');
+                    const $viewBtn = $(`#comment-${parentId} .ig-view-replies-btn`);
+                    
+                    $comment.remove();
+                    
+                    // Update view replies button
+                    if ($viewBtn.length > 0) {
+                        const currentCount = $viewBtn.data('count') - 1;
+                        if (currentCount > 0) {
+                            $viewBtn.data('count', currentCount);
+                            if ($viewBtn.data('open') === 1) {
+                                $viewBtn.find('.label').text(`Sembunyikan ${currentCount} balasan`);
+                            } else {
+                                $viewBtn.find('.label').text(`Lihat ${currentCount} balasan`);
+                            }
+                        } else {
+                            // Remove view button if no more replies
+                            $viewBtn.remove();
+                            // Remove replies list if empty
+                            $(`#replies-${parentId}`).remove();
+                        }
+                    }
+                } else {
+                    // It's a parent comment - remove entire comment with replies
+                    $comment.remove();
+                }
                 
                 // Update comment count on button
                 const $commentBtn = $(`.comment-toggle[data-feed-id="${currentFeedId}"]`);
                 const currentCount = parseInt($commentBtn.find('.comment-count').text()) || 0;
                 $commentBtn.find('.comment-count').text(Math.max(0, currentCount - 1));
+                
+                // Show success message
+                if (data.message) {
+                    // Show temporary success notification instead of alert
+                    const notification = $(`
+                        <div class="alert alert-success alert-dismissible fade show position-fixed" 
+                             style="top: 20px; right: 20px; z-index: 9999; min-width: 250px;">
+                            <i class="fas fa-check-circle me-2"></i>${data.message}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    `);
+                    $('body').append(notification);
+                    setTimeout(() => notification.fadeOut(500, () => notification.remove()), 3000);
+                }
             } else {
                 console.log('Delete failed, data:', data);
                 // Show specific error message from server

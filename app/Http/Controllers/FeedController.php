@@ -139,10 +139,18 @@ class FeedController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        // Soft delete the comment
-        $comment->delete(); // This will set deleted_at timestamp due to SoftDeletes trait
+        // Get reply count for response
+        $replyCount = $comment->children()->count();
 
-        return response()->json(['success' => true]);
+        // Hard delete - cascade delete will remove parent and all replies
+        $comment->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => $replyCount > 0 
+                ? 'Komentar dan ' . $replyCount . ' balasan berhasil dihapus'
+                : 'Komentar berhasil dihapus'
+        ]);
     }
 
     public function comments(Feed $feed)
