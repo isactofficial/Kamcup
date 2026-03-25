@@ -1556,7 +1556,7 @@
         const photo   = c.user?.profile?.profile_photo || '';
         const name    = c.user?.name || 'User';
         const timeAgo = moment(c.created_at).fromNow();
-        const isOwn   = c.user_id === {{ Auth::id() }};
+        const isOwn   = c.user_id == {{ Auth::id() }}; // Use loose comparison for string vs number
         const replies = c.children || [];
 
         // Replies always start COLLAPSED — harus klik "Lihat N balasan" dulu

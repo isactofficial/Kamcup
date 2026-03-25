@@ -135,7 +135,7 @@ class FeedController extends Controller
     public function commentDelete(FeedComment $comment)  // ← FIX #1 berlaku di sini
     {
         // FIX #2: pastikan hanya pemilik komentar yang bisa hapus
-        if ($comment->user_id !== Auth::id()) {
+        if ((int)$comment->user_id !== (int)Auth::id()) {
             abort(403, 'Unauthorized');
         }
 
