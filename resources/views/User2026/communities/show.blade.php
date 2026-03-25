@@ -626,8 +626,9 @@
         // If not, the user needs to configure Pusher first.
         if (typeof Echo !== 'undefined') {
             Echo.private(`community.{{ $community->id }}`)
-                .listen('MessageSent', (e) => {
-                    if (e.user.id !== currentUserId) {
+                .listen('.MessageSent', (e) => {
+                    // console.log('Community message received:', e);
+                    if (parseInt(e.user.id) !== parseInt(currentUserId)) {
                         appendMessage(e);
                     }
                 });
