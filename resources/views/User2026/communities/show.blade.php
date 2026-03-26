@@ -1024,15 +1024,15 @@
                         </div>
                     </button>
                     
-                    <button type="button" class="btn btn-outline-secondary border-2 rounded-4 p-3 text-start" disabled>
+                    <button type="button" class="btn btn-outline-success border-2 rounded-4 p-3 text-start" data-bs-toggle="modal" data-bs-target="#recurringAgendaModal">
                         <div class="d-flex align-items-center">
-                            <div class="rounded-circle bg-secondary-subtle text-secondary d-flex align-items-center justify-content-center me-3" 
+                            <div class="rounded-circle bg-success-subtle text-success d-flex align-items-center justify-content-center me-3" 
                                  style="width: 50px; height: 50px;">
                                 <i class="fas fa-redo fs-5"></i>
                             </div>
                             <div>
                                 <h6 class="fw-bold mb-1">Berulang</h6>
-                                <p class="small text-muted mb-0">Agenda rutin (harian/mingguan/bulanan) - <em>Coming soon</em></p>
+                                <p class="small text-muted mb-0">Agenda rutin (harian/mingguan/bulanan)</p>
                             </div>
                         </div>
                     </button>
@@ -1237,6 +1237,136 @@
 
             </div><!-- /.ig-modal-right -->
         </div><!-- /.modal-content -->
+    </div>
+</div>
+
+{{-- Create Recurring Agenda Modal --}}
+<div class="modal fade" id="recurringAgendaModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow rounded-4">
+            <div class="modal-header border-0 pb-0 shadow-none p-4">
+                <h5 class="modal-title fw-bold">Buat Agenda Berulang</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ route('user2026.komunitas.agenda.store', $community->slug) }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body p-4">
+                    <div class="alert alert-info border-0 rounded-3 mb-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Agenda berulang akan membuat beberapa agenda sesuai pola yang dipilih. Setiap agenda akan memiliki detail yang sama.
+                    </div>
+                    
+                    <div class="row g-3">
+                        <!-- Basic Info -->
+                        <div class="col-md-12">
+                            <label class="form-label small fw-bold">Judul Agenda</label>
+                            <input type="text" name="title" class="form-control rounded-3 border-light bg-light shadow-none" placeholder="Contoh: Latihan Basket Rutin" required>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label small fw-bold">Notes</label>
+                            <textarea name="content" class="form-control rounded-3 border-light bg-light shadow-none" rows="3" placeholder="Catatan tambahan atau informasi penting..."></textarea>
+                        </div>
+                        
+                        <!-- Recurring Pattern -->
+                        <div class="col-md-12">
+                            <label class="form-label small fw-bold">Pola Berulang</label>
+                            <select name="recurrence_pattern" class="form-control rounded-3 border-light bg-light shadow-none" required>
+                                <option value="">Pilih pola berulang</option>
+                                <option value="daily">Harian</option>
+                                <option value="weekly">Mingguan</option>
+                                <option value="monthly">Bulanan</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Hari (untuk mingguan)</label>
+                            <select name="recurrence_days" class="form-control rounded-3 border-light bg-light shadow-none" multiple>
+                                <option value="1">Senin</option>
+                                <option value="2">Selasa</option>
+                                <option value="3">Rabu</option>
+                                <option value="4">Kamis</option>
+                                <option value="5">Jumat</option>
+                                <option value="6">Sabtu</option>
+                                <option value="7">Minggu</option>
+                            </select>
+                            <div class="form-text small">Pilih hari untuk pola mingguan (bisa multiple)</div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Tanggal (untuk bulanan)</label>
+                            <input type="number" name="recurrence_day_of_month" class="form-control rounded-3 border-light bg-light shadow-none" placeholder="1-31" min="1" max="31">
+                            <div class="form-text small">Tanggal setiap bulan</div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Waktu Mulai</label>
+                            <input type="time" name="meet_time" class="form-control rounded-3 border-light bg-light shadow-none" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Durasi (Jam)</label>
+                            <input type="number" name="meet_duration" class="form-control rounded-3 border-light bg-light shadow-none" placeholder="Contoh: 2" step="0.5" min="0.5" max="24" required>
+                        </div>
+                        
+                        <div class="col-md-12">
+                            <label class="form-label small fw-bold">Lokasi</label>
+                            <input type="text" name="meet_location" class="form-control rounded-3 border-light bg-light shadow-none" placeholder="Alamat lengkap atau nama tempat" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Jumlah Peserta</label>
+                            <input type="number" name="meet_max_people" class="form-control rounded-3 border-light bg-light shadow-none" placeholder="Maksimal peserta" min="2" max="1000" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Fee (Rp)</label>
+                            <input type="number" name="meet_fee" class="form-control rounded-3 border-light bg-light shadow-none" placeholder="0 jika gratis" min="0" value="0">
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Gender</label>
+                            <select name="meet_gender" class="form-control rounded-3 border-light bg-light shadow-none">
+                                <option value="all">Semua</option>
+                                <option value="male">Pria</option>
+                                <option value="female">Wanita</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Kategori Usia</label>
+                            <select name="meet_age_category" class="form-control rounded-3 border-light bg-light shadow-none">
+                                <option value="all">Semua Usia</option>
+                                <option value="junior">Junior (&lt; 18 tahun)</option>
+                                <option value="adult">Adult (18 - 55 tahun)</option>
+                                <option value="senior">Senior (&gt; 55 tahun)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Tanggal Mulai</label>
+                            <input type="date" name="start_date" class="form-control rounded-3 border-light bg-light shadow-none" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Tanggal Selesai</label>
+                            <input type="date" name="end_date" class="form-control rounded-3 border-light bg-light shadow-none" required>
+                        </div>
+                        
+                        <div class="col-md-12">
+                            <label class="form-label small fw-bold">Foto Banner (Opsional)</label>
+                            <input type="file" name="image" class="form-control rounded-3 border-light bg-light shadow-none" accept="image/*">
+                            <div class="form-text small">Max 2MB, format support: jpg, png, webp</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0 p-4 justify-content-between">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-success rounded-pill px-4 shadow-sm">
+                        <i class="fas fa-redo me-2"></i>Buat Agenda Berulang
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 

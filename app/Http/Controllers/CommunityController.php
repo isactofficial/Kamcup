@@ -305,54 +305,63 @@ class CommunityController extends Controller
         }
 
         try {
-            $request->validate([
-                'title' => 'required|string|max:255',
-                'content' => 'nullable|string',
-                'meet_date' => 'required|date|after_or_equal:now',
-                'meet_duration' => 'required|numeric|min:0.5|max:24',
-                'meet_location' => 'required|string|max:255',
-                'meet_max_people' => 'required|integer|min:2|max:1000',
-                'meet_fee' => 'required|numeric|min:0',
-                'meet_gender' => 'required|in:all,male,female',
-                'meet_age_category' => 'required|in:all,junior,adult,senior',
-                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            ], [
-                'meet_date.after_or_equal' => 'Tanggal dan waktu tidak boleh kurang dari waktu sekarang.',
-                'meet_duration.min' => 'Durasi minimal 0.5 jam.',
-                'meet_duration.max' => 'Durasi maksimal 24 jam.',
-                'meet_max_people.min' => 'Jumlah peserta minimal 2 orang.',
-                'meet_max_people.max' => 'Jumlah peserta maksimal 1000 orang.',
-            ]);
-
-            \Log::info('Validation passed');
-
-            $feedData = [
-                'user_id' => Auth::id(),
-                'title' => $request->title,
-                'content' => $request->content,
-                'meet_date' => $request->meet_date,
-                'meet_duration' => $request->meet_duration,
-                'meet_location' => $request->meet_location,
-                'meet_max_people' => $request->meet_max_people,
-                'meet_fee' => $request->meet_fee,
-                'meet_gender' => $request->meet_gender,
-                'meet_age_category' => $request->meet_age_category,
-                'meet_description' => $request->content, // backward compatibility
-                'image' => $request->hasFile('image') ? $request->file('image')->store('feeds', 'public') : null,
-            ];
-
-            \Log::info('Creating feed with data', $feedData);
-
-            $feed = $community->feeds()->create($feedData);
-
-            \Log::info('Feed created successfully', ['feed_id' => $feed->id]);
-
-            // Automatically add creator as participant
-            $feed->joinedBy()->attach(Auth::id(), ['joined_at' => now()]);
+            // Check if this is a recurring agenda
+            $isRecurring = $request->has('recurrence_pattern') && $request->recurrence_pattern;
             
-            \Log::info('Creator added as participant', ['feed_id' => $feed->id, 'user_id' => Auth::id()]);
+            if ($isRecurring) {
+                // Validation for recurring agenda
+                $request->validate([
+                    'title' => 'required|string|max:255',
+                    'content' => 'nullable|string',
+                    'recurrence_pattern' => 'required|in:daily,weekly,monthly',
+                    'recurrence_days' => 'required_if:recurrence_pattern,weekly|array',
+                    'recurrence_days.*' => 'integer|between:1,7',
+                    'recurrence_day_of_month' => 'required_if:recurrence_pattern,monthly|integer|between:1,31',
+                    'meet_time' => 'required|date_format:H:i',
+                    'meet_duration' => 'required|numeric|min:0.5|max:24',
+                    'meet_location' => 'required|string|max:255',
+                    'meet_max_people' => 'required|integer|min:2|max:1000',
+                    'meet_fee' => 'required|numeric|min:0',
+                    'meet_gender' => 'required|in:all,male,female',
+                    'meet_age_category' => 'required|in:all,junior,adult,senior',
+                    'start_date' => 'required|date|after_or_equal:now',
+                    'end_date' => 'required|date|after:start_date',
+                    'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+                ], [
+                    'recurrence_pattern.required' => 'Pola berulang harus dipilih.',
+                    'recurrence_days.required_if' => 'Hari harus dipilih untuk pola mingguan.',
+                    'recurrence_day_of_month.required_if' => 'Tanggal harus diisi untuk pola bulanan.',
+                    'start_date.after_or_equal' => 'Tanggal mulai tidak boleh kurang dari hari ini.',
+                    'end_date.after' => 'Tanggal selesai harus setelah tanggal mulai.',
+                ]);
+                
+                $this->createRecurringAgenda($request, $community);
+                
+            } else {
+                // Validation for one-time agenda
+                $request->validate([
+                    'title' => 'required|string|max:255',
+                    'content' => 'nullable|string',
+                    'meet_date' => 'required|date|after_or_equal:now',
+                    'meet_duration' => 'required|numeric|min:0.5|max:24',
+                    'meet_location' => 'required|string|max:255',
+                    'meet_max_people' => 'required|integer|min:2|max:1000',
+                    'meet_fee' => 'required|numeric|min:0',
+                    'meet_gender' => 'required|in:all,male,female',
+                    'meet_age_category' => 'required|in:all,junior,adult,senior',
+                    'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+                ], [
+                    'meet_date.after_or_equal' => 'Tanggal dan waktu tidak boleh kurang dari waktu sekarang.',
+                    'meet_duration.min' => 'Durasi minimal 0.5 jam.',
+                    'meet_duration.max' => 'Durasi maksimal 24 jam.',
+                    'meet_max_people.min' => 'Jumlah peserta minimal 2 orang.',
+                    'meet_max_people.max' => 'Jumlah peserta maksimal 1000 orang.',
+                ]);
 
-            return redirect()->back()->with('success', 'Agenda komunitas berhasil dibuat!');
+                $this->createSingleAgenda($request, $community);
+            }
+
+            return redirect()->back()->with('success', $isRecurring ? 'Agenda berulang berhasil dibuat!' : 'Agenda komunitas berhasil dibuat!');
         } catch (\Exception $e) {
             \Log::error('Error creating agenda', [
                 'error' => $e->getMessage(),
@@ -363,6 +372,118 @@ class CommunityController extends Controller
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage())
                 ->withInput();
         }
+    }
+
+    /**
+     * Create a single agenda
+     */
+    private function createSingleAgenda($request, $community)
+    {
+        $feedData = [
+            'user_id' => Auth::id(),
+            'title' => $request->title,
+            'content' => $request->content,
+            'meet_date' => $request->meet_date,
+            'meet_duration' => $request->meet_duration,
+            'meet_location' => $request->meet_location,
+            'meet_max_people' => $request->meet_max_people,
+            'meet_fee' => $request->meet_fee,
+            'meet_gender' => $request->meet_gender,
+            'meet_age_category' => $request->meet_age_category,
+            'meet_description' => $request->content,
+            'image' => $request->hasFile('image') ? $request->file('image')->store('feeds', 'public') : null,
+        ];
+
+        $feed = $community->feeds()->create($feedData);
+        $feed->joinedBy()->attach(Auth::id(), ['joined_at' => now()]);
+        
+        \Log::info('Single agenda created', ['feed_id' => $feed->id]);
+    }
+
+    /**
+     * Create recurring agendas
+     */
+    private function createRecurringAgenda($request, $community)
+    {
+        $startDate = \Carbon\Carbon::parse($request->start_date);
+        $endDate = \Carbon\Carbon::parse($request->end_date);
+        $meetTime = $request->meet_time;
+        $pattern = $request->recurrence_pattern;
+        $recurrenceDays = $request->recurrence_days ?? [];
+        $recurrenceDayOfMonth = $request->recurrence_day_of_month;
+        
+        $createdCount = 0;
+        $currentDate = $startDate->copy();
+        
+        while ($currentDate <= $endDate) {
+            $shouldCreate = false;
+            
+            switch ($pattern) {
+                case 'daily':
+                    $shouldCreate = true;
+                    $currentDate->addDay();
+                    break;
+                    
+                case 'weekly':
+                    $dayOfWeek = $currentDate->dayOfWeek; // 0=Sunday, 1=Monday, ..., 6=Saturday
+                    $dayOfWeek = $dayOfWeek == 0 ? 7 : $dayOfWeek; // Convert to 1=Monday, ..., 7=Sunday
+                    
+                    if (in_array($dayOfWeek, $recurrenceDays)) {
+                        $shouldCreate = true;
+                    }
+                    $currentDate->addDay();
+                    break;
+                    
+                case 'monthly':
+                    if ($currentDate->day == $recurrenceDayOfMonth) {
+                        $shouldCreate = true;
+                        $currentDate->addMonth();
+                    } else {
+                        $currentDate->addDay();
+                    }
+                    break;
+            }
+            
+            if ($shouldCreate) {
+                $meetDateTime = $currentDate->copy()->setTimeFromTimeString($meetTime);
+                
+                // Only create if the datetime is in the future
+                if ($meetDateTime > now()) {
+                    $feedData = [
+                        'user_id' => Auth::id(),
+                        'title' => $request->title,
+                        'content' => $request->content,
+                        'meet_date' => $meetDateTime,
+                        'meet_time' => $meetTime,
+                        'meet_duration' => $request->meet_duration,
+                        'meet_location' => $request->meet_location,
+                        'meet_max_people' => $request->meet_max_people,
+                        'meet_fee' => $request->meet_fee,
+                        'meet_gender' => $request->meet_gender,
+                        'meet_age_category' => $request->meet_age_category,
+                        'meet_description' => $request->content,
+                        'is_recurring' => true,
+                        'recurrence_pattern' => $pattern,
+                        'recurrence_days' => is_array($recurrenceDays) ? implode(',', $recurrenceDays) : null,
+                        'recurrence_end_date' => $endDate,
+                        'image' => $request->hasFile('image') ? $request->file('image')->store('feeds', 'public') : null,
+                    ];
+                    
+                    $feed = $community->feeds()->create($feedData);
+                    $feed->joinedBy()->attach(Auth::id(), ['joined_at' => now()]);
+                    
+                    $createdCount++;
+                    \Log::info('Recurring agenda created', ['feed_id' => $feed->id, 'date' => $meetDateTime]);
+                }
+            }
+            
+            // Prevent infinite loop
+            if ($createdCount >= 100) {
+                break;
+            }
+        }
+        
+        \Log::info('Recurring agenda creation completed', ['created_count' => $createdCount]);
     }
 
     /**

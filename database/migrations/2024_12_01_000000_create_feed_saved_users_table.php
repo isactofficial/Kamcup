@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('feed_saved_users', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('feed_id')->constrained('feeds')->onDelete('cascade');
+            $table->unsignedBigInteger('feed_id');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->timestamp('saved_at')->useCurrent();
             $table->unique(['feed_id', 'user_id']);
