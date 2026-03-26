@@ -12,11 +12,12 @@ class FeedController extends Controller
 {
     public function index()
     {
-$feeds = Feed::selectRaw('feeds.*, 
+        $feeds = Feed::selectRaw('feeds.*, 
                 (SELECT COUNT(DISTINCT fl.user_id) FROM feed_likes fl WHERE fl.feed_id = feeds.id) as likes_count,
                 (SELECT COUNT(*) FROM feed_comments fc WHERE fc.feed_id = feeds.id) as comments_count,
                 (SELECT COUNT(DISTINCT fuj.user_id) FROM feed_user_joins fuj WHERE fuj.feed_id = feeds.id) as joins_count')
             ->with('user:id,name')
+            ->whereNull('community_id') // Filter out community feeds
             ->latest()
             ->paginate(15);
 
