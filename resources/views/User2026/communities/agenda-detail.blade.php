@@ -146,6 +146,29 @@
                                 <!-- Action Buttons -->
                                 <div class="d-flex gap-3">
                                     @if($feed->user_id == Auth::id())
+                                        <!-- Creator controls -->
+                                        <div class="d-flex gap-2 flex-wrap">
+                                            <!-- Delete Meet Button -->
+                                            <button 
+                                                onclick="deleteMeet({{ $feed->id }})" 
+                                                class="btn btn-danger rounded-pill px-4"
+                                                title="Hapus Agenda"
+                                            >
+                                                <i class="fas fa-trash me-2"></i>Hapus Agenda
+                                            </button>
+                                            
+                                            <!-- Stop Schedule for Recurring -->
+                                            @if($feed->is_recurring)
+                                                <button 
+                                                    onclick="stopRecurringSchedule({{ $feed->id }})" 
+                                                    class="btn btn-warning rounded-pill px-4"
+                                                    title="Stop Jadwal Berulang"
+                                                >
+                                                    <i class="fas fa-stop-circle me-2"></i>Stop Schedule
+                                                </button>
+                                            @endif
+                                        </div>
+                                        
                                         <!-- Creator is automatically participant -->
                                         <button class="btn btn-success rounded-pill px-4" disabled>
                                             <i class="fas fa-crown me-2"></i>Penyelenggara
@@ -333,6 +356,83 @@ function toggleJoinMeet(button, feedId) {
             
             // Refresh page to update participant count
             setTimeout(() => location.reload(), 1000);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Terjadi kesalahan. Silakan coba lagi.');
+    });
+}
+
+function deleteMeet(feedId) {
+    if (!confirm('Apakah Anda yakin ingin menghapus agenda ini? Tindakan ini tidak dapat dibatalkan.')) {
+        return;
+    }
+    
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    
+    fetch(`/feeds/${feedId}/delete`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken,
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Agenda berhasil dihapus!');
+            // Redirect back to community page
+            window.location.href = data.redirect || '/user/komunitas';
+        } else {
+            alert(data.message || 'Gagal menghapus agenda. Silakan coba lagi.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Terjadi kesalahan. Silakan coba lagi.');
+    });
+}
+
+function stopRecurringSchedule(feedId) {
+    if (!confirm('Apakah Anda yakin ingin menghentikan jadwal berulang ini? Agenda yang sudah terlihat akan dipertahankan, tapi agenda yang masih tersembunyi akan dihapus otomatis.')) {
+        return;
+    }
+    
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    
+    fetch(`/feeds/${feedId}/stop-recurring`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken,
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            // Hide the stop schedule button
+            const stopButton = document.querySelector(`button[onclick="stopRecurringSchedule(${feedId})"]`);
+            if (stopButton) {
+                stopButton.style.display = 'none';
+            }
+            
+            // Update badge to show it's no longer recurring
+            const badges = document.querySelectorAll('.badge');
+            badges.forEach(badge => {
+                if (badge.textContent.includes('Mingguan')) {
+                    badge.innerHTML = '<i class="fas fa-calendar-day me-1"></i>Harian (Berhenti)';
+                    badge.className = 'badge bg-warning-subtle text-warning mb-2 rounded-pill px-3';
+                }
+            });
+            
+            // Refresh page to update the agenda list
+            setTimeout(() => location.reload(), 2000);
+        } else {
+            alert(data.message || 'Gagal menghentikan jadwal. Silakan coba lagi.');
         }
     })
     .catch(error => {

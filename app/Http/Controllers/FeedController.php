@@ -267,6 +267,98 @@ class FeedController extends Controller
             'message' => 'Feed disimpan!'
         ]);
     }
+
+    /**
+     * Delete a meet/agenda (only for creator)
+     */
+    public function deleteMeet(Feed $feed)
+    {
+        // Check if user is the creator
+        if ($feed->user_id !== auth()->id()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki izin untuk menghapus agenda ini.'
+            ], 403);
+        }
+
+        // Get community slug for redirect
+        $communitySlug = $feed->community ? $feed->community->slug : null;
+
+        // Delete the feed (this will cascade delete joins, likes, etc.)
+        $feed->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Agenda berhasil dihapus!',
+            'redirect' => $communitySlug ? route('user2026.komunitas.show', $communitySlug) : route('user2026.komunitas')
+        ]);
+    }
+
+    /**
+     * Stop recurring schedule for a recurring agenda
+     */
+    public function stopRecurringSchedule(Feed $feed)
+    {
+        // Check if user is the creator
+        if ($feed->user_id !== auth()->id()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki izin untuk menghentikan jadwal ini.'
+            ], 403);
+        }
+
+        // Check if this is a recurring agenda
+        if (!$feed->is_recurring) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ini bukan agenda berulang.'
+            ], 400);
+        }
+
+        // Get all recurring agendas with same pattern from this community
+        $community = $feed->community;
+        $allRecurringAgendas = $community->feeds()
+            ->where('is_recurring', true)
+            ->where('recurrence_pattern', $feed->recurrence_pattern)
+            ->where('recurrence_days', $feed->recurrence_days)
+            ->where('title', $feed->title)
+            ->orderBy('meet_date')
+            ->get();
+
+        $deletedCount = 0;
+        $keptCount = 0;
+
+        foreach ($allRecurringAgendas as $agenda) {
+            // Check if agenda should be visible based on auto upload days
+            $shouldKeep = true;
+            if ($agenda->is_recurring && !is_null($agenda->auto_upload_days) && $agenda->auto_upload_days > 0) {
+                $hoursUntilMeet = \Carbon\Carbon::parse($agenda->meet_date)->diffInHours(\Carbon\Carbon::now());
+                $shouldKeep = $hoursUntilMeet < ($agenda->auto_upload_days * 24) || $hoursUntilMeet <= 0;
+            }
+
+            if ($shouldKeep) {
+                // Keep visible agendas but mark as non-recurring
+                $agenda->update([
+                    'is_recurring' => false,
+                    'recurrence_pattern' => null,
+                    'recurrence_days' => null,
+                    'recurrence_end_date' => now(),
+                ]);
+                $keptCount++;
+            } else {
+                // Delete hidden agendas
+                $agenda->delete();
+                $deletedCount++;
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "Jadwal berulang berhasil dihentikan! {$keptCount} agenda dipertahankan, {$deletedCount} agenda tersembunyi dihapus.",
+            'kept' => $keptCount,
+            'deleted' => $deletedCount
+        ]);
+    }
 }
 
 

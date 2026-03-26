@@ -328,9 +328,10 @@
                                             // Check if agenda should be visible based on auto upload days
                                             $shouldShow = true;
                                             if ($agenda->is_recurring && !is_null($agenda->auto_upload_days) && $agenda->auto_upload_days > 0) {
-                                                $daysUntilMeet = \Carbon\Carbon::parse($agenda->meet_date)->diffInDays(\Carbon\Carbon::now());
-                                                // Show if: days_until <= auto_upload_days OR agenda is today/in past
-                                                $shouldShow = $daysUntilMeet <= $agenda->auto_upload_days || $daysUntilMeet <= 0;
+                                                $hoursUntilMeet = \Carbon\Carbon::parse($agenda->meet_date)->diffInHours(\Carbon\Carbon::now());
+                                                $daysUntilMeet = floor($hoursUntilMeet / 24); // Convert to days
+                                                // Show if: hours_until < (auto_upload_days * 24) OR agenda is today/in past
+                                                $shouldShow = $hoursUntilMeet < ($agenda->auto_upload_days * 24) || $hoursUntilMeet <= 0;
                                             }
                                         @endphp
                                         
@@ -426,9 +427,10 @@
                                             // Check if agenda should be visible based on auto upload days
                                             $shouldShow = true;
                                             if ($agenda->is_recurring && !is_null($agenda->auto_upload_days) && $agenda->auto_upload_days > 0) {
-                                                $daysUntilMeet = \Carbon\Carbon::parse($agenda->meet_date)->diffInDays(\Carbon\Carbon::now());
-                                                // Show if: days_until <= auto_upload_days OR agenda is today/in past
-                                                $shouldShow = $daysUntilMeet <= $agenda->auto_upload_days || $daysUntilMeet <= 0;
+                                                $hoursUntilMeet = \Carbon\Carbon::parse($agenda->meet_date)->diffInHours(\Carbon\Carbon::now());
+                                                $daysUntilMeet = floor($hoursUntilMeet / 24); // Convert to days
+                                                // Show if: hours_until < (auto_upload_days * 24) OR agenda is today/in past
+                                                $shouldShow = $hoursUntilMeet < ($agenda->auto_upload_days * 24) || $hoursUntilMeet <= 0;
                                             }
                                         @endphp
                                         

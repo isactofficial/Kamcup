@@ -142,6 +142,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/feeds/{feed}/comments', [App\Http\Controllers\FeedController::class, 'commentStore'])->name('feeds.comment.store');
     Route::delete('/feeds/{comment}/comment', [App\Http\Controllers\FeedController::class, 'commentDelete'])->name('feeds.comment.delete');
     
+    // Meet management
+    Route::delete('/feeds/{feed}/delete', [App\Http\Controllers\FeedController::class, 'deleteMeet'])->name('feeds.delete');
+    Route::post('/feeds/{feed}/stop-recurring', [App\Http\Controllers\FeedController::class, 'stopRecurringSchedule'])->name('feeds.stop.recurring');
+    
     // Meets creation and join
     Route::post('/user/feeds', [App\Http\Controllers\FeedController::class, 'store'])->name('user2026.feeds.store');
     Route::post('/feeds/{feed}/join', [App\Http\Controllers\FeedController::class, 'join'])->name('feeds.join');
