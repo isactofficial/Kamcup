@@ -755,6 +755,11 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Global variables to avoid Blade caching issues
+        window.authUserAvatar = '{{ Auth::user()->profile->profile_photo ?? "" }}';
+        window.authUserName = '{{ Auth::user()->name }}';
+        // Add cache-busting timestamp
+        window.cacheBuster = Date.now();
         const userId = {{ Auth::id() }};
         const sidebarSearchInput = document.getElementById('user-search-input');
         const searchResults = document.getElementById('search-results-container');
@@ -1152,11 +1157,12 @@
             container.classList.add('d-none');
             document.getElementById('mutual-chevron').style.transform = 'rotate(0deg)';
 
+            // Update avatar in member sidebar (right sidebar)
             const avatarContainer = document.getElementById('member-avatar-container');
             if (avatar) {
                 // Check if avatar is already a full URL or just a path
                 const avatarSrc = avatar.startsWith('http') ? avatar : `/storage/${avatar}`;
-                avatarContainer.innerHTML = `<img src="${avatarSrc}" class="rounded-circle object-fit-contain shadow-sm h-100 w-100 border border-4 border-white bg-light" style="background:#f8f9fa;" alt="">`;
+                avatarContainer.innerHTML = `<img src="${avatarSrc}" class="rounded-circle object-fit-cover shadow-sm h-100 w-100 border border-4 border-white bg-light" style="background:#f8f9fa;" alt="">`;
             } else {
                 avatarContainer.innerHTML = `<div class="rounded-circle bg-accent d-flex align-items-center justify-content-center text-white fw-bold fs-2 h-100 w-100 shadow-sm border border-4 border-white">${name[0].toUpperCase()}</div>`;
             }
@@ -1503,68 +1509,6 @@
             return new File([u8arr], filename, {type:mime});
         }
 
-        // Update appendMsg to handle real images
-        function appendMsg(m) {
-            const isMe = m.sender_id === userId;
-            const container = document.getElementById('chat-messages-inner');
-            const item = document.createElement('div');
-            item.className = 'chat-msg-container animate-fade-in mb-2';
-
-            const time = new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            const senderName = m.sender_id == userId ? '{{ Auth::user()->name }}' : currentFriendName;
-            const senderInitial = senderName[0].toUpperCase();
-
-            // Handle message content with images
-            let messageContent = '';
-
-            if (m.image_path) {
-                // Real image from backend
-                const imageSrc = m.image_path.startsWith('data:') ? m.image_path : `/storage/${m.image_path}`;
-                messageContent = `<img src="${imageSrc}" alt="Image" class="rounded-2" style="max-width: 200px; max-height: 200px; object-fit: cover;">`;
-
-                if (m.message) {
-                    messageContent = `<div>${m.message}</div><div class="mt-2">${messageContent}</div>`;
-                }
-            } else if (m.message) {
-                // Text only message
-                messageContent = m.message;
-            }
-
-            // Determine avatar source
-            let avatarHtml = '';
-            if (isMe) {
-                // Current user - use their own avatar or initial
-                const userAvatar = '{{ Auth::user()->profile->profile_photo ?? "" }}';
-                if (userAvatar) {
-                    avatarHtml = `<img src="/storage/${userAvatar}" alt="${senderName}" class="rounded-circle" style="width: 38px; height: 38px; object-fit: cover;">`;
-                } else {
-                    avatarHtml = `<div class="rounded-circle bg-pink-light text-pink d-flex align-items-center justify-content-center fw-bold" style="width: 38px; height: 38px; font-size: 0.8rem;">${senderInitial}</div>`;
-                }
-            } else {
-                // Other user - use current friend's avatar or initial
-                if (currentFriendAvatar) {
-                    const avatarSrc = currentFriendAvatar.startsWith('http') ? currentFriendAvatar : `/storage/${currentFriendAvatar}`;
-                    avatarHtml = `<img src="${avatarSrc}" alt="${senderName}" class="rounded-circle" style="width: 38px; height: 38px; object-fit: cover;">`;
-                } else {
-                    avatarHtml = `<div class="rounded-circle bg-accent-light text-accent d-flex align-items-center justify-content-center fw-bold" style="width: 38px; height: 38px; font-size: 0.8rem;">${senderInitial}</div>`;
-                }
-            }
-
-            item.innerHTML = `
-                <div class="avatar-sm">
-                    ${avatarHtml}
-                </div>
-                <div class="flex-grow-1">
-                    <div class="d-flex align-items-center mb-1">
-                        <span class="chat-msg-author small ${isMe ? 'text-pink' : 'text-accent'}">${senderName}</span>
-                        <span class="chat-msg-time ms-2">${time}</span>
-                    </div>
-                    <div class="chat-msg-text">${messageContent}</div>
-                </div>
-            `;
-            container.appendChild(item);
-        }
-
         // --- REPLY FUNCTIONALITY ---
         let currentReplyMessageId = null;
         let currentReplyMessage = null;
@@ -1613,7 +1557,7 @@
 
         function setReply(m) {
             currentReplyMessageId = m.id;
-            const senderName = m.sender ? m.sender.name : (m.sender_id == userId ? '{{ Auth::user()->name }}' : currentFriendName);
+            const senderName = m.sender ? m.sender.name : (parseInt(m.sender_id) === parseInt(userId) ? window.authUserName : currentFriendName);
             const previewText = (m.message || '[Gambar]').substring(0, 60) + ((m.message || '').length > 60 ? '...' : '');
             currentReplyMessage = { senderName, previewText };
 
@@ -1649,7 +1593,18 @@
 
         // Update appendMsg to handle reply threads and context menu
         function appendMsg(m) {
-            const isMe = m.sender_id === userId;
+            const isMe = parseInt(m.sender_id) === parseInt(userId);
+            console.log('appendMsg:', {
+                messageId: m.id,
+                sender_id: m.sender_id,
+                userId: userId,
+                sender_id_parsed: parseInt(m.sender_id),
+                userId_parsed: parseInt(userId),
+                isMe: isMe,
+                senderName: parseInt(m.sender_id) === parseInt(userId) ? window.authUserName : currentFriendName,
+                userAvatar: window.authUserAvatar,
+                friendAvatar: currentFriendAvatar
+            });
             const container = document.getElementById('chat-messages-inner');
             const item = document.createElement('div');
             item.className = 'chat-msg-container animate-fade-in mb-2';
@@ -1665,7 +1620,7 @@
             item.addEventListener('touchmove', function () { clearTimeout(pressTimer); });
 
             const time = new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            const senderName = m.sender_id == userId ? '{{ Auth::user()->name }}' : currentFriendName;
+            const senderName = m.sender_id == userId ? window.authUserName : currentFriendName;
             const senderInitial = senderName[0].toUpperCase();
 
             // Handle message content with images
@@ -1702,14 +1657,15 @@
             let avatarHtml = '';
             if (isMe) {
                 // Current user - use their own avatar or initial
-                const userAvatar = '{{ Auth::user()->profile->profile_photo ?? "" }}';
+                // Use JavaScript variable to avoid caching issues on hosting
+                const userAvatar = window.authUserAvatar || '{{ Auth::user()->profile->profile_photo ?? "" }}';
                 if (userAvatar) {
                     avatarHtml = `<img src="/storage/${userAvatar}" alt="${senderName}" class="rounded-circle" style="width: 38px; height: 38px; object-fit: cover;">`;
                 } else {
                     avatarHtml = `<div class="rounded-circle bg-pink-light text-pink d-flex align-items-center justify-content-center fw-bold" style="width: 38px; height: 38px; font-size: 0.8rem;">${senderInitial}</div>`;
                 }
             } else {
-                // Other user - use current friend's avatar or initial
+                // Other user - use current friend's avatar or initial (from currentFriendAvatar variable)
                 if (currentFriendAvatar) {
                     const avatarSrc = currentFriendAvatar.startsWith('http') ? currentFriendAvatar : `/storage/${currentFriendAvatar}`;
                     avatarHtml = `<img src="${avatarSrc}" alt="${senderName}" class="rounded-circle" style="width: 38px; height: 38px; object-fit: cover;">`;
