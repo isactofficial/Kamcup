@@ -308,15 +308,20 @@ class CommunityController extends Controller
             // Check if this is a recurring agenda
             $isRecurring = $request->has('recurrence_pattern') && $request->recurrence_pattern;
             
+            \Log::info('Request data received', [
+                'is_recurring' => $isRecurring,
+                'all_data' => $request->all(),
+                'recurrence_days' => $request->recurrence_days,
+                'recurrence_days_type' => gettype($request->recurrence_days),
+                'auto_upload_days' => $request->auto_upload_days
+            ]);
+            
             if ($isRecurring) {
                 // Validation for recurring agenda
                 $request->validate([
                     'title' => 'required|string|max:255',
                     'content' => 'nullable|string',
-                    'recurrence_pattern' => 'required|in:daily,weekly,monthly',
-                    'recurrence_days' => 'required_if:recurrence_pattern,weekly|array',
-                    'recurrence_days.*' => 'integer|between:1,7',
-                    'recurrence_day_of_month' => 'required_if:recurrence_pattern,monthly|integer|between:1,31',
+                    'recurrence_days' => 'required|integer|between:1,7',
                     'meet_time' => 'required|date_format:H:i',
                     'meet_duration' => 'required|numeric|min:0.5|max:24',
                     'meet_location' => 'required|string|max:255',
@@ -324,18 +329,15 @@ class CommunityController extends Controller
                     'meet_fee' => 'required|numeric|min:0',
                     'meet_gender' => 'required|in:all,male,female',
                     'meet_age_category' => 'required|in:all,junior,adult,senior',
-                    'start_date' => 'required|date|after_or_equal:now',
-                    'end_date' => 'required|date|after:start_date',
+                    'auto_upload_days' => 'nullable|integer|in:1,3,7,14,30',
                     'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
                 ], [
-                    'recurrence_pattern.required' => 'Pola berulang harus dipilih.',
-                    'recurrence_days.required_if' => 'Hari harus dipilih untuk pola mingguan.',
-                    'recurrence_day_of_month.required_if' => 'Tanggal harus diisi untuk pola bulanan.',
-                    'start_date.after_or_equal' => 'Tanggal mulai tidak boleh kurang dari hari ini.',
-                    'end_date.after' => 'Tanggal selesai harus setelah tanggal mulai.',
+                    'recurrence_days.required' => 'Hari harus dipilih untuk agenda mingguan.',
+                    'recurrence_days.between' => 'Hari harus antara 1-7 (Senin-Minggu).',
+                    'auto_upload_days.in' => 'Pilih waktu auto upload yang valid.',
                 ]);
                 
-                $this->createRecurringAgenda($request, $community);
+                $this->createWeeklyRecurringAgenda($request, $community);
                 
             } else {
                 // Validation for one-time agenda
@@ -401,54 +403,29 @@ class CommunityController extends Controller
     }
 
     /**
-     * Create recurring agendas
+     * Create weekly recurring agendas
      */
-    private function createRecurringAgenda($request, $community)
+    private function createWeeklyRecurringAgenda($request, $community)
     {
-        $startDate = \Carbon\Carbon::parse($request->start_date);
-        $endDate = \Carbon\Carbon::parse($request->end_date);
         $meetTime = $request->meet_time;
-        $pattern = $request->recurrence_pattern;
-        $recurrenceDays = $request->recurrence_days ?? [];
-        $recurrenceDayOfMonth = $request->recurrence_day_of_month;
+        $recurrenceDay = $request->recurrence_days; // single day, not array
+        $autoUploadDays = $request->auto_upload_days ?? 7; // default 1 week
         
         $createdCount = 0;
-        $currentDate = $startDate->copy();
+        $currentDate = now()->copy();
+        
+        // Calculate end date based on auto upload setting
+        $endDate = now()->copy()->addDays($autoUploadDays * 8); // 8 weeks = ~2 months
         
         while ($currentDate <= $endDate) {
-            $shouldCreate = false;
+            $dayOfWeek = $currentDate->dayOfWeek; // 0=Sunday, 1=Monday, ..., 6=Saturday
+            $dayOfWeek = $dayOfWeek == 0 ? 7 : $dayOfWeek; // Convert to 1=Monday, ..., 7=Sunday
             
-            switch ($pattern) {
-                case 'daily':
-                    $shouldCreate = true;
-                    $currentDate->addDay();
-                    break;
-                    
-                case 'weekly':
-                    $dayOfWeek = $currentDate->dayOfWeek; // 0=Sunday, 1=Monday, ..., 6=Saturday
-                    $dayOfWeek = $dayOfWeek == 0 ? 7 : $dayOfWeek; // Convert to 1=Monday, ..., 7=Sunday
-                    
-                    if (in_array($dayOfWeek, $recurrenceDays)) {
-                        $shouldCreate = true;
-                    }
-                    $currentDate->addDay();
-                    break;
-                    
-                case 'monthly':
-                    if ($currentDate->day == $recurrenceDayOfMonth) {
-                        $shouldCreate = true;
-                        $currentDate->addMonth();
-                    } else {
-                        $currentDate->addDay();
-                    }
-                    break;
-            }
-            
-            if ($shouldCreate) {
+            if ($dayOfWeek == $recurrenceDay) {
                 $meetDateTime = $currentDate->copy()->setTimeFromTimeString($meetTime);
                 
-                // Only create if the datetime is in the future
-                if ($meetDateTime > now()) {
+                // Only create if in future and within auto upload window
+                if ($meetDateTime > now() && $meetDateTime->diffInDays(now()) >= $autoUploadDays) {
                     $feedData = [
                         'user_id' => Auth::id(),
                         'title' => $request->title,
@@ -463,8 +440,8 @@ class CommunityController extends Controller
                         'meet_age_category' => $request->meet_age_category,
                         'meet_description' => $request->content,
                         'is_recurring' => true,
-                        'recurrence_pattern' => $pattern,
-                        'recurrence_days' => is_array($recurrenceDays) ? implode(',', $recurrenceDays) : null,
+                        'recurrence_pattern' => 'weekly',
+                        'recurrence_days' => $recurrenceDay, // single day, not array
                         'recurrence_end_date' => $endDate,
                         'image' => $request->hasFile('image') ? $request->file('image')->store('feeds', 'public') : null,
                     ];
@@ -473,9 +450,16 @@ class CommunityController extends Controller
                     $feed->joinedBy()->attach(Auth::id(), ['joined_at' => now()]);
                     
                     $createdCount++;
-                    \Log::info('Recurring agenda created', ['feed_id' => $feed->id, 'date' => $meetDateTime]);
+                    \Log::info('Weekly recurring agenda created', [
+                        'feed_id' => $feed->id, 
+                        'date' => $meetDateTime,
+                        'recurrence_day' => $recurrenceDay,
+                        'auto_upload_days' => $autoUploadDays
+                    ]);
                 }
             }
+            
+            $currentDate->addDay();
             
             // Prevent infinite loop
             if ($createdCount >= 100) {
@@ -483,7 +467,12 @@ class CommunityController extends Controller
             }
         }
         
-        \Log::info('Recurring agenda creation completed', ['created_count' => $createdCount]);
+        \Log::info('Weekly recurring agenda creation completed', [
+            'created_count' => $createdCount,
+            'recurrence_day' => $recurrenceDay,
+            'auto_upload_days' => $autoUploadDays,
+            'end_date' => $endDate
+        ]);
     }
 
     /**

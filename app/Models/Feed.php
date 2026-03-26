@@ -28,6 +28,13 @@ class Feed extends Model
         'meet_fee',
         'meet_gender',
         'meet_age_category',
+        'is_recurring',
+        'recurrence_pattern',
+        'recurrence_days',
+        'recurrence_end_date',
+        'recurrence_day_of_month',
+        'recurrence_count',
+        'meet_time',
     ];
 
     protected $casts = [
