@@ -316,6 +316,10 @@
                                                     {{ \Carbon\Carbon::parse($agenda->meet_date)->translatedFormat('d F Y, H:i') }}
                                                 </div>
                                                 <div class="small text-muted d-flex align-items-center">
+                                                    <i class="fas fa-clock me-2 text-primary"></i>
+                                                    {{ $agenda->meet_duration ?? 0 }} jam
+                                                </div>
+                                                <div class="small text-muted d-flex align-items-center">
                                                     <i class="fas fa-map-marker-alt me-2 text-primary"></i>
                                                     {{ $agenda->meet_location }}
                                                 </div>
@@ -323,6 +327,34 @@
                                                     <i class="fas fa-users me-2 text-primary"></i>
                                                     {{ $agenda->joins_count ?? 0 }} / {{ $agenda->meet_max_people }} Peserta
                                                 </div>
+                                                @if($agenda->meet_fee > 0)
+                                                <div class="small text-muted d-flex align-items-center">
+                                                    <i class="fas fa-money-bill-wave me-2 text-primary"></i>
+                                                    Rp {{ number_format($agenda->meet_fee, 0, ',', '.') }}
+                                                </div>
+                                                @endif
+                                                @if($agenda->meet_gender != 'all')
+                                                <div class="small text-muted d-flex align-items-center">
+                                                    <i class="fas fa-venus-mars me-2 text-primary"></i>
+                                                    {{ $agenda->meet_gender == 'male' ? 'Pria' : 'Wanita' }}
+                                                </div>
+                                                @endif
+                                                @if($agenda->meet_age_category != 'all')
+                                                <div class="small text-muted d-flex align-items-center">
+                                                    <i class="fas fa-user-tag me-2 text-primary"></i>
+                                                    {{ ucfirst($agenda->meet_age_category) }}
+                                                    @if($agenda->meet_age_category == 'junior') (< 18 th)
+                                                    @elseif($agenda->meet_age_category == 'adult') (18-55 th)
+                                                    @elseif($agenda->meet_age_category == 'senior') (> 55 th)
+                                                    @endif
+                                                </div>
+                                                @endif
+                                                @if($agenda->content)
+                                                <div class="small text-muted d-flex align-items-start">
+                                                    <i class="fas fa-sticky-note me-2 text-primary mt-1"></i>
+                                                    <span>{{ Str::limit($agenda->content, 100) }}</span>
+                                                </div>
+                                                @endif
                                             </div>
 
                                             <div class="d-grid mt-auto pt-3">
@@ -1068,21 +1100,47 @@
                             <label class="form-label small fw-bold">Judul Agenda</label>
                             <input type="text" name="title" class="form-control rounded-3 border-light bg-light shadow-none" placeholder="Contoh: Latihan Rutin Basket" required>
                         </div>
+                        <div class="col-md-12">
+                            <label class="form-label small fw-bold">Notes</label>
+                            <textarea name="content" class="form-control rounded-3 border-light bg-light shadow-none" rows="3" placeholder="Catatan tambahan atau informasi penting..."></textarea>
+                        </div>
                         <div class="col-md-6">
                             <label class="form-label small fw-bold">Tanggal & Waktu</label>
                             <input type="datetime-local" name="meet_date" class="form-control rounded-3 border-light bg-light shadow-none" required>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label small fw-bold">Maksimal Peserta</label>
-                            <input type="number" name="meet_max_people" class="form-control rounded-3 border-light bg-light shadow-none" placeholder="2-1000" min="2" max="1000" required>
+                            <label class="form-label small fw-bold">Durasi (Jam)</label>
+                            <input type="number" name="meet_duration" class="form-control rounded-3 border-light bg-light shadow-none" placeholder="Contoh: 2.5" step="0.5" min="0.5" max="24" required>
+                            <div class="form-text small">Format: 0.5, 1, 1.5, 2, dst (maksimal 24 jam)</div>
                         </div>
                         <div class="col-md-12">
                             <label class="form-label small fw-bold">Lokasi</label>
                             <input type="text" name="meet_location" class="form-control rounded-3 border-light bg-light shadow-none" placeholder="Alamat lengkap atau nama tempat" required>
                         </div>
-                        <div class="col-md-12">
-                            <label class="form-label small fw-bold">Deskripsi / Detail Agenda</label>
-                            <textarea name="meet_description" class="form-control rounded-3 border-light bg-light shadow-none" rows="4" placeholder="Jelaskan apa saja kegiatannya..." required></textarea>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Jumlah Peserta</label>
+                            <input type="number" name="meet_max_people" class="form-control rounded-3 border-light bg-light shadow-none" placeholder="Maksimal peserta" min="2" max="1000" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Fee (Rp)</label>
+                            <input type="number" name="meet_fee" class="form-control rounded-3 border-light bg-light shadow-none" placeholder="0 jika gratis" min="0" value="0">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Gender</label>
+                            <select name="meet_gender" class="form-control rounded-3 border-light bg-light shadow-none">
+                                <option value="all">Semua</option>
+                                <option value="male">Pria</option>
+                                <option value="female">Wanita</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Kategori Usia</label>
+                            <select name="meet_age_category" class="form-control rounded-3 border-light bg-light shadow-none">
+                                <option value="all">Semua Usia</option>
+                                <option value="junior">Junior (&lt; 18 tahun)</option>
+                                <option value="adult">Adult (18 - 55 tahun)</option>
+                                <option value="senior">Senior (&gt; 55 tahun)</option>
+                            </select>
                         </div>
                         <div class="col-md-12">
                             <label class="form-label small fw-bold">Foto Banner (Opsional)</label>

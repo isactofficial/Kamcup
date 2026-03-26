@@ -239,21 +239,29 @@ class CommunityController extends Controller
 
         $request->validate([
             'title' => 'required|string|max:255',
+            'content' => 'nullable|string',
             'meet_date' => 'required|date|after:now',
+            'meet_duration' => 'required|numeric|min:0.5|max:24',
             'meet_location' => 'required|string|max:255',
             'meet_max_people' => 'required|integer|min:2|max:1000',
-            'meet_description' => 'required|string|max:2000',
+            'meet_fee' => 'required|numeric|min:0',
+            'meet_gender' => 'required|in:all,male,female',
+            'meet_age_category' => 'required|in:all,junior,adult,senior',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
 
         $community->feeds()->create([
             'user_id' => Auth::id(),
             'title' => $request->title,
-            'content' => $request->meet_description,
+            'content' => $request->content,
             'meet_date' => $request->meet_date,
+            'meet_duration' => $request->meet_duration,
             'meet_location' => $request->meet_location,
             'meet_max_people' => $request->meet_max_people,
-            'meet_description' => $request->meet_description,
+            'meet_fee' => $request->meet_fee,
+            'meet_gender' => $request->meet_gender,
+            'meet_age_category' => $request->meet_age_category,
+            'meet_description' => $request->content, // backward compatibility
             'image' => $request->hasFile('image') ? $request->file('image')->store('feeds', 'public') : null,
         ]);
 

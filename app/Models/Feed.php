@@ -24,6 +24,10 @@ class Feed extends Model
         'meet_location',
         'meet_max_people',
         'meet_description',
+        'meet_duration',
+        'meet_fee',
+        'meet_gender',
+        'meet_age_category',
     ];
 
     protected $casts = [
