@@ -86,7 +86,14 @@
                 <!-- FRIENDS DASHBOARD (Landing View) -->
                 <div id="welcome-view" class="flex-grow-1 d-flex flex-column p-4 animate-fade-in">
                     <div class="d-flex align-items-center gap-3 mb-4 border-bottom pb-3">
-                        <h5 class="fw-bold text-dark mb-0" id="main-view-title">Teman</h5>
+                        <!-- Mobile Back Button -->
+                        <div class="d-md-none">
+                            <a href="{{ route('profile.index') }}" class="btn btn-sm btn-outline-secondary d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                <i class="fas fa-arrow-left"></i>
+                            </a>
+                        </div>
+                        <!-- Desktop Title -->
+                        <h5 class="fw-bold text-dark mb-0 d-none d-md-block" id="main-view-title">Teman</h5>
                         <div class="btn-group-friends ms-2">
                             <button class="btn-friends active" id="tab-semua" onclick="showAllFriends()">Semua</button>
                             <button class="btn-friends" id="tab-tertunda" onclick="showRequests()">Tertunda <span class="badge bg-danger rounded-pill ms-1">{{ $pendingRequests->count() }}</span></button>
@@ -239,6 +246,12 @@
 
         <!-- MEMBER INFO (Sidebar Right) -->
         <div class="member-info-bar d-none d-xl-flex flex-column h-100 border-start overflow-auto custom-scrollbar shadow-sm" id="member-sidebar" style="background-color: #ffffff; width: 340px; border-left: 1px solid #eee; color: #333;">
+             <!-- Mobile Close Button -->
+             <div class="d-xl-none position-absolute top-0 start-0 p-3" style="z-index: 9999 !important;">
+                 <button class="btn btn-sm btn-outline-secondary d-flex align-items-center justify-content-center" onclick="window.hideMemberSidebar()" style="background: white !important; width: 32px; height: 32px; border: 1px solid #6c757d !important;">
+                     <i class="fas fa-arrow-left"></i>
+                 </button>
+             </div>
              <!-- Banner Overlay -->
              <div class="profile-banner-top w-100" style="height: 100px; background-color: var(--teman-accent); position: relative; overflow: hidden;">
                 <div style="position: absolute; inset: 0; background: linear-gradient(rgba(0,0,0,0.1), transparent);"></div>
@@ -423,23 +436,7 @@
         }
 
         .dm-list-bar {
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100% !important;
-            height: 100vh !important;
-            height: 100dvh !important;
-            z-index: 1050 !important;
-            transition: transform 0.3s ease-in-out;
-            transform: translateX(-100%);
-        }
-
-        .dm-list-bar.mobile-visible {
-            transform: translateX(0);
-        }
-
-        .dm-list-bar.mobile-hidden {
-            transform: translateX(-100%);
+            display: none !important;
         }
 
         #chat-view {
@@ -666,6 +663,8 @@
             const newIsMobile = window.innerWidth <= 768;
             if (newIsMobile !== isMobile) {
                 isMobile = newIsMobile;
+                // Reset member sidebar when switching between mobile/desktop
+                hideMemberSidebar();
                 // Re-render chat header if chat is active
                 if (currentFriendId && currentFriendName) {
                     updateMobileChatHeader(currentFriendName, currentFriendAvatar);
@@ -678,37 +677,89 @@
 
         // Responsive sidebar functionality
         function showSidebar() {
-            const dmListBar = document.querySelector('.dm-list-bar');
-            const chatView = document.getElementById('chat-view');
+            // Sidebar disabled on mobile
+            if (!isMobile) {
+                const dmListBar = document.querySelector('.dm-list-bar');
+                const chatView = document.getElementById('chat-view');
 
-            if (isMobile && dmListBar) {
-                dmListBar.classList.remove('mobile-hidden');
-                dmListBar.classList.add('mobile-visible');
-                chatView.classList.add('chat-view-hidden');
-                chatView.classList.remove('chat-view-visible');
+                if (dmListBar) {
+                    dmListBar.classList.remove('mobile-hidden');
+                    dmListBar.classList.add('mobile-visible');
+                    chatView.classList.add('chat-view-hidden');
+                    chatView.classList.remove('chat-view-visible');
+                }
             }
         }
 
         function hideSidebar() {
-            const dmListBar = document.querySelector('.dm-list-bar');
+            // Sidebar disabled on mobile, just show main content
             const chatView = document.getElementById('chat-view');
+            const welcomeView = document.getElementById('welcome-view');
 
-            if (isMobile && dmListBar) {
-                dmListBar.classList.remove('mobile-visible');
-                dmListBar.classList.add('mobile-hidden');
-                chatView.classList.remove('chat-view-hidden');
-                chatView.classList.add('chat-view-visible');
+            if (isMobile) {
+                console.log('hideSidebar called - hiding chat, showing welcome');
+                // Hide chat view and show welcome view
+                chatView.classList.remove('chat-view-visible');
+                chatView.classList.add('chat-view-hidden');
+                welcomeView.classList.remove('d-none');
+                welcomeView.classList.add('d-flex');
             }
         }
 
         // Make functions globally accessible
         window.showSidebar = showSidebar;
         window.hideSidebar = hideSidebar;
+        window.showMemberSidebar = showMemberSidebar;
+        window.hideMemberSidebar = hideMemberSidebar;
+
+        function showMemberSidebar() {
+            console.log('showMemberSidebar called, isMobile:', isMobile);
+            // Show right sidebar on mobile
+            const memberSidebar = document.getElementById('member-sidebar');
+            console.log('memberSidebar element:', memberSidebar);
+            if (memberSidebar) {
+                if (isMobile) {
+                    // Mobile: full screen overlay
+                    console.log('Showing mobile member sidebar');
+                    memberSidebar.classList.remove('d-none');
+                    memberSidebar.style.display = 'flex !important';
+                    memberSidebar.style.position = 'fixed';
+                    memberSidebar.style.top = '0';
+                    memberSidebar.style.right = '0';
+                    memberSidebar.style.zIndex = '1060';
+                    memberSidebar.style.width = '100%';
+                    memberSidebar.style.height = '100vh';
+                    memberSidebar.style.height = '100dvh';
+                    console.log('Applied styles, current display:', memberSidebar.style.display);
+                } else {
+                    // Desktop: normal sidebar
+                    console.log('Showing desktop member sidebar');
+                    memberSidebar.style.display = 'flex';
+                }
+            } else {
+                console.log('member-sidebar element not found!');
+            }
+        }
+
+        function hideMemberSidebar() {
+            // Hide right sidebar and reset all styles
+            const memberSidebar = document.getElementById('member-sidebar');
+            if (memberSidebar) {
+                memberSidebar.classList.add('d-none');
+                memberSidebar.style.display = '';
+                memberSidebar.style.position = '';
+                memberSidebar.style.top = '';
+                memberSidebar.style.right = '';
+                memberSidebar.style.zIndex = '';
+                memberSidebar.style.width = '';
+                memberSidebar.style.height = '';
+            }
+        }
 
         // Add responsive back button to chat header (mobile only)
         if (isMobile) {
-            // Initially show sidebar on mobile
-            showSidebar();
+            // Show main content by default on mobile
+            hideSidebar();
         }
 
         // Update mobile chat header when chat is opened
@@ -723,6 +774,7 @@
             }
 
             if (isMobile) {
+                console.log('Creating mobile header for:', name);
                 // Mobile: Create and show mobile header
                 const desktopContent = chatHeader.querySelector('.chat-header-content');
                 if (desktopContent) {
@@ -737,10 +789,10 @@
                     : `<div class="rounded-circle bg-accent-light text-accent d-flex align-items-center justify-content-center fw-bold" style="width: 40px; height: 40px; font-size: 1rem;">${name[0]?.toUpperCase() || 'U'}</div>`;
 
                 mobileHeader.innerHTML = `
-                    <button class="mobile-back-btn btn btn-sm btn-outline-secondary me-3" onclick="window.showSidebar()">
+                    <button class="mobile-back-btn btn btn-sm btn-outline-secondary d-flex align-items-center justify-content-center me-3" onclick="window.hideSidebar()" style="width: 32px; height: 32px;">
                         <i class="fas fa-arrow-left"></i>
                     </button>
-                    <div class="mobile-profile-info d-flex align-items-center flex-grow-1">
+                    <div class="mobile-profile-info d-flex align-items-center flex-grow-1 cursor-pointer" onclick="window.showMemberSidebar()">
                         ${avatarHtml}
                         <div class="ms-3">
                             <div class="fw-bold text-dark">${name}</div>
@@ -826,7 +878,6 @@
             setActiveTab('tab-semua');
             welcomeView.classList.remove('d-none');
             hideChatView();
-            document.getElementById('main-view-title').innerText = 'Teman';
             document.getElementById('all-friends-view').classList.remove('d-none');
             document.getElementById('requests-view').classList.add('d-none');
             document.getElementById('search-view').classList.add('d-none');
@@ -844,7 +895,6 @@
             setActiveTab('tab-tertunda');
             welcomeView.classList.remove('d-none');
             hideChatView();
-            document.getElementById('main-view-title').innerText = 'Permintaan Pertemanan';
             document.getElementById('requests-view').classList.remove('d-none');
             document.getElementById('all-friends-view').classList.add('d-none');
             document.getElementById('search-view').classList.add('d-none');
@@ -854,7 +904,6 @@
             setActiveTab('tab-tambah');
             welcomeView.classList.remove('d-none');
             hideChatView();
-            document.getElementById('main-view-title').innerText = 'Tambah Teman';
             document.getElementById('search-view').classList.remove('d-none');
             document.getElementById('all-friends-view').classList.add('d-none');
             document.getElementById('requests-view').classList.add('d-none');
@@ -939,9 +988,13 @@
 
         // --- CHAT ---
         window.openChat = async function(id, name, avatar = '', bio = '', joinDate = 'Jan 01, 2026', mutualCount = 0, mutuals = []) {
+            console.log('openChat called for:', name, 'isMobile:', isMobile);
             currentFriendId = id;
             currentFriendName = name;
             currentFriendAvatar = avatar;
+            
+            // Hide welcome view and show chat view
+            welcomeView.classList.remove('d-flex');
             welcomeView.classList.add('d-none');
             showChatViewFn();
             chatInput.placeholder = `Kirim pesan ke @${name}`;
@@ -949,9 +1002,9 @@
             // Update mobile chat header with profile info
             updateMobileChatHeader(name, avatar, bio, joinDate, mutualCount, mutuals);
 
-            // On mobile, hide sidebar when opening chat
+            // On mobile, don't call hideSidebar since it would hide the chat we just opened
             if (isMobile) {
-                hideSidebar();
+                console.log('mobile mode - keeping chat view open');
             }
 
             // Highlight active friend in sidebar
