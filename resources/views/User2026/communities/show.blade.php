@@ -287,7 +287,7 @@
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <h5 class="fw-bold mb-0" style="color: #cb2786;">Jadwal Pertemuan & Latihan</h5>
                             @if($isCommunityAdmin)
-                                <button class="btn btn-sm btn-outline-primary px-3 rounded-pill" data-bs-toggle="modal" data-bs-target="#createAgendaModal">
+                                <button class="btn btn-sm btn-outline-primary px-3 rounded-pill" data-bs-toggle="modal" data-bs-target="#agendaTypeModal">
                                     <i class="fas fa-plus me-1"></i> Buat Agenda
                                 </button>
                             @endif
@@ -971,6 +971,52 @@
     .ig-modal-right { width: 100%; height: 55vh; }
 }
 </style>
+{{-- Agenda Type Selection Modal --}}
+<div class="modal fade" id="agendaTypeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-4">
+            <div class="modal-header border-0 pb-0 shadow-none p-4">
+                <h5 class="fw-bold mb-0">Pilih Tipe Agenda</h5>
+                <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="text-muted mb-4">Pilih jenis agenda yang ingin kamu buat:</p>
+                
+                <div class="d-grid gap-3">
+                    <button type="button" class="btn btn-outline-primary border-2 rounded-4 p-3 text-start" 
+                            data-bs-dismiss="modal" 
+                            data-bs-toggle="modal" 
+                            data-bs-target="#createAgendaModal">
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center me-3" 
+                                 style="width: 50px; height: 50px;">
+                                <i class="fas fa-calendar-day fs-5"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1">One Time</h6>
+                                <p class="small text-muted mb-0">Agenda sekali meeting, tanggal dan waktu spesifik</p>
+                            </div>
+                        </div>
+                    </button>
+                    
+                    <button type="button" class="btn btn-outline-secondary border-2 rounded-4 p-3 text-start" disabled>
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-secondary-subtle text-secondary d-flex align-items-center justify-content-center me-3" 
+                                 style="width: 50px; height: 50px;">
+                                <i class="fas fa-redo fs-5"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1">Berulang</h6>
+                                <p class="small text-muted mb-0">Agenda rutin (harian/mingguan/bulanan) - <em>Coming soon</em></p>
+                            </div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @if($isCommunityAdmin)
 {{-- Create Post Modal --}}
 <div class="modal fade" id="createPostModal" tabindex="-1" aria-hidden="true">
