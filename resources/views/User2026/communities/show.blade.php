@@ -303,12 +303,12 @@
                                 </li>
                                 <li class="nav-item" role="presentation">
                                     <button class="nav-link" id="recurring-agenda-tab" data-bs-toggle="tab" data-bs-target="#recurring-agenda" type="button" role="tab">
-                                        <i class="fas fa-redo me-2"></i>Agenda Berulang
+                                        <i class="fas fa-redo me-2"></i>Agenda Mingguan
                                     </button>
                                 </li>
                                 <li class="nav-item" role="presentation">
                                     <button class="nav-link" id="single-agenda-tab" data-bs-toggle="tab" data-bs-target="#single-agenda" type="button" role="tab">
-                                        <i class="fas fa-calendar-day me-2"></i>Agenda Satu Kali
+                                        <i class="fas fa-calendar-day me-2"></i>Agenda Harian
                                     </button>
                                 </li>
                             </ul>
@@ -324,72 +324,84 @@
                                     @endphp
 
                                     @forelse($allAgendas as $agenda)
-                                        <div class="col-md-6">
-                                            <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 agenda-card" 
-                                                 style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;"
-                                                 onclick="window.location.href='{{ route('user2026.komunitas.agenda.show', [$community->slug, $agenda->id]) }}'">
-                                                @if($agenda->image)
-                                                    <img src="{{ asset('storage/' . $agenda->image) }}" class="card-img-top" style="height: 150px; object-fit: cover;">
-                                                @else
-                                                    <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 150px;">
-                                                        <i class="fas fa-calendar-alt text-muted" style="font-size: 3rem;"></i>
-                                                    </div>
-                                                @endif
-                                                <div class="card-body p-4">
-                                                    <div class="badge {{ $agenda->is_recurring ? 'bg-success-subtle text-success' : 'bg-primary-subtle text-primary' }} mb-2 rounded-pill px-3">
-                                                        {{ $agenda->is_recurring ? 'Berulang' : 'Agenda' }}
-                                                    </div>
-                                                    <h6 class="fw-bold mb-3">{{ $agenda->title }}</h6>
-                                                    
-                                                    <div class="d-flex flex-column gap-2 mb-4">
-                                                        <div class="small text-muted d-flex align-items-center">
-                                                            <i class="fas fa-calendar-day me-2 text-primary"></i>
-                                                            {{ \Carbon\Carbon::parse($agenda->meet_date)->translatedFormat('d F Y, H:i') }}
+                                        @php
+                                            // Check if agenda should be visible based on auto upload days
+                                            $shouldShow = true;
+                                            if ($agenda->is_recurring && !is_null($agenda->auto_upload_days) && $agenda->auto_upload_days > 0) {
+                                                $daysUntilMeet = \Carbon\Carbon::parse($agenda->meet_date)->diffInDays(\Carbon\Carbon::now());
+                                                // Show if: days_until <= auto_upload_days OR agenda is today/in past
+                                                $shouldShow = $daysUntilMeet <= $agenda->auto_upload_days || $daysUntilMeet <= 0;
+                                            }
+                                        @endphp
+                                        
+                                        @if($shouldShow)
+                                            <div class="col-md-6">
+                                                <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 agenda-card" 
+                                                     style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;"
+                                                     onclick="window.location.href='{{ route('user2026.komunitas.agenda.show', [$community->slug, $agenda->id]) }}'">
+                                                    @if($agenda->image)
+                                                        <img src="{{ asset('storage/' . $agenda->image) }}" class="card-img-top" style="height: 150px; object-fit: cover;">
+                                                    @else
+                                                        <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 150px;">
+                                                            <i class="fas fa-calendar-alt text-muted" style="font-size: 3rem;"></i>
                                                         </div>
-                                                        <div class="small text-muted d-flex align-items-center">
-                                                            <i class="fas fa-clock me-2 text-primary"></i>
-                                                            {{ $agenda->meet_duration ?? 0 }} jam
+                                                    @endif
+                                                    <div class="card-body p-4">
+                                                        <div class="badge {{ $agenda->is_recurring ? 'bg-success-subtle text-success' : 'bg-primary-subtle text-primary' }} mb-2 rounded-pill px-3">
+                                                            {{ $agenda->is_recurring ? 'Mingguan' : 'Harian' }}
                                                         </div>
-                                                        <div class="small text-muted d-flex align-items-center">
-                                                            <i class="fas fa-map-marker-alt me-2 text-primary"></i>
-                                                            {{ $agenda->meet_location }}
-                                                        </div>
-                                                        <div class="small text-muted d-flex align-items-center">
-                                                            <i class="fas fa-users me-2 text-primary"></i>
-                                                            {{ $agenda->joins_count ?? 0 }} / {{ $agenda->meet_max_people }} Peserta
-                                                        </div>
-                                                        @if($agenda->meet_fee > 0)
-                                                        <div class="small text-muted d-flex align-items-center">
-                                                            <i class="fas fa-money-bill-wave me-2 text-primary"></i>
-                                                            Rp {{ number_format($agenda->meet_fee, 0, ',', '.') }}
-                                                        </div>
-                                                        @endif
-                                                        @if($agenda->meet_gender != 'all')
-                                                        <div class="small text-muted d-flex align-items-center">
-                                                            <i class="fas fa-venus-mars me-2 text-primary"></i>
-                                                            {{ $agenda->meet_gender == 'male' ? 'Pria' : 'Wanita' }}
-                                                        </div>
-                                                        @endif
-                                                        @if($agenda->meet_age_category != 'all')
-                                                        <div class="small text-muted d-flex align-items-center">
-                                                            <i class="fas fa-user-tag me-2 text-primary"></i>
-                                                            {{ ucfirst($agenda->meet_age_category) }}
-                                                            @if($agenda->meet_age_category == 'junior') (< 18 th)
-                                                            @elseif($agenda->meet_age_category == 'adult') (18-55 th)
-                                                            @elseif($agenda->meet_age_category == 'senior') (> 55 th)
+                                                        <h6 class="fw-bold mb-3">{{ $agenda->title }}</h6>
+                                                        
+                                                        <div class="d-flex flex-column gap-2 mb-4">
+                                                            <div class="small text-muted d-flex align-items-center">
+                                                                <i class="fas fa-calendar-day me-2 text-primary"></i>
+                                                                {{ \Carbon\Carbon::parse($agenda->meet_date)->translatedFormat('d F Y, H:i') }}
+                                                            </div>
+                                                            <div class="small text-muted d-flex align-items-center">
+                                                                <i class="fas fa-clock me-2 text-primary"></i>
+                                                                {{ $agenda->meet_duration ?? 0 }} jam
+                                                            </div>
+                                                            <div class="small text-muted d-flex align-items-center">
+                                                                <i class="fas fa-map-marker-alt me-2 text-primary"></i>
+                                                                {{ $agenda->meet_location }}
+                                                            </div>
+                                                            <div class="small text-muted d-flex align-items-center">
+                                                                <i class="fas fa-users me-2 text-primary"></i>
+                                                                {{ $agenda->joins_count ?? 0 }} / {{ $agenda->meet_max_people }} Peserta
+                                                            </div>
+                                                            @if($agenda->meet_fee > 0)
+                                                            <div class="small text-muted d-flex align-items-center">
+                                                                <i class="fas fa-money-bill-wave me-2 text-primary"></i>
+                                                                Rp {{ number_format($agenda->meet_fee, 0, ',', '.') }}
+                                                            </div>
+                                                            @endif
+                                                            @if($agenda->meet_gender != 'all')
+                                                            <div class="small text-muted d-flex align-items-center">
+                                                                <i class="fas fa-venus-mars me-2 text-primary"></i>
+                                                                {{ $agenda->meet_gender == 'male' ? 'Pria' : 'Wanita' }}
+                                                            </div>
+                                                            @endif
+                                                            @if($agenda->meet_age_category != 'all')
+                                                            <div class="small text-muted d-flex align-items-center">
+                                                                <i class="fas fa-user-tag me-2 text-primary"></i>
+                                                                {{ ucfirst($agenda->meet_age_category) }}
+                                                                @if($agenda->meet_age_category == 'junior') (< 18 th)
+                                                                @elseif($agenda->meet_age_category == 'adult') (18-55 th)
+                                                                @elseif($agenda->meet_age_category == 'senior') (> 55 th)
+                                                                @endif
+                                                            </div>
+                                                            @endif
+                                                            @if($agenda->content)
+                                                            <div class="small text-muted d-flex align-items-start">
+                                                                <i class="fas fa-sticky-note me-2 text-primary mt-1"></i>
+                                                                <span>{{ Str::limit($agenda->content, 100) }}</span>
+                                                            </div>
                                                             @endif
                                                         </div>
-                                                        @endif
-                                                        @if($agenda->content)
-                                                        <div class="small text-muted d-flex align-items-start">
-                                                            <i class="fas fa-sticky-note me-2 text-primary mt-1"></i>
-                                                            <span>{{ Str::limit($agenda->content, 100) }}</span>
-                                                        </div>
-                                                        @endif
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
+                                        @endif
                                     @empty
                                         <div class="col-12">
                                             <div class="alert bg-light border-0 text-center py-5 rounded-4">
@@ -401,7 +413,7 @@
                                     @endforelse
                                 </div>
 
-                                <!-- Tab Agenda Berulang -->
+                                <!-- Tab Agenda Mingguan -->
                                 <div class="tab-pane fade" id="recurring-agenda" role="tabpanel">
                                     @php
                                         $recurringAgendas = $community->feeds->filter(function($f) {
@@ -410,62 +422,74 @@
                                     @endphp
 
                                     @forelse($recurringAgendas as $agenda)
-                                        <div class="col-md-6">
-                                            <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 agenda-card" 
-                                                 style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;"
-                                                 onclick="window.location.href='{{ route('user2026.komunitas.agenda.show', [$community->slug, $agenda->id]) }}'">
-                                                @if($agenda->image)
-                                                    <img src="{{ asset('storage/' . $agenda->image) }}" class="card-img-top" style="height: 150px; object-fit: cover;">
-                                                @else
-                                                    <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 150px;">
-                                                        <i class="fas fa-redo text-success" style="font-size: 3rem;"></i>
-                                                    </div>
-                                                @endif
-                                                <div class="card-body p-4">
-                                                    <div class="badge bg-success-subtle text-success mb-2 rounded-pill px-3">
-                                                        <i class="fas fa-redo me-1"></i>Berulang
-                                                    </div>
-                                                    <h6 class="fw-bold mb-3">{{ $agenda->title }}</h6>
-                                                    
-                                                    <div class="d-flex flex-column gap-2 mb-4">
-                                                        <div class="small text-muted d-flex align-items-center">
-                                                            <i class="fas fa-calendar-day me-2 text-success"></i>
-                                                            {{ \Carbon\Carbon::parse($agenda->meet_date)->translatedFormat('d F Y, H:i') }}
+                                        @php
+                                            // Check if agenda should be visible based on auto upload days
+                                            $shouldShow = true;
+                                            if ($agenda->is_recurring && !is_null($agenda->auto_upload_days) && $agenda->auto_upload_days > 0) {
+                                                $daysUntilMeet = \Carbon\Carbon::parse($agenda->meet_date)->diffInDays(\Carbon\Carbon::now());
+                                                // Show if: days_until <= auto_upload_days OR agenda is today/in past
+                                                $shouldShow = $daysUntilMeet <= $agenda->auto_upload_days || $daysUntilMeet <= 0;
+                                            }
+                                        @endphp
+                                        
+                                        @if($shouldShow)
+                                            <div class="col-md-6">
+                                                <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 agenda-card" 
+                                                     style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;"
+                                                     onclick="window.location.href='{{ route('user2026.komunitas.agenda.show', [$community->slug, $agenda->id]) }}'">
+                                                    @if($agenda->image)
+                                                        <img src="{{ asset('storage/' . $agenda->image) }}" class="card-img-top" style="height: 150px; object-fit: cover;">
+                                                    @else
+                                                        <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 150px;">
+                                                            <i class="fas fa-redo text-success" style="font-size: 3rem;"></i>
                                                         </div>
-                                                        <div class="small text-muted d-flex align-items-center">
-                                                            <i class="fas fa-redo me-2 text-success"></i>
-                                                            @if($agenda->recurrence_pattern == 'weekly')
-                                                                Setiap {{ \Carbon\Carbon::parse($agenda->meet_date)->translatedFormat('l') }}
-                                                            @endif
+                                                    @endif
+                                                    <div class="card-body p-4">
+                                                        <div class="badge bg-success-subtle text-success mb-2 rounded-pill px-3">
+                                                            <i class="fas fa-redo me-1"></i>Mingguan
                                                         </div>
-                                                        <div class="small text-muted d-flex align-items-center">
-                                                            <i class="fas fa-clock me-2 text-success"></i>
-                                                            {{ $agenda->meet_duration ?? 0 }} jam
-                                                        </div>
-                                                        <div class="small text-muted d-flex align-items-center">
-                                                            <i class="fas fa-map-marker-alt me-2 text-success"></i>
-                                                            {{ $agenda->meet_location }}
-                                                        </div>
-                                                        <div class="small text-muted d-flex align-items-center">
-                                                            <i class="fas fa-users me-2 text-success"></i>
-                                                            {{ $agenda->joins_count ?? 0 }} / {{ $agenda->meet_max_people }} Peserta
+                                                        <h6 class="fw-bold mb-3">{{ $agenda->title }}</h6>
+                                                        
+                                                        <div class="d-flex flex-column gap-2 mb-4">
+                                                            <div class="small text-muted d-flex align-items-center">
+                                                                <i class="fas fa-calendar-day me-2 text-success"></i>
+                                                                {{ \Carbon\Carbon::parse($agenda->meet_date)->translatedFormat('d F Y, H:i') }}
+                                                            </div>
+                                                            <div class="small text-muted d-flex align-items-center">
+                                                                <i class="fas fa-redo me-2 text-success"></i>
+                                                                @if($agenda->recurrence_pattern == 'weekly')
+                                                                    Setiap {{ \Carbon\Carbon::parse($agenda->meet_date)->translatedFormat('l') }}
+                                                                @endif
+                                                            </div>
+                                                            <div class="small text-muted d-flex align-items-center">
+                                                                <i class="fas fa-clock me-2 text-success"></i>
+                                                                {{ $agenda->meet_duration ?? 0 }} jam
+                                                            </div>
+                                                            <div class="small text-muted d-flex align-items-center">
+                                                                <i class="fas fa-map-marker-alt me-2 text-success"></i>
+                                                                {{ $agenda->meet_location }}
+                                                            </div>
+                                                            <div class="small text-muted d-flex align-items-center">
+                                                                <i class="fas fa-users me-2 text-success"></i>
+                                                                {{ $agenda->joins_count ?? 0 }} / {{ $agenda->meet_max_people }} Peserta
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
+                                        @endif
                                     @empty
                                         <div class="col-12">
                                             <div class="alert bg-light border-0 text-center py-5 rounded-4">
                                                 <i class="fas fa-redo fs-2 mb-3 text-muted"></i>
-                                                <h6 class="fw-bold">Belum ada agenda berulang</h6>
-                                                <p class="text-muted small mb-0">Buat agenda berulang untuk jadwal rutin mingguan.</p>
+                                                <h6 class="fw-bold">Belum ada agenda mingguan</h6>
+                                                <p class="text-muted small mb-0">Buat agenda mingguan untuk jadwal rutin.</p>
                                             </div>
                                         </div>
                                     @endforelse
                                 </div>
 
-                                <!-- Tab Agenda Satu Kali -->
+                                <!-- Tab Agenda Harian -->
                                 <div class="tab-pane fade" id="single-agenda" role="tabpanel">
                                     @php
                                         $singleAgendas = $community->feeds->filter(function($f) {
@@ -474,50 +498,57 @@
                                     @endphp
 
                                     @forelse($singleAgendas as $agenda)
-                                        <div class="col-md-6">
-                                            <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 agenda-card" 
-                                                 style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;"
-                                                 onclick="window.location.href='{{ route('user2026.komunitas.agenda.show', [$community->slug, $agenda->id]) }}'">
-                                                @if($agenda->image)
-                                                    <img src="{{ asset('storage/' . $agenda->image) }}" class="card-img-top" style="height: 150px; object-fit: cover;">
-                                                @else
-                                                    <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 150px;">
-                                                        <i class="fas fa-calendar-day text-primary" style="font-size: 3rem;"></i>
-                                                    </div>
-                                                @endif
-                                                <div class="card-body p-4">
-                                                    <div class="badge bg-primary-subtle text-primary mb-2 rounded-pill px-3">
-                                                        <i class="fas fa-calendar-day me-1"></i>Satu Kali
-                                                    </div>
-                                                    <h6 class="fw-bold mb-3">{{ $agenda->title }}</h6>
-                                                    
-                                                    <div class="d-flex flex-column gap-2 mb-4">
-                                                        <div class="small text-muted d-flex align-items-center">
-                                                            <i class="fas fa-calendar-day me-2 text-primary"></i>
-                                                            {{ \Carbon\Carbon::parse($agenda->meet_date)->translatedFormat('d F Y, H:i') }}
+                                        @php
+                                            // For single agenda, always show (no auto upload logic)
+                                            $shouldShow = true;
+                                        @endphp
+                                        
+                                        @if($shouldShow)
+                                            <div class="col-md-6">
+                                                <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 agenda-card" 
+                                                     style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;"
+                                                     onclick="window.location.href='{{ route('user2026.komunitas.agenda.show', [$community->slug, $agenda->id]) }}'">
+                                                    @if($agenda->image)
+                                                        <img src="{{ asset('storage/' . $agenda->image) }}" class="card-img-top" style="height: 150px; object-fit: cover;">
+                                                    @else
+                                                        <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 150px;">
+                                                            <i class="fas fa-calendar-day text-primary" style="font-size: 3rem;"></i>
                                                         </div>
-                                                        <div class="small text-muted d-flex align-items-center">
-                                                            <i class="fas fa-clock me-2 text-primary"></i>
-                                                            {{ $agenda->meet_duration ?? 0 }} jam
+                                                    @endif
+                                                    <div class="card-body p-4">
+                                                        <div class="badge bg-primary-subtle text-primary mb-2 rounded-pill px-3">
+                                                            <i class="fas fa-calendar-day me-1"></i>Harian
                                                         </div>
-                                                        <div class="small text-muted d-flex align-items-center">
-                                                            <i class="fas fa-map-marker-alt me-2 text-primary"></i>
-                                                            {{ $agenda->meet_location }}
-                                                        </div>
-                                                        <div class="small text-muted d-flex align-items-center">
-                                                            <i class="fas fa-users me-2 text-primary"></i>
-                                                            {{ $agenda->joins_count ?? 0 }} / {{ $agenda->meet_max_people }} Peserta
+                                                        <h6 class="fw-bold mb-3">{{ $agenda->title }}</h6>
+                                                        
+                                                        <div class="d-flex flex-column gap-2 mb-4">
+                                                            <div class="small text-muted d-flex align-items-center">
+                                                                <i class="fas fa-calendar-day me-2 text-primary"></i>
+                                                                {{ \Carbon\Carbon::parse($agenda->meet_date)->translatedFormat('d F Y, H:i') }}
+                                                            </div>
+                                                            <div class="small text-muted d-flex align-items-center">
+                                                                <i class="fas fa-clock me-2 text-primary"></i>
+                                                                {{ $agenda->meet_duration ?? 0 }} jam
+                                                            </div>
+                                                            <div class="small text-muted d-flex align-items-center">
+                                                                <i class="fas fa-map-marker-alt me-2 text-primary"></i>
+                                                                {{ $agenda->meet_location }}
+                                                            </div>
+                                                            <div class="small text-muted d-flex align-items-center">
+                                                                <i class="fas fa-users me-2 text-primary"></i>
+                                                                {{ $agenda->joins_count ?? 0 }} / {{ $agenda->meet_max_people }} Peserta
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
+                                        @endif
                                     @empty
                                         <div class="col-12">
                                             <div class="alert bg-light border-0 text-center py-5 rounded-4">
                                                 <i class="fas fa-calendar-day fs-2 mb-3 text-muted"></i>
-                                                <h6 class="fw-bold">Belum ada agenda satu kali</h6>
-                                                <p class="text-muted small mb-0">Buat agenda satu kali untuk jadwal khusus.</p>
+                                                <h6 class="fw-bold">Belum ada agenda harian</h6>
+                                                <p class="text-muted small mb-0">Buat agenda harian untuk jadwal khusus.</p>
                                             </div>
                                         </div>
                                     @endforelse
@@ -1167,7 +1198,7 @@
                                 <i class="fas fa-calendar-day fs-5"></i>
                             </div>
                             <div>
-                                <h6 class="fw-bold mb-1">One Time</h6>
+                                <h6 class="fw-bold mb-1">Harian</h6>
                                 <p class="small text-muted mb-0">Agenda sekali meeting, tanggal dan waktu spesifik</p>
                             </div>
                         </div>
@@ -1180,8 +1211,8 @@
                                 <i class="fas fa-redo fs-5"></i>
                             </div>
                             <div>
-                                <h6 class="fw-bold mb-1">Berulang</h6>
-                                <p class="small text-muted mb-0">Agenda rutin (harian/mingguan/bulanan)</p>
+                                <h6 class="fw-bold mb-1">Mingguan</h6>
+                                <p class="small text-muted mb-0">Agenda rutin mingguan dengan auto upload</p>
                             </div>
                         </div>
                     </button>

@@ -35,6 +35,7 @@ class Feed extends Model
         'recurrence_day_of_month',
         'recurrence_count',
         'meet_time',
+        'auto_upload_days',
     ];
 
     protected $casts = [

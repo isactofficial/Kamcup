@@ -23,6 +23,9 @@ class CommunityController extends Controller
     /*Display the specified community.*/
     public function show(Community $community)
     {
+        // Check if we need to extend recurring agendas
+        $this->extendRecurringAgendaIfNeeded($community);
+        
         $userId = Auth::id();
         $community->load(['creator', 'members', 'feeds' => function($q) use ($userId) {
             $q->with(['user.profile'])
@@ -403,7 +406,7 @@ class CommunityController extends Controller
     }
 
     /**
-     * Create weekly recurring agendas
+     * Create weekly recurring agendas (lazy loading - 3 months ahead)
      */
     private function createWeeklyRecurringAgenda($request, $community)
     {
@@ -414,8 +417,8 @@ class CommunityController extends Controller
         $createdCount = 0;
         $currentDate = now()->copy();
         
-        // Calculate end date based on auto upload setting
-        $endDate = now()->copy()->addDays($autoUploadDays * 8); // 8 weeks = ~2 months
+        // Create agendas for 3 months in advance (more manageable)
+        $endDate = now()->copy()->addMonths(3);
         
         while ($currentDate <= $endDate) {
             $dayOfWeek = $currentDate->dayOfWeek; // 0=Sunday, 1=Monday, ..., 6=Saturday
@@ -424,8 +427,8 @@ class CommunityController extends Controller
             if ($dayOfWeek == $recurrenceDay) {
                 $meetDateTime = $currentDate->copy()->setTimeFromTimeString($meetTime);
                 
-                // Only create if in future and within auto upload window
-                if ($meetDateTime > now() && $meetDateTime->diffInDays(now()) >= $autoUploadDays) {
+                // Only create if the datetime is in the future
+                if ($meetDateTime > now()) {
                     $feedData = [
                         'user_id' => Auth::id(),
                         'title' => $request->title,
@@ -443,6 +446,7 @@ class CommunityController extends Controller
                         'recurrence_pattern' => 'weekly',
                         'recurrence_days' => $recurrenceDay, // single day, not array
                         'recurrence_end_date' => $endDate,
+                        'auto_upload_days' => $autoUploadDays, // store auto upload setting
                         'image' => $request->hasFile('image') ? $request->file('image')->store('feeds', 'public') : null,
                     ];
                     
@@ -461,8 +465,8 @@ class CommunityController extends Controller
             
             $currentDate->addDay();
             
-            // Prevent infinite loop
-            if ($createdCount >= 100) {
+            // Prevent infinite loop (max 12 agendas for 3 months)
+            if ($createdCount >= 12) {
                 break;
             }
         }
@@ -472,6 +476,88 @@ class CommunityController extends Controller
             'recurrence_day' => $recurrenceDay,
             'auto_upload_days' => $autoUploadDays,
             'end_date' => $endDate
+        ]);
+    }
+
+    /**
+     * Extend recurring agenda when needed
+     */
+    private function extendRecurringAgendaIfNeeded($community)
+    {
+        // Check if we need to extend recurring agendas
+        $visibleDate = now()->copy()->addMonths(1);
+        
+        // Find the latest recurring agenda
+        $latestRecurring = $community->feeds()
+            ->where('is_recurring', true)
+            ->orderBy('meet_date', 'desc')
+            ->first();
+        
+        if ($latestRecurring && $latestRecurring->meet_date < $visibleDate) {
+            // Extend agenda for 3 more months
+            $this->extendAgenda($latestRecurring, $visibleDate->copy()->addMonths(3));
+        }
+    }
+
+    /**
+     * Extend agenda with new dates
+     */
+    private function extendAgenda($baseAgenda, $endDate)
+    {
+        $recurrenceDay = $baseAgenda->recurrence_days;
+        $meetTime = $baseAgenda->meet_time;
+        $autoUploadDays = $baseAgenda->auto_upload_days;
+        
+        $createdCount = 0;
+        $currentDate = $baseAgenda->meet_date->copy()->addWeek(); // Start from next week
+        
+        while ($currentDate <= $endDate) {
+            $dayOfWeek = $currentDate->dayOfWeek;
+            $dayOfWeek = $dayOfWeek == 0 ? 7 : $dayOfWeek;
+            
+            if ($dayOfWeek == $recurrenceDay) {
+                $meetDateTime = $currentDate->copy()->setTimeFromTimeString($meetTime);
+                
+                if ($meetDateTime > now()) {
+                    $feedData = [
+                        'user_id' => $baseAgenda->user_id,
+                        'title' => $baseAgenda->title,
+                        'content' => $baseAgenda->content,
+                        'meet_date' => $meetDateTime,
+                        'meet_time' => $meetTime,
+                        'meet_duration' => $baseAgenda->meet_duration,
+                        'meet_location' => $baseAgenda->meet_location,
+                        'meet_max_people' => $baseAgenda->meet_max_people,
+                        'meet_fee' => $baseAgenda->meet_fee,
+                        'meet_gender' => $baseAgenda->meet_gender,
+                        'meet_age_category' => $baseAgenda->meet_age_category,
+                        'meet_description' => $baseAgenda->content,
+                        'is_recurring' => true,
+                        'recurrence_pattern' => 'weekly',
+                        'recurrence_days' => $recurrenceDay,
+                        'recurrence_end_date' => $endDate,
+                        'auto_upload_days' => $autoUploadDays,
+                        'image' => $baseAgenda->image,
+                    ];
+                    
+                    $feed = $baseAgenda->community->feeds()->create($feedData);
+                    $feed->joinedBy()->attach($baseAgenda->user_id, ['joined_at' => now()]);
+                    
+                    $createdCount++;
+                }
+            }
+            
+            $currentDate->addDay();
+            
+            if ($createdCount >= 12) {
+                break;
+            }
+        }
+        
+        \Log::info('Recurring agenda extended', [
+            'base_agenda_id' => $baseAgenda->id,
+            'created_count' => $createdCount,
+            'new_end_date' => $endDate
         ]);
     }
 
