@@ -302,9 +302,15 @@
 
                             @forelse($agendas as $agenda)
                                 <div class="col-md-6">
-                                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+                                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 agenda-card" 
+                                         style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;"
+                                         onclick="window.location.href='{{ route('user2026.komunitas.agenda.show', [$community->slug, $agenda->id]) }}'">
                                         @if($agenda->image)
                                             <img src="{{ asset('storage/' . $agenda->image) }}" class="card-img-top" style="height: 150px; object-fit: cover;">
+                                        @else
+                                            <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 150px;">
+                                                <i class="fas fa-calendar-alt text-muted" style="font-size: 3rem;"></i>
+                                            </div>
                                         @endif
                                         <div class="card-body p-4">
                                             <div class="badge bg-primary-subtle text-primary mb-2 rounded-pill px-3">Agenda</div>
@@ -359,7 +365,7 @@
 
                                             <div class="d-grid mt-auto pt-3">
                                                 <button 
-                                                    onclick="toggleJoinMeet(this, {{ $agenda->id }})" 
+                                                    onclick="event.stopPropagation(); toggleJoinMeet(this, {{ $agenda->id }})" 
                                                     class="btn rounded-pill btn-sm fw-bold {{ $agenda->current_user_joined ? 'btn-danger' : 'btn-primary' }}"
                                                     data-joined="{{ $agenda->current_user_joined ? '1' : '0' }}"
                                                 >
@@ -1106,7 +1112,9 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label small fw-bold">Tanggal & Waktu</label>
-                            <input type="datetime-local" name="meet_date" class="form-control rounded-3 border-light bg-light shadow-none" required>
+                            <input type="datetime-local" name="meet_date" class="form-control rounded-3 border-light bg-light shadow-none" 
+                                   min="{{ now()->addMinutes(30)->format('Y-m-d\TH:i') }}" required>
+                            <div class="form-text small">Minimal 30 menit dari sekarang</div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label small fw-bold">Durasi (Jam)</label>
@@ -1952,6 +1960,17 @@
         resetReply();
     });
 </script>
+
+<style>
+.agenda-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 97, 122, 0.15) !important;
+}
+
+.agenda-card:hover .btn {
+    transform: scale(1.05);
+}
+</style>
 @endpush
 
 @endsection

@@ -203,6 +203,7 @@ Route::middleware(['auth'])->group(function () {
 });
     Route::get('/user/komunitas/buat', [App\Http\Controllers\CommunityController::class, 'create'])->name('user2026.komunitas.create');
     Route::get('/user/komunitas/{community:slug}', [App\Http\Controllers\CommunityController::class, 'show'])->name('user2026.komunitas.show');
+    Route::get('/user/komunitas/{community:slug}/agenda/{feed}', [App\Http\Controllers\CommunityController::class, 'showAgenda'])->name('user2026.komunitas.agenda.show');
     Route::get('/user/komunitas/{community:slug}/messages', [App\Http\Controllers\CommunityController::class, 'getMessages'])->name('user2026.komunitas.messages');
     Route::post('/user/komunitas/{community:slug}/messages', [App\Http\Controllers\CommunityController::class, 'sendMessage'])->name('user2026.komunitas.messages.store');
     Route::post('/user/komunitas/{community:slug}/report', [App\Http\Controllers\CommunityController::class, 'report'])->name('user2026.komunitas.report');

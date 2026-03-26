@@ -226,46 +226,127 @@ class CommunityController extends Controller
     }
 
     /**
+     * Show agenda detail page.
+     */
+    public function showAgenda(Community $community, Feed $feed)
+    {
+        // Verify that this feed belongs to the community
+        if ($feed->community_id !== $community->id) {
+            abort(404);
+        }
+
+        // Verify that this is actually an agenda (has meet_date)
+        if (!$feed->meet_date) {
+            abort(404);
+        }
+
+        $userId = Auth::id();
+        
+        // Load agenda with relationships
+        $feed->load([
+            'user.profile',
+            'community',
+            'joinedBy' => function($q) use ($userId) {
+                $q->with('profile')->latest();
+            },
+            'comments' => function($q) use ($userId) {
+                $q->with(['user.profile', 'replies.user.profile'])
+                  ->whereNull('parent_id')
+                  ->latest();
+            }
+        ]);
+
+        // Check if user is member and permissions
+        $userMember = $community->members()->where('user_id', $userId)->first();
+        $isJoined = $userMember && $userMember->pivot->status === 'approved';
+        $isCommunityAdmin = ($userMember && $userMember->pivot->role === 'admin') || $community->user_id === $userId;
+        
+        // Load current user status for this agenda
+        $feed->current_user_joined = $feed->joinedBy()->where('user_id', $userId)->exists();
+        $feed->joins_count = $feed->joinedBy()->count();
+
+        return view('User2026.communities.agenda-detail', compact('community', 'feed', 'isJoined', 'isCommunityAdmin'));
+    }
+
+    /**
      * Store a new agenda (meet) for the community.
      */
     public function storeAgenda(Request $request, Community $community)
     {
+        // Debug logging
+        \Log::info('storeAgenda called', [
+            'user_id' => Auth::id(),
+            'community_id' => $community->id,
+            'request_data' => $request->all()
+        ]);
+
         $userMember = $community->members()->where('user_id', Auth::id())->first();
         $isCommunityAdmin = ($userMember && $userMember->pivot->role === 'admin') || $community->user_id === Auth::id();
+
+        \Log::info('Permission check', [
+            'isCommunityAdmin' => $isCommunityAdmin,
+            'userMember' => $userMember ? $userMember->toArray() : null,
+            'community_creator_id' => $community->user_id
+        ]);
 
         if (!$isCommunityAdmin) {
             return redirect()->back()->with('error', 'Hanya admin komunitas yang dapat membuat agenda.');
         }
 
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'content' => 'nullable|string',
-            'meet_date' => 'required|date|after:now',
-            'meet_duration' => 'required|numeric|min:0.5|max:24',
-            'meet_location' => 'required|string|max:255',
-            'meet_max_people' => 'required|integer|min:2|max:1000',
-            'meet_fee' => 'required|numeric|min:0',
-            'meet_gender' => 'required|in:all,male,female',
-            'meet_age_category' => 'required|in:all,junior,adult,senior',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-        ]);
+        try {
+            $request->validate([
+                'title' => 'required|string|max:255',
+                'content' => 'nullable|string',
+                'meet_date' => 'required|date|after_or_equal:now',
+                'meet_duration' => 'required|numeric|min:0.5|max:24',
+                'meet_location' => 'required|string|max:255',
+                'meet_max_people' => 'required|integer|min:2|max:1000',
+                'meet_fee' => 'required|numeric|min:0',
+                'meet_gender' => 'required|in:all,male,female',
+                'meet_age_category' => 'required|in:all,junior,adult,senior',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            ], [
+                'meet_date.after_or_equal' => 'Tanggal dan waktu tidak boleh kurang dari waktu sekarang.',
+                'meet_duration.min' => 'Durasi minimal 0.5 jam.',
+                'meet_duration.max' => 'Durasi maksimal 24 jam.',
+                'meet_max_people.min' => 'Jumlah peserta minimal 2 orang.',
+                'meet_max_people.max' => 'Jumlah peserta maksimal 1000 orang.',
+            ]);
 
-        $community->feeds()->create([
-            'user_id' => Auth::id(),
-            'title' => $request->title,
-            'content' => $request->content,
-            'meet_date' => $request->meet_date,
-            'meet_duration' => $request->meet_duration,
-            'meet_location' => $request->meet_location,
-            'meet_max_people' => $request->meet_max_people,
-            'meet_fee' => $request->meet_fee,
-            'meet_gender' => $request->meet_gender,
-            'meet_age_category' => $request->meet_age_category,
-            'meet_description' => $request->content, // backward compatibility
-            'image' => $request->hasFile('image') ? $request->file('image')->store('feeds', 'public') : null,
-        ]);
+            \Log::info('Validation passed');
 
-        return redirect()->back()->with('success', 'Agenda komunitas berhasil dibuat!');
+            $feedData = [
+                'user_id' => Auth::id(),
+                'title' => $request->title,
+                'content' => $request->content,
+                'meet_date' => $request->meet_date,
+                'meet_duration' => $request->meet_duration,
+                'meet_location' => $request->meet_location,
+                'meet_max_people' => $request->meet_max_people,
+                'meet_fee' => $request->meet_fee,
+                'meet_gender' => $request->meet_gender,
+                'meet_age_category' => $request->meet_age_category,
+                'meet_description' => $request->content, // backward compatibility
+                'image' => $request->hasFile('image') ? $request->file('image')->store('feeds', 'public') : null,
+            ];
+
+            \Log::info('Creating feed with data', $feedData);
+
+            $feed = $community->feeds()->create($feedData);
+
+            \Log::info('Feed created successfully', ['feed_id' => $feed->id]);
+
+            return redirect()->back()->with('success', 'Agenda komunitas berhasil dibuat!');
+        } catch (\Exception $e) {
+            \Log::error('Error creating agenda', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return redirect()->back()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage())
+                ->withInput();
+        }
     }
 
     /**
