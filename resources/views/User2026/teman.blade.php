@@ -374,21 +374,129 @@
     }
     .btn-action:hover { transform: scale(1.1); }
 
-    /* Messages */
-    #chat-box {
+    /* ===================== CHAT LAYOUT FIX ===================== */
+    /* Main chat area harus full height dan flex column */
+    .main-chat-area {
         display: flex;
         flex-direction: column;
-        justify-content: flex-end;
-        overflow-y: auto;
-        min-height: 0;
+        height: 100vh;
+        overflow: hidden;
     }
 
+    /* Chat view harus flex column dan mengisi sisa ruang */
+    #chat-view {
+        display: none;
+        flex-direction: column;
+        height: 100%;
+        overflow: hidden;
+    }
+    #chat-view.chat-view-visible {
+        display: flex !important;
+    }
+    #chat-view.chat-view-hidden {
+        display: none !important;
+    }
+
+    /* Chat box — area pesan yang bisa di-scroll */
+    #chat-box {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        overflow-x: hidden;
+        display: flex;
+        flex-direction: column;
+        padding: 16px;
+        min-height: 0; /* PENTING: tanpa ini flex child tidak bisa scroll */
+    }
+
+    #chat-messages-inner {
+        margin-top: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    /* Chat input wrapper — selalu di bawah */
+    .chat-input-wrapper {
+        flex-shrink: 0;
+        position: relative;
+    }
+    /* =========================================================== */
+
     .chat-msg-container {
-        display: flex; gap: 12px; padding: 8px 0;
+        display: flex; gap: 12px; padding: 6px 0;
     }
     .chat-msg-author { font-weight: 700; color: #333; margin-right: 8px; }
     .chat-msg-time { font-size: 0.7rem; color: #999; }
-    .chat-msg-text { color: #444; font-size: 0.95rem; }
+    .chat-msg-text { color: #444; font-size: 0.95rem; line-height: 1.5; }
+
+    /* Reply thread style (Discord-like) */
+    .reply-thread {
+        background: #f0f4f8;
+        border-left: 3px solid var(--teman-accent);
+        border-radius: 6px;
+        padding: 6px 10px;
+        margin-bottom: 6px;
+        font-size: 0.8rem;
+        color: #666;
+        cursor: pointer;
+        max-width: 100%;
+        overflow: hidden;
+    }
+    .reply-thread:hover { background: #e8eef3; }
+    .reply-thread .reply-author { font-weight: 700; color: var(--teman-accent); margin-right: 6px; }
+    .reply-thread .reply-text { color: #555; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Context menu untuk reply */
+    .chat-context-menu {
+        position: fixed;
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 10px;
+        padding: 6px 0;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        z-index: 9999;
+        min-width: 160px;
+    }
+    .chat-context-menu-item {
+        padding: 8px 16px;
+        cursor: pointer;
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: background 0.15s;
+    }
+    .chat-context-menu-item:hover { background: #f8f9fa; }
+
+    /* Reply preview bar (di atas input) */
+    .reply-preview-bar {
+        background: #f0f4f8;
+        border-left: 3px solid var(--teman-accent);
+        border-radius: 6px;
+        padding: 8px 12px;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 0.82rem;
+    }
+    .reply-preview-bar .reply-preview-text {
+        color: #555;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        flex: 1;
+    }
+    .reply-preview-bar .btn-cancel-reply {
+        background: none;
+        border: none;
+        color: #999;
+        cursor: pointer;
+        padding: 0 4px;
+        font-size: 1rem;
+        line-height: 1;
+    }
+    .reply-preview-bar .btn-cancel-reply:hover { color: #333; }
 
     .custom-scrollbar::-webkit-scrollbar { width: 6px; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 10px; }
@@ -397,9 +505,9 @@
     .cursor-pointer { cursor: pointer; }
     .transition-all { transition: all 0.2s; }
 
-    /* Chat view toggle */
-    #chat-view.chat-view-hidden { display: none !important; pointer-events: none; }
-    #chat-view.chat-view-visible { display: flex !important; }
+    /* Animate */
+    .animate-fade-in { animation: fadeIn 0.2s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
     /* Responsive Design */
     @media (max-width: 1200px) {
@@ -430,7 +538,6 @@
 
     @media (max-width: 768px) {
         .friends-app-container {
-            grid-template-columns: 1fr !important;
             height: 100vh !important;
             height: 100dvh !important;
         }
@@ -463,6 +570,7 @@
             top: 0 !important;
             z-index: 100 !important;
             display: flex !important;
+            border-bottom: 1px solid #e9ecef;
         }
 
         .mobile-profile-info .fw-bold {
@@ -1456,6 +1564,377 @@
             `;
             container.appendChild(item);
         }
+
+        // --- REPLY FUNCTIONALITY ---
+        let currentReplyMessageId = null;
+        let currentReplyMessage = null;
+        let contextMenuEl = null;
+
+        function getOrCreateContextMenu() {
+            if (!contextMenuEl) {
+                contextMenuEl = document.createElement('div');
+                contextMenuEl.className = 'chat-context-menu';
+                contextMenuEl.id = 'chat-context-menu';
+                document.body.appendChild(contextMenuEl);
+            }
+            return contextMenuEl;
+        }
+
+        function hideContextMenu() {
+            if (contextMenuEl) contextMenuEl.style.display = 'none';
+        }
+
+        document.addEventListener('click', function (e) {
+            if (contextMenuEl && !contextMenuEl.contains(e.target)) hideContextMenu();
+        });
+
+        window.showReplyContextMenu = function (e, m) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const menu = getOrCreateContextMenu();
+            menu.innerHTML = `
+                <div class="chat-context-menu-item" id="ctx-reply-btn">
+                    <i class="fas fa-reply text-accent"></i> Balas Pesan
+                </div>`;
+            menu.style.display = 'block';
+
+            // Position menu - avoid going off screen
+            const x = Math.min(e.clientX, window.innerWidth - 180);
+            const y = Math.min(e.clientY, window.innerHeight - 80);
+            menu.style.left = x + 'px';
+            menu.style.top = y + 'px';
+
+            document.getElementById('ctx-reply-btn').onclick = function () {
+                setReply(m);
+                hideContextMenu();
+            };
+        };
+
+        function setReply(m) {
+            currentReplyMessageId = m.id;
+            const senderName = m.sender ? m.sender.name : (m.sender_id == userId ? '{{ Auth::user()->name }}' : currentFriendName);
+            const previewText = (m.message || '[Gambar]').substring(0, 60) + ((m.message || '').length > 60 ? '...' : '');
+            currentReplyMessage = { senderName, previewText };
+
+            // Remove old reply bar if exists
+            const oldBar = document.getElementById('reply-preview-bar');
+            if (oldBar) oldBar.remove();
+
+            // Create new reply bar above input
+            const inputWrapper = document.querySelector('.chat-input-wrapper');
+            const bar = document.createElement('div');
+            bar.id = 'reply-preview-bar';
+            bar.className = 'reply-preview-bar mx-3 mb-0 mt-2';
+            bar.innerHTML = `
+                <div style="flex:1;overflow:hidden;">
+                    <span class="fw-bold text-accent" style="font-size:0.8rem;">Membalas ${senderName}</span>
+                    <div class="reply-preview-text">${previewText}</div>
+                </div>
+                <button class="btn-cancel-reply" onclick="clearReplyState()" title="Batal balas">
+                    <i class="fas fa-times"></i>
+                </button>`;
+            inputWrapper.insertBefore(bar, inputWrapper.firstChild);
+
+            chatInput.focus();
+        }
+
+        window.clearReplyState = function () {
+            currentReplyMessageId = null;
+            currentReplyMessage = null;
+            const bar = document.getElementById('reply-preview-bar');
+            if (bar) bar.remove();
+            chatInput.placeholder = `Kirim pesan ke @${currentFriendName}`;
+        };
+
+        // Update appendMsg to handle reply threads and context menu
+        function appendMsg(m) {
+            const isMe = m.sender_id === userId;
+            const container = document.getElementById('chat-messages-inner');
+            const item = document.createElement('div');
+            item.className = 'chat-msg-container animate-fade-in mb-2';
+            if (m.id) item.dataset.messageId = m.id;
+
+            // Context menu (right click / long press)
+            item.addEventListener('contextmenu', function (e) { window.showReplyContextMenu(e, m); });
+            let pressTimer;
+            item.addEventListener('touchstart', function (e) {
+                pressTimer = setTimeout(() => { window.showReplyContextMenu(e.touches[0] || e, m); }, 600);
+            }, { passive: true });
+            item.addEventListener('touchend', function () { clearTimeout(pressTimer); });
+            item.addEventListener('touchmove', function () { clearTimeout(pressTimer); });
+
+            const time = new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const senderName = m.sender_id == userId ? '{{ Auth::user()->name }}' : currentFriendName;
+            const senderInitial = senderName[0].toUpperCase();
+
+            // Handle message content with images
+            let messageContent = '';
+
+            if (m.image_path) {
+                // Real image from backend
+                const imageSrc = m.image_path.startsWith('data:') ? m.image_path : `/storage/${m.image_path}`;
+                messageContent = `<img src="${imageSrc}" alt="Image" class="rounded-2" style="max-width: 200px; max-height: 200px; object-fit: cover;">`;
+
+                if (m.message) {
+                    messageContent = `<div>${m.message}</div><div class="mt-2">${messageContent}</div>`;
+                }
+            } else if (m.message) {
+                // Text only message
+                messageContent = m.message;
+            }
+
+            // Reply thread HTML
+            let replyHtml = '';
+            if (m.reply_to) {
+                const replySender = m.reply_to.sender ? m.reply_to.sender.name : 'Unknown';
+                const replyText = m.reply_to.image_path && !m.reply_to.message
+                    ? '[Gambar]'
+                    : (m.reply_to.message || '').substring(0, 60) + ((m.reply_to.message || '').length > 60 ? '...' : '');
+                replyHtml = `
+                    <div class="reply-thread">
+                        <span class="reply-author"><i class="fas fa-reply me-1" style="font-size:0.7rem;"></i>${replySender}</span>
+                        <span class="reply-text">${replyText}</span>
+                    </div>`;
+            }
+
+            // Determine avatar source
+            let avatarHtml = '';
+            if (isMe) {
+                // Current user - use their own avatar or initial
+                const userAvatar = '{{ Auth::user()->profile->profile_photo ?? "" }}';
+                if (userAvatar) {
+                    avatarHtml = `<img src="/storage/${userAvatar}" alt="${senderName}" class="rounded-circle" style="width: 38px; height: 38px; object-fit: cover;">`;
+                } else {
+                    avatarHtml = `<div class="rounded-circle bg-pink-light text-pink d-flex align-items-center justify-content-center fw-bold" style="width: 38px; height: 38px; font-size: 0.8rem;">${senderInitial}</div>`;
+                }
+            } else {
+                // Other user - use current friend's avatar or initial
+                if (currentFriendAvatar) {
+                    const avatarSrc = currentFriendAvatar.startsWith('http') ? currentFriendAvatar : `/storage/${currentFriendAvatar}`;
+                    avatarHtml = `<img src="${avatarSrc}" alt="${senderName}" class="rounded-circle" style="width: 38px; height: 38px; object-fit: cover;">`;
+                } else {
+                    avatarHtml = `<div class="rounded-circle bg-accent-light text-accent d-flex align-items-center justify-content-center fw-bold" style="width: 38px; height: 38px; font-size: 0.8rem;">${senderInitial}</div>`;
+                }
+            }
+
+            item.innerHTML = `
+                <div class="avatar-sm">
+                    ${avatarHtml}
+                </div>
+                <div class="flex-grow-1">
+                    <div class="d-flex align-items-center mb-1">
+                        <span class="chat-msg-author small ${isMe ? 'text-pink' : 'text-accent'}">${senderName}</span>
+                        <span class="chat-msg-time ms-2">${time}</span>
+                    </div>
+                    ${replyHtml}
+                    <div class="chat-msg-text">${messageContent}</div>
+                </div>
+            `;
+            container.appendChild(item);
+        }
+
+        // Update chat form submission to handle replies
+        document.getElementById('chat-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const text = chatInput.value.trim();
+            if (!text && !selectedImage) return;
+
+            chatInput.value = '';
+
+            // Optimistic update for own messages
+            const now = new Date();
+            let messageData = {
+                sender_id: userId,
+                message: text,
+                created_at: now.toISOString(),
+                image_path: null
+            };
+
+            // Add reply info if replying
+            if (currentReplyMessageId && currentReplyMessage) {
+                messageData.reply_to = {
+                    sender: { name: currentReplyMessage.senderName },
+                    message: currentReplyMessage.previewText
+                };
+            }
+
+            // If there's an image, handle it differently
+            if (selectedImage) {
+                // Show optimistic update with image
+                messageData.image_path = selectedImage; // Use base64 for optimistic update
+
+                // Send real image
+                try {
+                    const formData = new FormData();
+                    formData.append('image', dataURLtoFile(selectedImage, 'chat-image.png'));
+                    if (text) {
+                        formData.append('message', text);
+                    }
+                    if (currentReplyMessageId) {
+                        formData.append('reply_message_id', currentReplyMessageId);
+                    }
+
+                    const res = await fetch(`/user/teman/${currentFriendId}/send-image`, {
+                        method: 'POST',
+                        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                        body: formData
+                    });
+
+                    if (!res.ok) {
+                        console.error('Failed to send image:', res.status);
+                        // Try to get error details
+                        const errorText = await res.text();
+                        console.error('Error response:', errorText);
+
+                        // Remove optimistic message if failed
+                        const lastMessage = document.querySelector('#chat-messages-inner .chat-msg-container:last-child');
+                        if (lastMessage) {
+                            lastMessage.remove();
+                        }
+                        chatInput.value = text;
+
+                        // Show specific error based on status code
+                        let errorMessage = 'Gagal mengirim gambar. Silakan coba lagi.';
+                        if (res.status === 413) {
+                            errorMessage = 'Ukuran file terlalu besar. Maksimal 2MB.';
+                        } else if (res.status === 422) {
+                            errorMessage = 'File tidak valid. Pastikan file adalah gambar dan ukuran tidak lebih dari 2MB.';
+                        } else if (res.status === 500) {
+                            errorMessage = 'Server sedang bermasalah. Silakan coba lagi nanti.';
+                        } else if (res.status === 403) {
+                            errorMessage = 'Tidak memiliki izin untuk mengirim gambar.';
+                        } else {
+                            errorMessage = `Gagal mengirim gambar (${res.status}). Silakan coba lagi.`;
+                        }
+
+                        showErrorNotification(errorMessage);
+                        return;
+                    }
+
+                    // Check if response is JSON
+                    const contentType = res.headers.get('content-type');
+                    if (!contentType || !contentType.includes('application/json')) {
+                        const errorText = await res.text();
+                        console.error('Non-JSON response:', errorText);
+
+                        // Remove optimistic message if failed
+                        const lastMessage = document.querySelector('#chat-messages-inner .chat-msg-container:last-child');
+                        if (lastMessage) {
+                            lastMessage.remove();
+                        }
+                        chatInput.value = text;
+
+                        // Show user-friendly error
+                        showErrorNotification('Server mengembalikan response tidak valid. Silakan coba lagi.');
+                        return;
+                    }
+
+                    const result = await res.json();
+
+                    // Check if upload was successful
+                    if (result.success && result.message) {
+                        // Update optimistic message with real image path
+                        const lastMessage = document.querySelector('#chat-messages-inner .chat-msg-container:last-child .chat-msg-text img');
+                        if (lastMessage && result.message.image_path) {
+                            lastMessage.src = `/storage/${result.message.image_path}`;
+                        }
+
+                        // Show success notification
+                        showSuccessNotification('Gambar berhasil dikirim!');
+                    } else {
+                        console.error('Upload failed:', result.message);
+
+                        // Remove optimistic message if failed
+                        const lastMessage = document.querySelector('#chat-messages-inner .chat-msg-container:last-child');
+                        if (lastMessage) {
+                            lastMessage.remove();
+                        }
+                        chatInput.value = text;
+
+                        // Show specific error message
+                        let errorMessage = 'Gagal mengirim gambar. Silakan coba lagi.';
+                        if (result.errors && result.errors.image) {
+                            const errorText = result.errors.image[0];
+
+                            // Translate technical errors to user-friendly messages
+                            if (errorText.includes('may not be greater than')) {
+                                errorMessage = 'Ukuran file terlalu besar. Maksimal 2MB.';
+                            } else if (errorText.includes('must be an image')) {
+                                errorMessage = 'File yang dipilih bukan gambar. Silakan pilih file gambar.';
+                            } else if (errorText.includes('required')) {
+                                errorMessage = 'File gambar wajib diisi.';
+                            } else {
+                                errorMessage = `Error: ${errorText}`;
+                            }
+                        } else if (result.message) {
+                            errorMessage = result.message;
+                        }
+
+                        showErrorNotification(errorMessage);
+                        return;
+                    }
+
+                } catch(e) {
+                    console.error('Error sending image:', e);
+                    // Remove optimistic message if failed
+                    const lastMessage = document.querySelector('#chat-messages-inner .chat-msg-container:last-child');
+                    if (lastMessage) {
+                        lastMessage.remove();
+                    }
+                    chatInput.value = text;
+
+                    // Show user-friendly error
+                    showErrorNotification('Gagal mengirim gambar. Periksa koneksi internet Anda.');
+                    return;
+                }
+
+                // Clear image preview
+                selectedImage = null;
+                imagePreview.src = '';
+                imagePreviewContainer.classList.add('d-none');
+                imageUpload.value = '';
+            } else {
+                // Send text message
+                try {
+                    const payload = { message: text };
+                    if (currentReplyMessageId) payload.reply_message_id = currentReplyMessageId;
+
+                    const res = await fetch(`/user/teman/${currentFriendId}/messages`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!res.ok) {
+                        console.error('Failed to send message:', res.status);
+                        // Remove optimistic message if failed
+                        const lastMessage = document.querySelector('#chat-messages-inner .chat-msg-container:last-child');
+                        if (lastMessage) {
+                            lastMessage.remove();
+                        }
+                        chatInput.value = text;
+                        return;
+                    }
+                } catch(e) {
+                    console.error('Error sending message:', e);
+                    // Remove optimistic message if failed
+                    const lastMessage = document.querySelector('#chat-messages-inner .chat-msg-container:last-child');
+                    if (lastMessage) {
+                        lastMessage.remove();
+                    }
+                    chatInput.value = text;
+                    return;
+                }
+            }
+
+            // Clear reply state after sending
+            window.clearReplyState();
+
+            // Show optimistic update
+            appendMsg(messageData);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        };
 
         if (typeof Echo !== 'undefined') {
             Echo.private(`user.${userId}`)
