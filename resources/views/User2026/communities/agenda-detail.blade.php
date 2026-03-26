@@ -47,7 +47,7 @@
             <!-- Left Content -->
             <div class="col-lg-8">
                 <!-- Tabs -->
-                <ul class="nav nav-tabs mb-4" id="agendaTab" role="tablist">
+                <ul class="nav nav-tabs" id="agendaTabs" role="tablist">
                     <li class="nav-item" role="presentation">
                         <button class="nav-link active" id="details-tab" data-bs-toggle="tab" data-bs-target="#details" type="button" role="tab">Details</button>
                     </li>
@@ -55,9 +55,6 @@
                         <button class="nav-link" id="participants-tab" data-bs-toggle="tab" data-bs-target="#participants" type="button" role="tab">
                             Participants ({{ $feed->joins_count ?? 0 }})
                         </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="chat-tab" data-bs-toggle="tab" data-bs-target="#chat" type="button" role="tab">Chat</button>
                     </li>
                 </ul>
 
@@ -148,7 +145,12 @@
 
                                 <!-- Action Buttons -->
                                 <div class="d-flex gap-3">
-                                    @if($isJoined)
+                                    @if($feed->user_id == Auth::id())
+                                        <!-- Creator is automatically participant -->
+                                        <button class="btn btn-success rounded-pill px-4" disabled>
+                                            <i class="fas fa-crown me-2"></i>Penyelenggara
+                                        </button>
+                                    @elseif($feed->current_user_joined)
                                         <button 
                                             onclick="toggleJoinMeet(this, {{ $feed->id }})" 
                                             class="btn btn-danger rounded-pill px-4"
@@ -165,12 +167,6 @@
                                             <i class="fas fa-plus me-2"></i>Ikut Agenda
                                         </button>
                                     @endif
-                                    <button class="btn btn-outline-primary rounded-pill px-4">
-                                        <i class="fas fa-calendar-plus me-2"></i>Add to Calendar
-                                    </button>
-                                    <button class="btn btn-outline-secondary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#addNotesModal">
-                                        <i class="fas fa-sticky-note me-2"></i>Add Notes
-                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -186,10 +182,16 @@
                                         @foreach($feed->joinedBy as $participant)
                                             <div class="col-md-6 mb-3">
                                                 <div class="d-flex align-items-center p-3 bg-light rounded-3">
-                                                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3" 
-                                                         style="width: 40px; height: 40px;">
-                                                        {{ strtoupper(substr($participant->name, 0, 1)) }}
-                                                    </div>
+                                                    @if($participant->profile && $participant->profile->profile_photo)
+                                                        <img src="{{ asset('storage/' . $participant->profile->profile_photo) }}" 
+                                                             class="rounded-circle me-3" 
+                                                             style="width: 40px; height: 40px; object-fit: cover;">
+                                                    @else
+                                                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3" 
+                                                             style="width: 40px; height: 40px;">
+                                                            {{ strtoupper(substr($participant->name, 0, 1)) }}
+                                                        </div>
+                                                    @endif
                                                     <div class="flex-grow-1">
                                                         <div class="fw-bold">{{ $participant->name }}</div>
                                                         <div class="small text-muted">
@@ -205,55 +207,6 @@
                                         <i class="fas fa-users fa-2x mb-3"></i>
                                         <p>Belum ada peserta yang bergabung.</p>
                                     </div>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Chat Tab -->
-                    <div class="tab-pane fade" id="chat" role="tabpanel">
-                        <div class="card border-0 shadow-sm rounded-4">
-                            <div class="card-body p-4">
-                                <h6 class="fw-bold text-primary mb-3">Diskusi Agenda</h6>
-                                <div class="chat-container" style="height: 400px; overflow-y: auto;">
-                                    @if($feed->comments->count() > 0)
-                                        @foreach($feed->comments as $comment)
-                                            <div class="mb-3">
-                                                <div class="d-flex align-items-start">
-                                                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-2" 
-                                                         style="width: 32px; height: 32px; font-size: 12px;">
-                                                        {{ strtoupper(substr($comment->user->name, 0, 1)) }}
-                                                    </div>
-                                                    <div class="flex-grow-1">
-                                                        <div class="bg-light rounded-3 p-3">
-                                                            <div class="fw-bold small">{{ $comment->user->name }}</div>
-                                                            <div class="small">{{ $comment->content }}</div>
-                                                        </div>
-                                                        <div class="small text-muted ms-3">{{ $comment->created_at->diffForHumans() }}</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                    @else
-                                        <div class="text-center py-5 text-muted">
-                                            <i class="fas fa-comments fa-2x mb-3"></i>
-                                            <p>Belum ada diskusi. Mulai percakapan!</p>
-                                        </div>
-                                    @endif
-                                </div>
-                                @if($isJoined)
-                                <div class="mt-3">
-                                    <form class="d-flex gap-2">
-                                        <input type="text" class="form-control rounded-pill" placeholder="Tulis pesan...">
-                                        <button type="submit" class="btn btn-primary rounded-pill px-4">
-                                            <i class="fas fa-paper-plane"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                                @else
-                                <div class="mt-3 text-center text-muted">
-                                    <small>Ikut agenda untuk bisa berpartisipasi dalam diskusi</small>
-                                </div>
                                 @endif
                             </div>
                         </div>
@@ -291,57 +244,26 @@
                     <div class="card-body p-4">
                         <h6 class="fw-bold text-primary mb-3">Penyelenggara</h6>
                         <div class="d-flex align-items-center">
-                            <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center me-3" 
-                                 style="width: 40px; height: 40px;">
-                                {{ strtoupper(substr($feed->user->name, 0, 1)) }}
-                            </div>
+                            @if($feed->user->profile && $feed->user->profile->profile_photo)
+                                <img src="{{ asset('storage/' . $feed->user->profile->profile_photo) }}" 
+                                     class="rounded-circle me-3" 
+                                     style="width: 40px; height: 40px; object-fit: cover;">
+                            @else
+                                <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center me-3" 
+                                     style="width: 40px; height: 40px;">
+                                    {{ strtoupper(substr($feed->user->name, 0, 1)) }}
+                                </div>
+                            @endif
                             <div>
                                 <div class="fw-bold">{{ $feed->user->name }}</div>
                                 <div class="small text-muted">Admin Komunitas</div>
+                                @if($feed->user->profile && $feed->user->profile->name)
+                                    <div class="small text-muted mt-1">{{ Str::limit($feed->user->profile->name, 50) }}</div>
+                                @endif
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <!-- Share -->
-                <div class="card border-0 shadow-sm rounded-4">
-                    <div class="card-body p-4">
-                        <h6 class="fw-bold text-primary mb-3">Bagikan</h6>
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-outline-primary btn-sm rounded-circle flex-fill">
-                                <i class="fas fa-share"></i>
-                            </button>
-                            <button class="btn btn-outline-success btn-sm rounded-circle flex-fill">
-                                <i class="fab fa-whatsapp"></i>
-                            </button>
-                            <button class="btn btn-outline-info btn-sm rounded-circle flex-fill">
-                                <i class="fab fa-twitter"></i>
-                            </button>
-                            <button class="btn btn-outline-secondary btn-sm rounded-circle flex-fill">
-                                <i class="fas fa-link"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Add Notes Modal -->
-<div class="modal fade" id="addNotesModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow rounded-4">
-            <div class="modal-header border-0">
-                <h5 class="modal-title fw-bold">Tambah Catatan Pribadi</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <textarea class="form-control rounded-3" rows="4" placeholder="Catatan pribadi tentang agenda ini..."></textarea>
-            </div>
-            <div class="modal-footer border-0">
-                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Batal</button>
-                <button type="button" class="btn btn-primary rounded-pill px-4">Simpan</button>
             </div>
         </div>
     </div>

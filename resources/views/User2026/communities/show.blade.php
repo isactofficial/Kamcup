@@ -362,19 +362,6 @@
                                                 </div>
                                                 @endif
                                             </div>
-
-                                            <div class="d-grid mt-auto pt-3">
-                                                <button 
-                                                    onclick="event.stopPropagation(); toggleJoinMeet(this, {{ $agenda->id }})" 
-                                                    class="btn rounded-pill btn-sm fw-bold {{ $agenda->current_user_joined ? 'btn-danger' : 'btn-primary' }}"
-                                                    data-joined="{{ $agenda->current_user_joined ? '1' : '0' }}"
-                                                >
-                                                    <span class="btn-text">
-                                                        {{ $agenda->current_user_joined ? 'Batal Ikut' : 'Gabung Sekarang' }}
-                                                    </span>
-                                                    <i class="fas {{ $agenda->current_user_joined ? 'fa-times' : 'fa-plus' }} ms-1"></i>
-                                                </button>
-                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -1965,10 +1952,6 @@
 .agenda-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 8px 25px rgba(0, 97, 122, 0.15) !important;
-}
-
-.agenda-card:hover .btn {
-    transform: scale(1.05);
 }
 </style>
 @endpush

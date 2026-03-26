@@ -26,9 +26,20 @@ class CommunityController extends Controller
         $userId = Auth::id();
         $community->load(['creator', 'members', 'feeds' => function($q) use ($userId) {
             $q->with(['user.profile'])
-              ->selectRaw('feeds.*, 
-                EXISTS(SELECT 1 FROM feed_user_joins WHERE feed_id = feeds.id AND user_id = ?) as current_user_joined,
-                EXISTS(SELECT 1 FROM feed_likes WHERE feed_id = feeds.id AND user_id = ?) as current_user_liked', [$userId, $userId])
+              ->addSelect(['current_user_joined' => function($query) use ($userId) {
+                  $query->selectRaw('1')
+                        ->from('feed_user_joins')
+                        ->whereColumn('feed_user_joins.feed_id', 'feeds.id')
+                        ->where('feed_user_joins.user_id', $userId)
+                        ->limit(1);
+              }])
+              ->addSelect(['current_user_liked' => function($query) use ($userId) {
+                  $query->selectRaw('1')
+                        ->from('feed_likes')
+                        ->whereColumn('feed_likes.feed_id', 'feeds.id')
+                        ->where('feed_likes.user_id', $userId)
+                        ->limit(1);
+              }])
               ->withCount(['likes as likes_count', 'comments as comments_count', 'joinedBy as joins_count'])
               ->latest();
         }]);
@@ -335,6 +346,11 @@ class CommunityController extends Controller
             $feed = $community->feeds()->create($feedData);
 
             \Log::info('Feed created successfully', ['feed_id' => $feed->id]);
+
+            // Automatically add creator as participant
+            $feed->joinedBy()->attach(Auth::id(), ['joined_at' => now()]);
+            
+            \Log::info('Creator added as participant', ['feed_id' => $feed->id, 'user_id' => Auth::id()]);
 
             return redirect()->back()->with('success', 'Agenda komunitas berhasil dibuat!');
         } catch (\Exception $e) {
