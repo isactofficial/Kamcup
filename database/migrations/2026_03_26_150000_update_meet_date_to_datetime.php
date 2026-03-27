@@ -13,9 +13,9 @@ return new class extends Migration
      */
     public function up()
     {
+        // No longer needed - meet_date is now DATETIME in previous migration
         Schema::table('feeds', function (Blueprint $table) {
-            // Change meet_date from DATE to DATETIME to store both date and time
-            $table->dateTime('meet_date')->nullable()->change();
+            // Migration is now empty as functionality moved to previous migration
         });
     }
 
@@ -27,8 +27,9 @@ return new class extends Migration
     public function down()
     {
         Schema::table('feeds', function (Blueprint $table) {
-            // Revert back to DATE if needed
-            $table->date('meet_date')->nullable()->change();
+            // Drop DATETIME and recreate as DATE
+            $table->dropColumn('meet_date');
+            $table->date('meet_date')->nullable()->after('meet_location'); // adjust position as needed
         });
     }
 };

@@ -486,13 +486,18 @@ class CommunityController extends Controller
     {
         // Check if we need to extend recurring agendas
         $visibleDate = now()->copy()->addMonths(1);
-        
+
+        // Safety check: if no recurring agendas exist, skip
+        if (!$community->feeds()->where('is_recurring', true)->exists()) {
+            return;
+        }
+
         // Find the latest recurring agenda
         $latestRecurring = $community->feeds()
             ->where('is_recurring', true)
             ->orderBy('meet_date', 'desc')
             ->first();
-        
+
         if ($latestRecurring && $latestRecurring->meet_date < $visibleDate) {
             // Extend agenda for 3 more months
             $this->extendAgenda($latestRecurring, $visibleDate->copy()->addMonths(3));
