@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (!Schema::hasTable('feeds')) {
+            return;
+        }
+
         Schema::table('feeds', function (Blueprint $table) {
             if (!Schema::hasColumn('feeds', 'meet_date')) {
                 $table->dateTime('meet_date')->nullable()->after('meet_location');
@@ -26,6 +30,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (!Schema::hasTable('feeds')) {
+            return;
+        }
+
         Schema::table('feeds', function (Blueprint $table) {
             if (Schema::hasColumn('feeds', 'meet_date')) {
                 $table->dropColumn('meet_date');
